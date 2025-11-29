@@ -1,7 +1,10 @@
 spring:
   application:
     name: lekhai
+  server:
+    port: 8080
 
+  # Database Configuration
   datasource:
     name: lekhai
     url: ${DB_URL:jdbc:postgresql://localhost:5432/lekhai}
