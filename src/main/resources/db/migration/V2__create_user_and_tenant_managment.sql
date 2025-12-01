@@ -7,8 +7,8 @@ CREATE TABLE user_details (
     uuid VARCHAR(20) NOT NULL UNIQUE,
     role VARCHAR(50) NOT NULL,
     category_id INT NOT NULL,
-    permission_bit BIGINT DEFAULT 0 NOT NULL,
-    special_feature_bits BIGINT DEFAULT 0 NOT NULL,
+    permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
+    special_feature_bits BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
     tenant VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -30,9 +30,13 @@ CREATE INDEX idx_user_details_tenant_role ON user_details(tenant, role);
 CREATE TABLE tenant_details (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(20) NOT NULL UNIQUE,
-    role VARCHAR(50) NOT NULL,
+    role VARCHAR(50) NOT NULL, -- will almost always be ADMIN ( should we need this explicitly)
     category_id INT NOT NULL,
-    permission_bit BIGINT DEFAULT 0 NOT NULL,
+    permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
+    special_feature_bits BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
+    gst_in VARCHAR(15) NULL UNIQUE,
+    firm_name VARCHAR(255) NOT NULL,
+    registered_address TEXT NULL,
     tenant VARCHAR(50) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
