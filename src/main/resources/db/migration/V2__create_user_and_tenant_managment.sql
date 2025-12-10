@@ -37,7 +37,7 @@ CREATE TABLE tenant_details (
     gst_in VARCHAR(15) NULL UNIQUE,
     firm_name VARCHAR(255) NOT NULL,
     registered_address TEXT NULL,
-    tenant VARCHAR(50) NOT NULL UNIQUE,
+    tenant INTEGER NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
