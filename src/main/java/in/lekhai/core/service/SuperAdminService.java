@@ -26,7 +26,6 @@ public class SuperAdminService {
     private final UserCredentialRepository userCredentialRepository;
     private final TenantDetailsRepo tenantDetailsRepo;
 
-    @Autowired
     public SuperAdminService(CategoryMasterRepo categoryMasterRepo, RoleCategoryMasterRepo roleCategoryMasterRepo,
                              UserCredentialRepository userCredentialRepository, TenantDetailsRepo tenantDetailsRepo) {
         this.categoryMasterRepo = categoryMasterRepo;
@@ -82,6 +81,7 @@ public class SuperAdminService {
 
     public void createCategory(CategoryCreationRequest request) {
         CategoryMaster toBeSavedCategory = CategoryMaster.builder()
+                .category(request.categoryName())
                 .build();
         categoryMasterRepo.save(toBeSavedCategory);
     }

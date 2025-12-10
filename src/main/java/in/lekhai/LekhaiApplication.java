@@ -1,11 +1,12 @@
 package in.lekhai;
 
-import lombok.extern.slf4j.Slf4j;
+import in.lekhai.authentication.config.RsaKeyProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.jdbc.repository.config.EnableJdbcAuditing;
 
-@Slf4j
+@EnableConfigurationProperties(RsaKeyProperties.class)
 @SpringBootApplication
 @EnableJdbcAuditing
 public class LekhaiApplication {
