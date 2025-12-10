@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/lekhai/login")
                         .permitAll().anyRequest().authenticated()
                 )
+                .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
@@ -63,10 +64,10 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwkSource);
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(

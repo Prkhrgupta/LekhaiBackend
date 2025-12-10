@@ -32,11 +32,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String generateToken(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-                        loginRequest.getPassword()));
-
+    public String generateToken(Authentication authentication) {
         return jwtTokenService.generateJwtToken(authentication);
     }
 

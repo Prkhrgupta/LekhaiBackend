@@ -13,7 +13,7 @@ import in.lekhai.core.repository.RoleCategoryMasterRepo;
 import in.lekhai.core.repository.TenantDetailsRepo;
 import in.lekhai.core.util.AdminUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +25,16 @@ public class SuperAdminService {
     private final RoleCategoryMasterRepo roleCategoryMasterRepo;
     private final UserCredentialRepository userCredentialRepository;
     private final TenantDetailsRepo tenantDetailsRepo;
+    private final PasswordEncoder passwordEncoder;
 
     public SuperAdminService(CategoryMasterRepo categoryMasterRepo, RoleCategoryMasterRepo roleCategoryMasterRepo,
-                             UserCredentialRepository userCredentialRepository, TenantDetailsRepo tenantDetailsRepo) {
+                             UserCredentialRepository userCredentialRepository, TenantDetailsRepo tenantDetailsRepo,
+                             PasswordEncoder passwordEncoder) {
         this.categoryMasterRepo = categoryMasterRepo;
         this.roleCategoryMasterRepo = roleCategoryMasterRepo;
         this.userCredentialRepository = userCredentialRepository;
         this.tenantDetailsRepo = tenantDetailsRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -55,7 +58,7 @@ public class SuperAdminService {
         UserCredentials userCredentials = UserCredentials.builder()
                 .uuid(AdminUtils.createUUID(roleCategoryMaster.getRole()))
                 .username(request.username())
-                .passHash(request.password()) // TODO: use the passworEncoder to encode
+                .passHash(passwordEncoder.encode(request.password()))
                 .build();
 
         userCredentialRepository.save(userCredentials);
