@@ -1,13 +1,16 @@
 package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
+import in.lekhai.authentication.exception.UserDoesNotExistException;
 import in.lekhai.authentication.repository.UserCredentialRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -16,6 +19,7 @@ import java.util.Collections;
 @Service
 public class UserService implements UserDetailsService {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     public final UserCredentialRepository userCredentialRepository;
 
     public UserService(
@@ -25,10 +29,14 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserCredentials userCredentials = userCredentialRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException(String.format("User %s not found", username))
-        );
+    @SneakyThrows
+    public UserDetails loadUserByUsername(String username) {
+        UserCredentials userCredentials = userCredentialRepository
+                .findByUsername(username)
+                .orElseThrow(() -> {
+                    log.error("User '{}' does not exist", username);
+                    return new UserDoesNotExistException(username);
+                });
 
         return User.builder()
                 .username(userCredentials.getUsername())
