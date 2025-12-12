@@ -29,7 +29,6 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    @SneakyThrows
     public UserDetails loadUserByUsername(String username) {
         UserCredentials userCredentials = userCredentialRepository
                 .findByUsername(username)
