@@ -1,16 +1,14 @@
 package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
-import in.lekhai.authentication.exception.UserDoesNotExistException;
 import in.lekhai.authentication.repository.UserCredentialRepository;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -34,7 +32,7 @@ public class UserService implements UserDetailsService {
                 .findByUsername(username)
                 .orElseThrow(() -> {
                     log.error("User '{}' does not exist", username);
-                    return new UserDoesNotExistException(username);
+                    return new UsernameNotFoundException(String.format("User %s does not exits", username));
                 });
 
         return User.builder()
