@@ -1,6 +1,7 @@
 package in.lekhai.core.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
+import in.lekhai.core.model.enums.Roles;
 import in.lekhai.authentication.repository.UserCredentialRepository;
 import in.lekhai.core.entity.CategoryMaster;
 import in.lekhai.core.entity.RoleCategoryMaster;
@@ -50,12 +51,11 @@ public class SuperAdminService {
                     log.error("Category : {} doesn't exists. failed to create admin {}", request.category(), request.username());
                     return new IllegalArgumentException(String.format("Category %s doesn't exists", request.category()));
                 });
-        //TODO : change to Role enum
-        RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo.findByRoleAndCategoryId(category.getId(), "ADMIN")
+        RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo.findByRoleAndCategoryId(category.getId(), Roles.ADMIN)
                 .orElseGet(() -> {
                     RoleCategoryMaster adminEntryForCategory = RoleCategoryMaster.builder()
                             .categoryId(category.getId())
-                            .role("ADMIN")
+                            .role(Roles.ADMIN)
                             .permission(category.getPermission())
                             .build();
                     return roleCategoryMasterRepo.save(adminEntryForCategory);

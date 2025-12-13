@@ -33,7 +33,6 @@ CREATE TABLE tenant_details (
     role VARCHAR(50) NOT NULL, -- will almost always be ADMIN ( should we need this explicitly)
     category_id INT NOT NULL,
     permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
-    special_feature_bits BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
     gst_in VARCHAR(15) NULL UNIQUE,
     firm_name VARCHAR(255) NOT NULL,
     registered_address TEXT NULL,

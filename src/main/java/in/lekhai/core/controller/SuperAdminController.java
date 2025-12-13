@@ -40,5 +40,4 @@ public class SuperAdminController {
         Result<FeatureCreationResponse> success = Result.success(featureCreationResponse);
         return ResponseEntity.ok(success);
     }
-
 }

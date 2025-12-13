@@ -1,5 +1,6 @@
 package in.lekhai.core.entity;
 
+import in.lekhai.core.model.enums.Roles;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -20,12 +21,10 @@ public class TenantDetails {
     @Id
     private Long id;
     private String uuid;
-    private String role; // FIXME: Think if we want it here or not
+    private Roles role; // FIXME: Think if we want it here or not
     private Long category_id;
     @Builder.Default
     private List<Long> permissionBit = new ArrayList<>();
-    @Builder.Default
-    private List<Long> specialFeatureBits = new ArrayList<>();
     private String gstIn;
     private String firmName;
     private String registeredAddress;

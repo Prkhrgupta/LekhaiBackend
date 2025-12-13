@@ -1,6 +1,7 @@
 package in.lekhai.core.repository;
 
 import in.lekhai.core.entity.RoleCategoryMaster;
+import in.lekhai.core.model.enums.Roles;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,5 @@ public interface RoleCategoryMasterRepo extends ListCrudRepository<RoleCategoryM
             WHERE category_id = :categoryId
             AND role = :role
             """)
-    // TODO: use Role enum for this
-    Optional<RoleCategoryMaster> findByRoleAndCategoryId(Long categoryId, String role);
+    Optional<RoleCategoryMaster> findByRoleAndCategoryId(Long categoryId, Roles role);
 }

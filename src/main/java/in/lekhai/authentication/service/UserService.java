@@ -27,26 +27,16 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
-        UserCredentials userCredentials = userCredentialRepository
+    public UserCredentials loadUserByUsername(String username) {
+        return userCredentialRepository
                 .findByUsername(username)
                 .orElseThrow(() -> {
                     log.error("User '{}' does not exist", username);
                     return new UsernameNotFoundException(String.format("User %s does not exits", username));
                 });
-
-        return User.builder()
-                .username(userCredentials.getUsername())
-                .password(userCredentials.getPassHash())
-                .authorities(getAuthorities(userCredentials))
-                .accountExpired(false)
-                .accountLocked(false)
-                .credentialsExpired(false)
-                .disabled(false)
-                .build();
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(UserCredentials userCredentials) {
-        return Collections.emptyList();
-    }
+//    private Collection<? extends GrantedAuthority> getAuthorities(UserCredentials userCredentials) {
+//        return Collections.emptyList();
+//    }
 }

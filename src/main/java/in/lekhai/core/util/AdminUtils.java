@@ -1,5 +1,7 @@
 package in.lekhai.core.util;
 
+import in.lekhai.core.model.enums.Roles;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -14,9 +16,9 @@ public class AdminUtils {
     private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
     private static final Integer DEFAULT_RANDOM_LETTER_LENGTH = 2;
 
-    public static String createUUID(String role) {
+    public static String createUUID(Roles role) {
         StringBuilder uuidBuilder = new StringBuilder();
-        String acronym = "ADM"; // fetch from role
+        String acronym = role.getAcronym();
         String dateStr = LocalDate.now(DEFAULT_ZONE).format(DATE_FORMATTER);
         String randomPart = generateRandomAlphanumeric();
 

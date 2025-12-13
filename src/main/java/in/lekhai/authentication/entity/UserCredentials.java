@@ -6,8 +6,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 @Table("user_credentials")
-public class UserCredentials  {
+public class UserCredentials implements UserDetails {
 
     @Id
     @Column("id")
@@ -42,4 +46,13 @@ public class UserCredentials  {
     @Column("is_account_active")
     private boolean isAccountActive;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passHash;
+    }
 }

@@ -5,11 +5,14 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface FeatureMasterRepo extends ListCrudRepository<FeatureMaster, Long> {
     Optional<FeatureMaster> findByFeatureKey(String featureKey);
+    List<FeatureMaster> findByBitPositionIn(Set<Integer> bitPositions);
 
     @Query(value = """
         SELECT COALESCE(MAX(bit_position) + 1, 0)

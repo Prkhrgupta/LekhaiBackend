@@ -1,5 +1,6 @@
 package in.lekhai.core.entity;
 
+import in.lekhai.core.model.enums.Roles;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,8 +20,9 @@ import java.util.List;
 public class RoleCategoryMaster {
     @Id
     private Long id;
-    private String role; // TODO :change to enum Role
+    private Roles role;
     private Long categoryId; // FK for CategoryMaster
+    @Builder.Default
     private List<Long> permission = new ArrayList<>();
     @CreatedDate
     private LocalDateTime createdAt;
