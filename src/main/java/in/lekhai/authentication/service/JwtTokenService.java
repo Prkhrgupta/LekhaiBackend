@@ -1,5 +1,6 @@
 package in.lekhai.authentication.service;
 
+import in.lekhai.authentication.entity.UserCredentials;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -35,6 +36,7 @@ public class JwtTokenService {
                 .expiresAt(now.plus(6, ChronoUnit.HOURS))
                 .subject(authentication.getName())
                 .claim("scope", scope)
+                .claim("userUuid", ((UserCredentials) authentication.getPrincipal()).getUuid())
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

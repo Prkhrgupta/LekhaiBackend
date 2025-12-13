@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +41,10 @@ public class AdminService {
             3. permission bits of that user
      */
     public MenuResponse generateUiJson() {
-        UserCredentials userCredentials = (UserCredentials) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String uuid = userCredentials.getUuid();
+        Jwt principal = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(principal.getClaims().get("userUuid"));
+//        UserCredentials userCredentials = (UserCredentials) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String uuid = principal.getClaims().get("userUuid").toString();
         //TODO: This user can be someone other than a Tenant (ADMIN) too, implement that
 
         TenantDetails tenantDetails = tenantDetailsRepo.findByUuid(uuid)
