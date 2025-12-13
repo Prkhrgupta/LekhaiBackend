@@ -42,8 +42,6 @@ public class AdminService {
      */
     public MenuResponse generateUiJson() {
         Jwt principal = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println(principal.getClaims().get("userUuid"));
-//        UserCredentials userCredentials = (UserCredentials) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String uuid = principal.getClaims().get("userUuid").toString();
         //TODO: This user can be someone other than a Tenant (ADMIN) too, implement that
 
