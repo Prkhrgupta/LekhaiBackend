@@ -1,4 +1,4 @@
-package in.lekhai.core.model;
+package in.lekhai.core.model.response;
 
 public record AdminRegistrationResponse(
         String username,

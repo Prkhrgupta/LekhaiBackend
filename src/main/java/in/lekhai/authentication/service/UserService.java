@@ -4,15 +4,9 @@ import in.lekhai.authentication.entity.UserCredentials;
 import in.lekhai.authentication.repository.UserCredentialRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.Collections;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -35,8 +29,4 @@ public class UserService implements UserDetailsService {
                     return new UsernameNotFoundException(String.format("User %s does not exits", username));
                 });
     }
-
-//    private Collection<? extends GrantedAuthority> getAuthorities(UserCredentials userCredentials) {
-//        return Collections.emptyList();
-//    }
 }

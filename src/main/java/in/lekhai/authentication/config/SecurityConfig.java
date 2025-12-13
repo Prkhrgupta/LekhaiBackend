@@ -6,7 +6,6 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import in.lekhai.authentication.config.convertor.CustomJwtAuthenticationConverter;
 import in.lekhai.authentication.config.properties.RsaKeyProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,14 +27,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final RsaKeyProperties rsaKeyProperties;
-    private final CustomJwtAuthenticationConverter jwtAuthenticationConverter;
 
     public SecurityConfig(
-            RsaKeyProperties rsaKeyProperties,
-            CustomJwtAuthenticationConverter jwtAuthenticationConverter
+            RsaKeyProperties rsaKeyProperties
     ) {
         this.rsaKeyProperties = rsaKeyProperties;
-        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
     }
 
     @Bean

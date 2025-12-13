@@ -6,9 +6,9 @@ import in.lekhai.authentication.repository.UserCredentialRepository;
 import in.lekhai.core.entity.CategoryMaster;
 import in.lekhai.core.entity.RoleCategoryMaster;
 import in.lekhai.core.entity.TenantDetails;
-import in.lekhai.core.model.AdminRegistrationRequest;
-import in.lekhai.core.model.AdminRegistrationResponse;
-import in.lekhai.core.model.CategoryCreationRequest;
+import in.lekhai.core.model.request.AdminRegistrationRequest;
+import in.lekhai.core.model.response.AdminRegistrationResponse;
+import in.lekhai.core.model.request.CategoryCreationRequest;
 import in.lekhai.core.repository.CategoryMasterRepo;
 import in.lekhai.core.repository.RoleCategoryMasterRepo;
 import in.lekhai.core.repository.TenantDetailsRepo;
@@ -17,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -67,7 +65,7 @@ public class SuperAdminService {
                 .passHash(passwordEncoder.encode(request.password()))
                 .build();
 
-        userCredentialRepository.save(userCredentials);
+        UserCredentials save = userCredentialRepository.save(userCredentials);
         TenantDetails tenantDetails = TenantDetails.builder()
                 .firmName(request.firmName())
                 .role(roleCategoryMaster.getRole())

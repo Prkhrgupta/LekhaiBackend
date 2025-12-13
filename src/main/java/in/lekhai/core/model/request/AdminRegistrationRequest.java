@@ -1,4 +1,4 @@
-package in.lekhai.core.model;
+package in.lekhai.core.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

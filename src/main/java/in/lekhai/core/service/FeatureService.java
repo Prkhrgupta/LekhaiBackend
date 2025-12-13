@@ -1,8 +1,8 @@
 package in.lekhai.core.service;
 
 import in.lekhai.core.entity.FeatureMaster;
-import in.lekhai.core.model.FeatureCreationResponse;
-import in.lekhai.core.model.ScreenFeatureCreationRequest;
+import in.lekhai.core.model.response.FeatureCreationResponse;
+import in.lekhai.core.model.request.ScreenFeatureCreationRequest;
 import in.lekhai.core.repository.FeatureMasterRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
