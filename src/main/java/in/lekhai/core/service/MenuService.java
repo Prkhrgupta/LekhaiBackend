@@ -6,8 +6,10 @@ import in.lekhai.core.model.menu.MenuResponse;
 import in.lekhai.core.repository.*;
 import in.lekhai.core.util.CollectionUtils;
 import in.lekhai.core.util.JwtUtil;
-import in.lekhai.exception.controller.exception.CategoryDoesNotExistException;
-import in.lekhai.exception.controller.exception.RoleForCategoryDoesNotExistException;
+import in.lekhai.error.controller.category.exception.CategoryDoesNotExistException;
+import in.lekhai.error.controller.role.exception.RoleForCategoryDoesNotExistException;
+import in.lekhai.error.controller.tenant.exception.TenantDoesNotExistException;
+import in.lekhai.error.controller.user.exception.UserDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,10 +52,12 @@ public class MenuService {
         BaseUserEntity userEntity = getUserEntity(uuid, role);
         Long categoryId = userEntity.getCategoryId();
 
-        CategoryMaster categoryMaster = categoryMasterRepo.findById(categoryId)
+        CategoryMaster categoryMaster = categoryMasterRepo
+                .findById(categoryId)
                 .orElseThrow(() -> new CategoryDoesNotExistException(String.valueOf(categoryId)));
 
-        RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo.findByRoleAndCategoryId(categoryId, role)
+        RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo
+                .findByRoleAndCategoryId(categoryId, role)
                 .orElseThrow(() -> new RoleForCategoryDoesNotExistException(role, categoryId));
 
 
@@ -84,23 +88,15 @@ public class MenuService {
         return switch (role) {
             case SUPER_ADMIN -> throw new RuntimeException(
                     String.format("Feature map can't be created for %s", Roles.SUPER_ADMIN
-                    )); // TODO: create custom or catch globally
-            case ADMIN -> tenantDetailsRepo.findByUuid(uuid)
+                    ));
+            case ADMIN -> tenantDetailsRepo
+                    .findByUuid(uuid)
                     .map(tenant -> (BaseUserEntity) tenant)
-                    .orElseThrow(() -> {
-                        log.error("No tenant entry found for ADMIN role with uuid: {}", uuid);
-                        return new RuntimeException(
-                                String.format("No tenant found for uuid: %s", uuid)
-                        );
-                    });
-            default -> userDetailsRepo.findByUuid(uuid)
+                    .orElseThrow(() -> new TenantDoesNotExistException(uuid, role));
+            default -> userDetailsRepo
+                    .findByUuid(uuid)
                     .map(user -> (BaseUserEntity) user)
-                    .orElseThrow(() -> {
-                        log.error("No user entry found for role {} with uuid: {}", role, uuid);
-                        return new RuntimeException(
-                                String.format("No user found for role %s with uuid: %s", role, uuid)
-                        );
-                    });
+                    .orElseThrow(() -> new UserDoesNotExistException(uuid, role));
         };
     }
 

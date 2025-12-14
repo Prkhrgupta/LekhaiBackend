@@ -1,6 +1,5 @@
 package in.lekhai.core.repository;
 
-import in.lekhai.core.entity.BaseUserEntity;
 import in.lekhai.core.entity.UserDetails;
 import org.springframework.data.repository.ListCrudRepository;
 

@@ -4,13 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record ScreenFeatureCreationRequest (
-        @NotNull
-        String featureKey,
+        @NotNull String featureKey,
         Long parentId,
-        @NotNull @NotBlank
-        String title,
+        @NotNull @NotBlank String title,
         String icon,
-        @NotNull
-        Boolean isScreen
+        @NotNull Boolean isScreen
 ) {
 }

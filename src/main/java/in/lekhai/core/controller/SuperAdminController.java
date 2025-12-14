@@ -6,6 +6,7 @@ import in.lekhai.core.model.request.CategoryCreationRequest;
 import in.lekhai.core.model.request.ScreenFeatureCreationRequest;
 import in.lekhai.core.model.request.SuperAdminRegistrationRequest;
 import in.lekhai.core.model.response.AdminRegistrationResponse;
+import in.lekhai.core.model.response.CategoryCreationResponse;
 import in.lekhai.core.model.response.FeatureCreationResponse;
 import in.lekhai.core.model.response.SuperAdminRegistrationResponse;
 import in.lekhai.core.service.FeatureService;
@@ -46,8 +47,8 @@ public class SuperAdminController {
 
     @PostMapping("/category/create")
     public ResponseEntity<Result<?>> createCategory(@RequestBody @Valid CategoryCreationRequest request) {
-        superAdminService.createCategory(request);
-        return ResponseEntity.ok(null);
+        CategoryCreationResponse response = superAdminService.createCategory(request);
+        return ResponseEntity.ok(Result.success(response));
     }
 
     @PostMapping("/feature/create")
