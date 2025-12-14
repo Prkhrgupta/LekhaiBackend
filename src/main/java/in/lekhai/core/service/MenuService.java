@@ -1,6 +1,5 @@
 package in.lekhai.core.service;
 
-import in.lekhai.authentication.entity.UserCredentials;
 import in.lekhai.core.entity.CategoryMaster;
 import in.lekhai.core.entity.FeatureMaster;
 import in.lekhai.core.entity.RoleCategoryMaster;
@@ -13,12 +12,12 @@ import in.lekhai.core.repository.FeatureMasterRepo;
 import in.lekhai.core.repository.RoleCategoryMasterRepo;
 import in.lekhai.core.repository.TenantDetailsRepo;
 import in.lekhai.core.util.CollectionUtils;
+import in.lekhai.core.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,22 +26,21 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class AdminService {
+public class MenuService {
 
     private final TenantDetailsRepo tenantDetailsRepo;
     private final CategoryMasterRepo categoryMasterRepo;
     private final RoleCategoryMasterRepo roleCategoryMasterRepo;
     private final FeatureMasterRepo featureMasterRepo;
-    private final JwtDecoder jwtDecoder;
+    private final JwtUtil jwtUtil;
 
     /*
             1. fetch permissions bits for category
             2. permission bits for that role in that category
             3. permission bits of that user
      */
-    public MenuResponse generateUiJson() {
-        Jwt principal = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String uuid = principal.getClaims().get("userUuid").toString();
+    public MenuResponse generateMenu() {
+        String uuid = jwtUtil.extractJwtClaim().uuid();
         //TODO: This user can be someone other than a Tenant (ADMIN) too, implement that
 
         TenantDetails tenantDetails = tenantDetailsRepo.findByUuid(uuid)

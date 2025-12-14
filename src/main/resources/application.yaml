@@ -24,3 +24,4 @@ rsa:
 super-admin:
   username: ${SUPER_ADMIN_USERNAME:admin}
   password: ${SUPER_ADMIN_PASSWORD:admin@lekhai.in}
+  name: ${SUPER_ADMIN_NAME:default_superadmin}
