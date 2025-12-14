@@ -1,5 +1,6 @@
 package in.lekhai.core.entity;
 
+
 import in.lekhai.core.model.enums.Roles;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,18 +17,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table("tenant_details")
-public class TenantDetails implements BaseUserEntity{
+@Table("user_details")
+public class UserDetails implements BaseUserEntity{
     @Id
     private Long id;
     private String uuid;
-    private Roles role; // FIXME: Think if we want it here or not
+    private Roles role;
     private Long categoryId;
     @Builder.Default
     private List<Long> permissionBit = new ArrayList<>();
-    private String gstIn;
-    private String firmName;
-    private String registeredAddress;
     private Integer tenant;
     @CreatedDate
     private LocalDateTime createdAt;
