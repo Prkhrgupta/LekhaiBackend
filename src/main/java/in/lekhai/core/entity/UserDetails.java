@@ -18,12 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table("user_details")
-public class UserDetails {
+public class UserDetails implements BaseUserEntity{
     @Id
     private Long id;
     private String uuid;
     private Roles role;
-    private Long category_id;
+    private Long categoryId;
     @Builder.Default
     private List<Long> permissionBit = new ArrayList<>();
     private Integer tenant;

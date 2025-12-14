@@ -70,7 +70,7 @@ public class SuperAdminService {
                 .firmName(request.firmName())
                 .role(roleCategoryMaster.getRole())
                 .uuid(userCredentials.getUuid())
-                .category_id(category.getId())
+                .categoryId(category.getId())
                 .gstIn(request.gstIn())
                 .permissionBit(category.getPermission())
                 .tenant(AdminUtils.createTenant())

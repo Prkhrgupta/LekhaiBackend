@@ -4,7 +4,7 @@
 
 CREATE TABLE super_admin_master (
     id BIGSERIAL PRIMARY KEY,
-    uuid VARCHAR(20) NOT NULL UNIQUE,
+    uuid user_code NOT NULL UNIQUE,
     name VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -17,7 +17,7 @@ CREATE TABLE super_admin_master (
 
 CREATE TABLE tenant_details (
     id BIGSERIAL PRIMARY KEY,
-    uuid VARCHAR(20) NOT NULL UNIQUE,
+    uuid user_code NOT NULL UNIQUE,
     role VARCHAR(50) NOT NULL, -- will almost always be ADMIN ( should we need this explicitly)
     category_id INT NOT NULL,
     permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
@@ -42,11 +42,11 @@ CREATE INDEX idx_tenant_details_tenant ON tenant_details(tenant);
 
 CREATE TABLE user_details (
     id BIGSERIAL PRIMARY KEY,
-    uuid VARCHAR(20) NOT NULL UNIQUE,
+    uuid user_code NOT NULL UNIQUE,
     role VARCHAR(50) NOT NULL,
     category_id BIGINT NOT NULL,
     permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
-    tenant VARCHAR(50) NOT NULL,
+    tenant INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
