@@ -1,6 +1,8 @@
 package in.lekhai.core.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
+import in.lekhai.core.entity.SuperAdminMaster;
+import in.lekhai.core.repository.SuperAdminMasterRepo;
 import in.lekhai.exception.controller.exception.CategoryDoesNotExistException;
 import in.lekhai.exception.controller.exception.UsernameAlreadyExistException;
 import in.lekhai.core.model.enums.Roles;
@@ -35,19 +37,22 @@ public class SuperAdminService {
     private final UserCredentialRepository userCredentialRepository;
     private final TenantDetailsRepo tenantDetailsRepo;
     private final PasswordEncoder passwordEncoder;
+    private final SuperAdminMasterRepo superAdminMasterRepo;
 
     public SuperAdminService(
             CategoryMasterRepo categoryMasterRepo,
             RoleCategoryMasterRepo roleCategoryMasterRepo,
             UserCredentialRepository userCredentialRepository,
             TenantDetailsRepo tenantDetailsRepo,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            SuperAdminMasterRepo superAdminMasterRepo
     ) {
         this.categoryMasterRepo = categoryMasterRepo;
         this.roleCategoryMasterRepo = roleCategoryMasterRepo;
         this.userCredentialRepository = userCredentialRepository;
         this.tenantDetailsRepo = tenantDetailsRepo;
         this.passwordEncoder = passwordEncoder;
+        this.superAdminMasterRepo = superAdminMasterRepo;
     }
 
     @Transactional
@@ -56,13 +61,25 @@ public class SuperAdminService {
         if(userCredentials.isPresent()) {
             throw new UsernameAlreadyExistException(request.username());
         }
-        UserCredentials superAdminCredentials = UserCredentials.builder()
-                .username(request.username())
-                .passHash(passwordEncoder.encode(request.password())).
-                uuid(createUUID(Roles.SUPER_ADMIN))
-                .build();
-        UserCredentials superAdminRegistrationResponse = userCredentialRepository.save(superAdminCredentials);
-        return new SuperAdminRegistrationResponse(superAdminRegistrationResponse.getUsername());
+
+        UserCredentials superAdminRegistrationResponse = userCredentialRepository.save(
+                UserCredentials.builder()
+                        .username(request.username())
+                        .passHash(passwordEncoder.encode(request.password())).
+                        uuid(createUUID(Roles.SUPER_ADMIN))
+                        .build()
+        );
+
+        SuperAdminMaster superAdminMasterResponse = superAdminMasterRepo.save(
+                SuperAdminMaster.builder()
+                        .name(request.name())
+                        .uuid(superAdminRegistrationResponse.getUuid())
+                        .build()
+        );
+
+
+        return new SuperAdminRegistrationResponse(superAdminMasterResponse.getName(),
+                superAdminRegistrationResponse.getUsername());
     }
 
     @Transactional
