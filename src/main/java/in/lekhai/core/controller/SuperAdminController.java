@@ -20,7 +20,8 @@ public class SuperAdminController {
     private final FeatureService featureService;
 
     public SuperAdminController(SuperAdminService superAdminService,
-                                FeatureService featureService) {
+                                FeatureService featureService
+    ) {
         this.superAdminService = superAdminService;
         this.featureService = featureService;
     }

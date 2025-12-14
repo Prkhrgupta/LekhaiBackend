@@ -1,56 +1,53 @@
 package in.lekhai.core.service;
 
-import in.lekhai.core.entity.CategoryMaster;
-import in.lekhai.core.entity.FeatureMaster;
-import in.lekhai.core.entity.RoleCategoryMaster;
-import in.lekhai.core.entity.TenantDetails;
+import in.lekhai.core.entity.*;
 import in.lekhai.core.model.enums.Roles;
-import in.lekhai.core.model.menu.MenuItem;
 import in.lekhai.core.model.menu.MenuResponse;
-import in.lekhai.core.repository.CategoryMasterRepo;
-import in.lekhai.core.repository.FeatureMasterRepo;
-import in.lekhai.core.repository.RoleCategoryMasterRepo;
-import in.lekhai.core.repository.TenantDetailsRepo;
+import in.lekhai.core.repository.*;
 import in.lekhai.core.util.CollectionUtils;
 import in.lekhai.core.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class MenuService {
 
     private final TenantDetailsRepo tenantDetailsRepo;
+    private final UserDetailsRepo userDetailsRepo;
     private final CategoryMasterRepo categoryMasterRepo;
     private final RoleCategoryMasterRepo roleCategoryMasterRepo;
     private final FeatureMasterRepo featureMasterRepo;
     private final JwtUtil jwtUtil;
+    private final MenuBuilder menuBuilder;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    /*
-            1. fetch permissions bits for category
-            2. permission bits for that role in that category
-            3. permission bits of that user
-     */
+    public MenuService(TenantDetailsRepo tenantDetailsRepo,
+                       UserDetailsRepo userDetailsRepo,
+                       CategoryMasterRepo categoryMasterRepo,
+                       RoleCategoryMasterRepo roleCategoryMasterRepo,
+                       FeatureMasterRepo featureMasterRepo,
+                       JwtUtil jwtUtil,
+                       MenuBuilder menuBuilder
+    ) {
+        this.tenantDetailsRepo = tenantDetailsRepo;
+        this.userDetailsRepo = userDetailsRepo;
+        this.categoryMasterRepo = categoryMasterRepo;
+        this.roleCategoryMasterRepo = roleCategoryMasterRepo;
+        this.featureMasterRepo = featureMasterRepo;
+        this.jwtUtil = jwtUtil;
+        this.menuBuilder = menuBuilder;
+    }
+
     public MenuResponse generateMenu() {
         String uuid = jwtUtil.extractJwtClaim().uuid();
-        //TODO: This user can be someone other than a Tenant (ADMIN) too, implement that
+        Roles role = jwtUtil.extractJwtClaim().role();
 
-        TenantDetails tenantDetails = tenantDetailsRepo.findByUuid(uuid)
-                .orElseThrow(() -> {
-                    log.error("No entry in tenant details for uuid : {}", uuid);
-                    return new RuntimeException("No uuid in tenant details, Entry missing");
-                });
+        BaseUserEntity userEntity = getUserEntity(uuid, role);
+        Long categoryId = userEntity.getCategoryId();
 
-        Long categoryId = tenantDetails.getCategory_id();
-        Roles role = tenantDetails.getRole();
         CategoryMaster categoryMaster = categoryMasterRepo.findById(categoryId)
                 .orElseThrow(() -> {
                     log.error("Something is wrong, user {} have a category that doesn't exists", uuid);
@@ -66,7 +63,7 @@ public class MenuService {
 
         List<Long> categoryPermissionBits = categoryMaster.getPermission();
         List<Long> roleCategoryPermissionBits = roleCategoryMaster.getPermission();
-        List<Long> userPermissionBits = tenantDetails.getPermissionBit(); // TODO: userDetails will be used for other Roles, other than ADMIN
+        List<Long> userPermissionBits = userEntity.getPermissionBit();
 
         List<Long> finalPermissionBits = new ArrayList<>(categoryPermissionBits.size());
         for(int i = 0; i < categoryPermissionBits.size(); i++)  {
@@ -84,103 +81,31 @@ public class MenuService {
             log.warn("Enabled feature list is empty for : uuid {}", uuid);
         }
 
-        return createUiJsonFromFeature(enabledRootFeatures);
+        return menuBuilder.buildMenu(enabledRootFeatures);
     }
 
-    private MenuResponse createUiJsonFromFeature(List<FeatureMaster> leafFeatures) {
-        Set<Long> parentIdsToFetch = leafFeatures.stream()
-                .map(FeatureMaster::getParentFeatureId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
-        Map<Long, FeatureMaster> featureMap = leafFeatures.stream()
-                .collect(Collectors.toMap(FeatureMaster::getId, f -> f));
-
-        // Recursively fetch all parents until we reach root
-        while (!parentIdsToFetch.isEmpty()) {
-            List<FeatureMaster> parents = featureMasterRepo.findAllById(parentIdsToFetch);
-
-            parentIdsToFetch.clear();
-            for (FeatureMaster parent : parents) {
-                if (!featureMap.containsKey(parent.getId())) {
-                    featureMap.put(parent.getId(), parent);
-                    if (parent.getParentFeatureId() != null) {
-                        parentIdsToFetch.add(parent.getParentFeatureId());
-                    }
-                }
-            }
-        }
-
-        // Step 2: Now build the hierarchy with all features
-        List<FeatureMaster> allFeatures = new ArrayList<>(featureMap.values());
-
-        Map<Long, List<FeatureMaster>> childrenMap = allFeatures.stream()
-                .filter(f -> f.getParentFeatureId() != null)
-                .collect(Collectors.groupingBy(FeatureMaster::getParentFeatureId));
-
-        List<FeatureMaster> roots = allFeatures.stream()
-                .filter(f -> f.getParentFeatureId() == null)
-                .sorted(Comparator.comparing(f -> f.getSortOrder() != null ? f.getSortOrder() : Long.MAX_VALUE))
-                .toList();
-
-        List<MenuItem> mainMenuItems = roots.stream()
-                .map(feature -> buildMenuItem(feature, childrenMap, featureMap))
-                .toList();
-
-        return new MenuResponse(mainMenuItems, List.of());
-    }
-    private MenuItem buildMenuItem(FeatureMaster feature,
-                                   Map<Long, List<FeatureMaster>> childrenMap,
-                                   Map<Long, FeatureMaster> featureMap) {
-        // Get children of current feature, sorted by sortOrder (handling nulls)
-        List<FeatureMaster> children = childrenMap.getOrDefault(feature.getId(), List.of())
-                .stream()
-                .sorted(Comparator.comparing(f -> f.getSortOrder() != null ? f.getSortOrder() : Long.MAX_VALUE))
-                .toList();
-
-        if (children.isEmpty()) {
-            // Leaf node - construct route
-            String route = buildRoute(feature, featureMap);
-            return new MenuItem(
-                    feature.getFeatureKey(),
-                    feature.getTitle(),
-                    feature.getIcon(),
-                    route,
-                    null
-            );
-        } else {
-            // Parent node - recursively build children
-            List<MenuItem> childMenuItems = children.stream()
-                    .map(child -> buildMenuItem(child, childrenMap, featureMap))
-                    .toList();
-
-            return new MenuItem(
-                    feature.getFeatureKey(),
-                    feature.getTitle(),
-                    feature.getIcon(),
-                    null,
-                    childMenuItems
-            );
-        }
-    }
-
-    private String buildRoute(FeatureMaster feature, Map<Long, FeatureMaster> featureMap) {
-        List<String> pathSegments = new ArrayList<>();
-        FeatureMaster current = feature;
-
-        // Traverse from leaf to root, collecting feature keys
-        while (current != null) {
-            pathSegments.add(current.getFeatureKey());
-            current = current.getParentFeatureId() != null
-                    ? featureMap.get(current.getParentFeatureId())
-                    : null;
-        }
-
-        // Reverse to get root-to-leaf order
-        Collections.reverse(pathSegments);
-
-        // Join with "/" to create route
-        return "/" + String.join("/", pathSegments);
+    private BaseUserEntity getUserEntity(String uuid, Roles role) {
+        return switch (role) {
+            case SUPER_ADMIN -> throw new RuntimeException(
+                    String.format("Feature map can't be created for %s", Roles.SUPER_ADMIN
+                    )); // TODO: create custom or catch globally
+            case ADMIN -> tenantDetailsRepo.findByUuid(uuid)
+                    .map(tenant -> (BaseUserEntity) tenant)
+                    .orElseThrow(() -> {
+                        log.error("No tenant entry found for ADMIN role with uuid: {}", uuid);
+                        return new RuntimeException(
+                                String.format("No tenant found for uuid: %s", uuid)
+                        );
+                    });
+            default -> userDetailsRepo.findByUuid(uuid)
+                    .map(user -> (BaseUserEntity) user)
+                    .orElseThrow(() -> {
+                        log.error("No user entry found for role {} with uuid: {}", role, uuid);
+                        return new RuntimeException(
+                                String.format("No user found for role %s with uuid: %s", role, uuid)
+                        );
+                    });
+        };
     }
 
     private List<FeatureMaster> getAllEnabledRootFeatures(List<Long> permissionBits) {
