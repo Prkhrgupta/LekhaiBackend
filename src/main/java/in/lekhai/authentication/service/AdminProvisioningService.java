@@ -2,7 +2,9 @@ package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
 import in.lekhai.authentication.repository.UserCredentialRepository;
+import in.lekhai.core.entity.SuperAdminMaster;
 import in.lekhai.core.model.enums.Roles;
+import in.lekhai.core.repository.SuperAdminMasterRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,27 +24,33 @@ public class AdminProvisioningService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserCredentialRepository userCredentialRepository;
+    private final SuperAdminMasterRepo superAdminMasterRepo;
 
     private final String username;
     private final String password;
+    private final String name;
 
     public AdminProvisioningService(
             PasswordEncoder passwordEncoder,
             UserCredentialRepository userCredentialRepository,
+            SuperAdminMasterRepo superAdminMasterRepo,
             @Value("${super-admin.username}") String username,
-            @Value("${super-admin.password}") String password
+            @Value("${super-admin.password}") String password,
+            @Value("${super-admin.name}") String name
     ) {
         this.passwordEncoder = passwordEncoder;
         this.userCredentialRepository = userCredentialRepository;
+        this.superAdminMasterRepo = superAdminMasterRepo;
         this.username = username;
         this.password = password;
+        this.name = name;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void provisionSuperAdmin() {
         Optional<UserCredentials> userCredentials = userCredentialRepository.findByUsername(username);
         if(userCredentials.isPresent()) {
-            log.info("SUPER ADMIN ALREADY EXISTS");
+            log.info("SUPER ADMIN ALREADY {} EXISTS", username);
             return;
         }
 
@@ -51,8 +59,15 @@ public class AdminProvisioningService {
                 .passHash(passwordEncoder.encode(password))
                 .uuid(createUUID(Roles.SUPER_ADMIN))
                 .build();
+        UserCredentials userCredentialsSaved = userCredentialRepository.save(superAdminCredentials);
 
-        userCredentialRepository.save(superAdminCredentials);
-        log.info("CREATING SUPER ADMIN");
+        SuperAdminMaster superAdminMaster = SuperAdminMaster.builder()
+                .name(name)
+                .uuid(userCredentialsSaved.getUuid())
+                .build();
+
+        superAdminMasterRepo.save(superAdminMaster);
+
+        log.info("CREATING SUPER ADMIN {}", username);
     }
 }

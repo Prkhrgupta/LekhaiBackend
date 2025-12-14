@@ -1,26 +1,14 @@
 -- ============================================
--- USER DETAILS
+--  SUPERADMIN MASTER
 -- ============================================
 
-CREATE TABLE user_details (
+CREATE TABLE super_admin_master (
     id BIGSERIAL PRIMARY KEY,
     uuid VARCHAR(20) NOT NULL UNIQUE,
-    role VARCHAR(50) NOT NULL,
-    category_id INT NOT NULL,
-    permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
-    special_feature_bits BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
-    tenant VARCHAR(50) NOT NULL,
+    name VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
-
-ALTER TABLE user_details
-    ADD CONSTRAINT fk_user_details_category
-    FOREIGN KEY (category_id) REFERENCES category_master(id) ON DELETE RESTRICT;
-
-CREATE INDEX idx_user_details_uuid ON user_details(uuid);
-CREATE INDEX idx_user_details_tenant ON user_details(tenant);
-CREATE INDEX idx_user_details_tenant_role ON user_details(tenant, role);
 
 
 -- ============================================
@@ -47,3 +35,26 @@ ALTER TABLE tenant_details
 
 CREATE INDEX idx_tenant_details_uuid ON tenant_details(uuid);
 CREATE INDEX idx_tenant_details_tenant ON tenant_details(tenant);
+
+-- ============================================
+-- USER DETAILS
+-- ============================================
+
+CREATE TABLE user_details (
+    id BIGSERIAL PRIMARY KEY,
+    uuid VARCHAR(20) NOT NULL UNIQUE,
+    role VARCHAR(50) NOT NULL,
+    category_id BIGINT NOT NULL,
+    permission_bit BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
+    tenant VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+ALTER TABLE user_details
+    ADD CONSTRAINT fk_user_details_category
+    FOREIGN KEY (category_id) REFERENCES category_master(id) ON DELETE RESTRICT;
+
+CREATE INDEX idx_user_details_uuid ON user_details(uuid);
+CREATE INDEX idx_user_details_tenant ON user_details(tenant);
+CREATE INDEX idx_user_details_tenant_role ON user_details(tenant, role);

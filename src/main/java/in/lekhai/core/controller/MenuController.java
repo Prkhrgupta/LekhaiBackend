@@ -2,27 +2,27 @@ package in.lekhai.core.controller;
 
 import in.lekhai.common.Result;
 import in.lekhai.core.model.menu.MenuResponse;
-import in.lekhai.core.service.AdminService;
+import in.lekhai.core.service.MenuService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin")
-public class AdminController {
+@RequestMapping("/api/menu")
+public class MenuController {
 
-    private final AdminService adminService;
+    private final MenuService menuService;
 
-    public AdminController(
-            AdminService adminService
+    public MenuController(
+            MenuService menuService
     ) {
-        this.adminService = adminService;
+        this.menuService = menuService;
     }
 
-    @GetMapping("/fetch-ui-json")
-    public ResponseEntity<Result<MenuResponse>> fetchUiJson() {
-        MenuResponse menuResponse = adminService.generateUiJson();
+    @GetMapping
+    public ResponseEntity<Result<MenuResponse>> getMenu() {
+        MenuResponse menuResponse = menuService.generateMenu();
         return ResponseEntity.ok(Result.success(menuResponse));
     }
 }
