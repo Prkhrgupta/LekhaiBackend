@@ -67,7 +67,6 @@ public class AdminProvisioningService {
                 .build();
 
         superAdminMasterRepo.save(superAdminMaster);
-
-        log.info("CREATING SUPER ADMIN {}", username);
+        log.info("CREATED SUPER ADMIN {}", username);
     }
 }

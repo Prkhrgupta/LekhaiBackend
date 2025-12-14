@@ -4,11 +4,14 @@ import in.lekhai.common.Result;
 import in.lekhai.core.model.request.AdminRegistrationRequest;
 import in.lekhai.core.model.request.CategoryCreationRequest;
 import in.lekhai.core.model.request.ScreenFeatureCreationRequest;
+import in.lekhai.core.model.request.SuperAdminRegistrationRequest;
 import in.lekhai.core.model.response.AdminRegistrationResponse;
 import in.lekhai.core.model.response.FeatureCreationResponse;
+import in.lekhai.core.model.response.SuperAdminRegistrationResponse;
 import in.lekhai.core.service.FeatureService;
 import in.lekhai.core.service.SuperAdminService;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,11 +22,19 @@ public class SuperAdminController {
     private final SuperAdminService superAdminService;
     private final FeatureService featureService;
 
-    public SuperAdminController(SuperAdminService superAdminService,
-                                FeatureService featureService
+    public SuperAdminController(
+            SuperAdminService superAdminService,
+            FeatureService featureService
     ) {
         this.superAdminService = superAdminService;
         this.featureService = featureService;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Result<?>> registerSuperAdmin(@RequestBody @Valid SuperAdminRegistrationRequest request) {
+        SuperAdminRegistrationResponse response = superAdminService.registerSuperAdmin(request);
+        Result<SuperAdminRegistrationResponse> registrationResponseResult = Result.success(response);
+        return ResponseEntity.ok(registrationResponseResult);
     }
 
     @PostMapping("/register/admin")
