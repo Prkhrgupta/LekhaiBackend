@@ -6,6 +6,8 @@ import in.lekhai.core.model.menu.MenuResponse;
 import in.lekhai.core.repository.*;
 import in.lekhai.core.util.CollectionUtils;
 import in.lekhai.core.util.JwtUtil;
+import in.lekhai.exception.controller.exception.CategoryDoesNotExistException;
+import in.lekhai.exception.controller.exception.RoleDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -49,16 +51,10 @@ public class MenuService {
         Long categoryId = userEntity.getCategoryId();
 
         CategoryMaster categoryMaster = categoryMasterRepo.findById(categoryId)
-                .orElseThrow(() -> {
-                    log.error("Something is wrong, user {} have a category that doesn't exists", uuid);
-                    return new RuntimeException("User : {} have a categoryId that isn't created / exists");
-                });
+                .orElseThrow(() -> new CategoryDoesNotExistException(String.valueOf(categoryId)));
 
         RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo.findByRoleAndCategoryId(categoryId, role)
-                .orElseThrow(() -> {
-                    log.error("Something is wrong, user {} role and categoryId that doesn't exist", uuid);
-                    return new RuntimeException("User : {} have a role and categoryId that isn't created / exists");
-                });
+                .orElseThrow(() -> new RoleDoesNotExistException(role, categoryId));
 
 
         List<Long> categoryPermissionBits = categoryMaster.getPermission();

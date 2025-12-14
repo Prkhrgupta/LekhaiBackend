@@ -2,6 +2,7 @@ package in.lekhai.exception.controller.handler;
 
 import in.lekhai.common.Result;
 import in.lekhai.exception.controller.exception.CategoryDoesNotExistException;
+import in.lekhai.exception.controller.exception.RoleDoesNotExistException;
 import in.lekhai.exception.controller.exception.UsernameAlreadyExistException;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
@@ -27,9 +28,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Result.error(exception.getMessage()));
     }
 
+    @ExceptionHandler(RoleDoesNotExistException.class)
+    public ResponseEntity<Result<?>> handleRoleDoesNotExistException(RoleDoesNotExistException exception) {
+        log.error("{}", exception.getMessage(), exception);
+        return ResponseEntity.badRequest().body(Result.error(exception.getMessage()));
+    }
+
     @ExceptionHandler(UsernameAlreadyExistException.class)
     public ResponseEntity<Result<?>> handleUsernameAlreadyExistException(UsernameAlreadyExistException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.badRequest().body(Result.error(exception.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Result<?>> handleAllException(Exception exception) {
+        log.error("{}", exception.getMessage(), exception);
+        return ResponseEntity.internalServerError().body(Result.error(exception.getLocalizedMessage()));
     }
 }
