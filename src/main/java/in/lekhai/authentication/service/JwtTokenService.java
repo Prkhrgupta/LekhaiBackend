@@ -85,7 +85,7 @@ public class JwtTokenService {
     }
 
     private Integer findTenantId(String uuid, Roles role) {
-        if(Roles.SUPER_ADMIN.equals(role)) return 0; // Return 0 for SUPERADMIN, This will be handled in JWTUtil
+        if(Roles.SUPER_ADMIN.equals(role)) return 0; // Return 0 for SUPERADMIN, This will be handled in JwtClaims.java
 
         if(Roles.ADMIN.equals(role)) {
             return tenantDetailsRepo.findByUuid(uuid)

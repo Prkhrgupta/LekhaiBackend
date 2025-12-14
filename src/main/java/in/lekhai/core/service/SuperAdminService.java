@@ -2,9 +2,11 @@ package in.lekhai.core.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
 import in.lekhai.core.entity.SuperAdminMaster;
+import in.lekhai.core.model.response.CategoryCreationResponse;
 import in.lekhai.core.repository.SuperAdminMasterRepo;
-import in.lekhai.exception.controller.exception.CategoryDoesNotExistException;
-import in.lekhai.exception.controller.exception.UsernameAlreadyExistException;
+import in.lekhai.error.controller.category.exception.CategoryAlreadyExistException;
+import in.lekhai.error.controller.category.exception.CategoryDoesNotExistException;
+import in.lekhai.error.controller.user.exception.UserAlreadyExistException;
 import in.lekhai.core.model.enums.Roles;
 import in.lekhai.authentication.repository.UserCredentialRepository;
 import in.lekhai.core.entity.CategoryMaster;
@@ -23,8 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 import static in.lekhai.core.util.AdminUtils.createUUID;
 
@@ -57,10 +57,11 @@ public class SuperAdminService {
 
     @Transactional
     public SuperAdminRegistrationResponse registerSuperAdmin(SuperAdminRegistrationRequest request) {
-        Optional<UserCredentials> userCredentials = userCredentialRepository.findByUsername(request.username());
-        if(userCredentials.isPresent()) {
-            throw new UsernameAlreadyExistException(request.username());
-        }
+        userCredentialRepository
+                .findByUsername(request.username())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExistException(request.username());
+                });
 
         UserCredentials superAdminRegistrationResponse = userCredentialRepository.save(
                 UserCredentials.builder()
@@ -77,7 +78,6 @@ public class SuperAdminService {
                         .build()
         );
 
-
         return new SuperAdminRegistrationResponse(superAdminMasterResponse.getName(),
                 superAdminRegistrationResponse.getUsername());
     }
@@ -88,10 +88,11 @@ public class SuperAdminService {
                 .findByCategory(request.category())
                 .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));
 
-        Optional<UserCredentials> userCredentials = userCredentialRepository.findByUsername(request.username());
-        if(userCredentials.isPresent()) {
-            throw new UsernameAlreadyExistException(request.username());
-        }
+        userCredentialRepository
+                .findByUsername(request.username())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExistException(request.username());
+                });
 
         RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo
                 .findByRoleAndCategoryId(category.getId(), Roles.ADMIN)
@@ -130,10 +131,16 @@ public class SuperAdminService {
         );
     }
 
-    public void createCategory(CategoryCreationRequest request) {
-        CategoryMaster toBeSavedCategory = CategoryMaster.builder()
-                .category(request.categoryName())
-                .build();
-        categoryMasterRepo.save(toBeSavedCategory);
+    public CategoryCreationResponse createCategory(CategoryCreationRequest request) {
+        categoryMasterRepo
+                .findByCategory(request.categoryName())
+                .ifPresent(category -> {
+                    throw new CategoryAlreadyExistException(request.categoryName());
+                });
+
+        CategoryMaster savedCategoryResponse = categoryMasterRepo.save(CategoryMaster.builder()
+                .category(request.categoryName()).build());
+
+        return new CategoryCreationResponse(savedCategoryResponse.getCategory());
     }
 }
