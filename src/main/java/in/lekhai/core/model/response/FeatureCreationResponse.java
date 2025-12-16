@@ -3,7 +3,7 @@ package in.lekhai.core.model.response;
 public record FeatureCreationResponse(
         Long id,
         String featureKey,
-        Long bitPosition,
+        Integer bitPosition,
         String title,
         String icon,
         String parentFeatureKey

@@ -5,8 +5,10 @@ import in.lekhai.core.model.request.AdminRegistrationRequest;
 import in.lekhai.core.model.request.CategoryCreationRequest;
 import in.lekhai.core.model.request.ScreenFeatureCreationRequest;
 import in.lekhai.core.model.request.SuperAdminRegistrationRequest;
+import in.lekhai.core.model.request.*;
 import in.lekhai.core.model.response.AdminRegistrationResponse;
 import in.lekhai.core.model.response.CategoryCreationResponse;
+import in.lekhai.core.model.response.CategoryResponse;
 import in.lekhai.core.model.response.FeatureCreationResponse;
 import in.lekhai.core.model.response.SuperAdminRegistrationResponse;
 import in.lekhai.core.service.FeatureService;
@@ -15,6 +17,8 @@ import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/superadmin")
@@ -56,5 +60,23 @@ public class SuperAdminController {
         FeatureCreationResponse featureCreationResponse = featureService.createScreenFeature(request);
         Result<FeatureCreationResponse> success = Result.success(featureCreationResponse);
         return ResponseEntity.ok(success);
+    }
+
+    @GetMapping("/features/all")
+    public ResponseEntity<Result<?>> getAllFeatures() {
+        List<FeatureResponse> allFeatures = featureService.getAllFeatures();
+        return ResponseEntity.ok(Result.success(allFeatures));
+    }
+
+    @GetMapping("/category/list")
+    public ResponseEntity<Result<List<CategoryResponse>>> getListOfCategories() {
+        List<CategoryResponse> categoryResponses = superAdminService.listOfCategories();
+        return ResponseEntity.ok(Result.success(categoryResponses));
+    }
+
+    @PostMapping("/category/enable/features")
+    public ResponseEntity<Result<?>> enableFeaturesForCategory(@RequestBody @Valid EnableCategoryWiseFeatures request) {
+        superAdminService.enableFeaturesForCategory(request);
+        return ResponseEntity.ok(null);
     }
 }
