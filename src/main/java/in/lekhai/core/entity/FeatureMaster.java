@@ -29,7 +29,7 @@ public class FeatureMaster {
 
     String icon;
 
-    Long bitPosition;
+    Integer bitPosition;
 
     Long sortOrder;
 

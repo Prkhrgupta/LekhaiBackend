@@ -2,7 +2,9 @@ package in.lekhai.core.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
 import in.lekhai.core.entity.SuperAdminMaster;
+import in.lekhai.core.model.request.EnableCategoryWiseFeatures;
 import in.lekhai.core.model.response.CategoryCreationResponse;
+import in.lekhai.core.model.response.CategoryResponse;
 import in.lekhai.core.repository.SuperAdminMasterRepo;
 import in.lekhai.error.controller.category.exception.CategoryAlreadyExistException;
 import in.lekhai.error.controller.category.exception.CategoryDoesNotExistException;
@@ -25,6 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static in.lekhai.core.util.AdminUtils.createUUID;
 
@@ -106,10 +113,10 @@ public class SuperAdminService {
                 });
 
         UserCredentials registeredAdmin = userCredentialRepository.save(UserCredentials.builder()
-                        .uuid(AdminUtils.createUUID(roleCategoryMaster.getRole()))
-                        .username(request.username())
-                        .passHash(passwordEncoder.encode(request.password()))
-                        .build());
+                .uuid(AdminUtils.createUUID(roleCategoryMaster.getRole()))
+                .username(request.username())
+                .passHash(passwordEncoder.encode(request.password()))
+                .build());
 
         TenantDetails registeredTenant = tenantDetailsRepo.save(TenantDetails.builder()
                 .firmName(request.firmName())
@@ -142,5 +149,46 @@ public class SuperAdminService {
                 .category(request.categoryName()).build());
 
         return new CategoryCreationResponse(savedCategoryResponse.getCategory());
+    }
+
+    public List<CategoryResponse> listOfCategories() {
+        return categoryMasterRepo.findAll()
+                .stream()
+                .map((categoryMaster) ->
+                        new CategoryResponse(categoryMaster.getId(),
+                                categoryMaster.getCategory(),
+                                categoryMaster.getCreatedAt()
+                        ))
+                .toList();
+    }
+
+    public void enableFeaturesForCategory(EnableCategoryWiseFeatures request) {
+        //TODO: check if the bits and category id are valid, send a list of category or permission that don't exists
+        List<CategoryMaster> categoryMasterList = categoryMasterRepo.findAllById(request.categoryIdList());
+        Map<Long, List<Long>> categoryPermissionMap = categoryMasterList
+                .stream()
+                .peek(category -> {
+                    addOrEnableBits(category.getPermission(), request.bitsPositionsToBeEnabled());
+                })
+                .collect(Collectors.toMap(
+                        CategoryMaster::getId,
+                        CategoryMaster::getPermission
+                ));
+
+        categoryMasterRepo.saveAll(categoryMasterList);
+    }
+
+    private void addOrEnableBits(List<Long> permissions, Set<Integer> bits) {
+        for (Integer bitPosition : bits) {
+            int index = bitPosition / 64;
+            int bit = bitPosition % 64;
+
+            while (permissions.size() <= index) {
+                permissions.add(0L);
+            }
+
+            Long currentValue = permissions.get(index);
+            permissions.set(index, currentValue | (1L << bit));
+        }
     }
 }
