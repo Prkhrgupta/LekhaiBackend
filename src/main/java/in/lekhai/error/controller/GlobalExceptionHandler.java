@@ -4,7 +4,9 @@ import in.lekhai.common.Result;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,5 +31,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<?>> handleAllException(Exception exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.internalServerError().body(Result.error("Internal Server Error"));
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<Result<?>> handleAutorizationException(Exception exception) {
+        log.error("{}", exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Result.error("Unauthorized"));
     }
 }
