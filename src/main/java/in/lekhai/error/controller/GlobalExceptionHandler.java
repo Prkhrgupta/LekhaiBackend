@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<Result<?>> handleAutorizationException(Exception exception) {
+    public ResponseEntity<Result<?>> handleAuthorizationException(AuthorizationDeniedException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Result.error("Unauthorized"));
     }
