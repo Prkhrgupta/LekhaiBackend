@@ -14,12 +14,12 @@ public record JwtClaims(
                 token.getClaimAsString("uuid"),
                 parseRole(token),
                 parseTenant(token),
-                token.getClaimAsString("username")
+                token.getClaimAsString("subject")
         );
     }
 
     private static Roles parseRole(Jwt token) {
-        String roleStr = token.getClaimAsString("role");
+        String roleStr = token.getClaimAsString("scope");
         if (roleStr == null) {
             throw new IllegalStateException("Role claim missing in JWT");
         }

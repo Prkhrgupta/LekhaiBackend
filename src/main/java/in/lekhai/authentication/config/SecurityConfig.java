@@ -29,29 +29,25 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final RsaKeyProperties rsaKeyProperties;
-    private final JwtAuthenticationConverter jwtAuthenticationConverter;
+    private final JwtAuthenticationConverter converter;
 
     public SecurityConfig(
             RsaKeyProperties rsaKeyProperties,
             JwtAuthenticationConverter jwtAuthenticationConverter
     ) {
         this.rsaKeyProperties = rsaKeyProperties;
-        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+        this.converter = jwtAuthenticationConverter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/lekhai/login").permitAll()
-                        .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/lekhai/login").permitAll().anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
 

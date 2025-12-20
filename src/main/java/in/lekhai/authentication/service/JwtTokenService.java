@@ -48,10 +48,6 @@ public class JwtTokenService {
     public String generateJwtToken(Authentication authentication) {
         Instant now = Instant.now();
 
-        String scope = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
-
         UserCredentials principal = (UserCredentials) authentication.getPrincipal();
         String uuid = principal.getUuid();
         Roles role = findRole(uuid);
@@ -60,11 +56,9 @@ public class JwtTokenService {
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plus(6, ChronoUnit.HOURS))
-                .subject(authentication.getName())
-                .claim("scope", scope)
-                .claim("username", principal.getUsername())
+                .claim("scope", role)
+                .claim("subject", authentication.getName())
                 .claim("uuid", uuid)
-                .claim("role", role)
                 .claim("tenant", findTenantId(uuid, role))
                 .build();
 

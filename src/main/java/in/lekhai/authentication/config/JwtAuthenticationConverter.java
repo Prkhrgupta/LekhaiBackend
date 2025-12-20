@@ -1,5 +1,7 @@
 package in.lekhai.authentication.config;
 
+import in.lekhai.core.model.JwtClaims;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -22,8 +24,9 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
     }
 
     private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-        String role = jwt.getClaim("role");
-        if (role == null) {
+        JwtClaims jwtClaims = JwtClaims.fromJwt(jwt);
+        String role = jwtClaims.role().toString();
+        if (StringUtils.isEmpty(role)) {
             return Collections.emptyList();
         }
         return Collections.singletonList(

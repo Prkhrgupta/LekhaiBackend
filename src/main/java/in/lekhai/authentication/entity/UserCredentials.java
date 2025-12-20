@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 @Getter
 @Setter
@@ -44,11 +44,12 @@ public class UserCredentials implements UserDetails {
     private LocalDateTime updatedAt;
 
     @Column("is_account_active")
-    private boolean isAccountActive;
+    @Builder.Default
+    private Boolean isAccountActive = true;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
