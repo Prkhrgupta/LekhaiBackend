@@ -42,6 +42,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(!(authentication instanceof JwtAuthenticationToken)) {
             filterChain.doFilter(request, response);
+            return;
         }
         try {
             Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
