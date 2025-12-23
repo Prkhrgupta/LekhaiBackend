@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -39,15 +40,13 @@ public class TenantContextFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(!(authentication instanceof BearerTokenAuthenticationFilter)) {
+        if(!(authentication instanceof JwtAuthenticationToken)) {
             filterChain.doFilter(request, response);
-            return;
         }
-
-        Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        JwtClaims claims = JwtClaims.fromJwt(token);
-        TenantContext.setTenantId(claims.tenant().toString());
         try {
+            Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            JwtClaims claims = JwtClaims.fromJwt(token);
+            TenantContext.setTenantId(claims.tenant().toString());
             filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();
