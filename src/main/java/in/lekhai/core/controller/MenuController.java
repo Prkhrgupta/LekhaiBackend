@@ -1,5 +1,6 @@
 package in.lekhai.core.controller;
 
+import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.common.Result;
 import in.lekhai.core.model.menu.MenuResponse;
 import in.lekhai.core.service.MenuService;
@@ -22,7 +23,7 @@ public class MenuController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize(SecurityExpressions.NOT_SUPER_ADMIN)
     public ResponseEntity<Result<MenuResponse>> getMenu() {
         MenuResponse menuResponse = menuService.generateMenu();
         return ResponseEntity.ok(Result.success(menuResponse));

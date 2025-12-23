@@ -1,15 +1,16 @@
 CREATE TABLE features (
     id SERIAL PRIMARY KEY,
-    feature_key VARCHAR(100) UNIQUE NOT NULL,
+    feature_key VARCHAR(100) NOT NULL,
     parent_id INTEGER REFERENCES features(id) ON DELETE CASCADE,
     title VARCHAR(100) NOT NULL,
     icon VARCHAR(100) NOT NULL,
     bit_position INTEGER UNIQUE,
+    route VARCHAR(150) UNIQUE,
     sort_order INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
-    is_deleted BOOLEAN DEFAULT false NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes
