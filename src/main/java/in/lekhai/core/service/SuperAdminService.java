@@ -1,6 +1,7 @@
 package in.lekhai.core.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
+import in.lekhai.authentication.model.TenantContext;
 import in.lekhai.core.entity.SuperAdminMaster;
 import in.lekhai.core.model.request.EnableCategoryWiseFeatures;
 import in.lekhai.core.model.response.CategoryCreationResponse;

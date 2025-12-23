@@ -1,6 +1,6 @@
 package in.lekhai.core.util;
 
-import in.lekhai.core.model.JwtClaims;
+import in.lekhai.authentication.model.JwtClaims;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;

@@ -1,5 +1,6 @@
 package in.lekhai.core.service;
 
+import in.lekhai.authentication.model.TenantContext;
 import in.lekhai.core.entity.CategoryMaster;
 import in.lekhai.core.entity.FeatureMaster;
 import in.lekhai.core.model.request.EnableCategoryWiseFeatures;

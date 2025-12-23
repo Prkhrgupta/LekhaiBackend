@@ -1,6 +1,6 @@
 package in.lekhai.authentication.config;
 
-import in.lekhai.core.model.JwtClaims;
+import in.lekhai.authentication.model.JwtClaims;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
