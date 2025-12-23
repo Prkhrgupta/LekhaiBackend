@@ -1,7 +1,11 @@
-package in.lekhai.core.model;
+package in.lekhai.authentication.model;
 
 import in.lekhai.core.model.enums.Roles;
+import in.lekhai.error.controller.role.exception.InvalidRoleException;
+import in.lekhai.error.controller.tenant.exception.InvalidTenantTypeException;
 import org.springframework.security.oauth2.jwt.Jwt;
+
+import static in.lekhai.common.JwtConstants.*;
 
 public record JwtClaims(
         String uuid,
@@ -11,35 +15,31 @@ public record JwtClaims(
 ) {
     public static JwtClaims fromJwt(Jwt token) {
         return new JwtClaims(
-                token.getClaimAsString("uuid"),
+                token.getClaimAsString(UUID),
                 parseRole(token),
                 parseTenant(token),
-                token.getClaimAsString("subject")
+                token.getClaimAsString(SUBJECT)
         );
     }
 
     private static Roles parseRole(Jwt token) {
-        String roleStr = token.getClaimAsString("scope");
+        String roleStr = token.getClaimAsString(SCOPE);
         if (roleStr == null) {
-            throw new IllegalStateException("Role claim missing in JWT");
+            throw new InvalidRoleException("Role claim missing in JWT");
         }
         try {
             return Roles.valueOf(roleStr);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Invalid role in JWT: " + roleStr, e);
+            throw new InvalidRoleException(String.format("Invalid role in JWT: %s", roleStr));
         }
     }
 
     private static Integer parseTenant(Jwt token) {
-        Object tenantObj = token.getClaim("tenant");
+        Object tenantObj = token.getClaim(TENANT_ID);
         if (tenantObj instanceof Number) {
-            if(tenantObj.equals(0)) return null; // SUPERADMIN
+            if(tenantObj.equals(0)) return null; // SUPER ADMIN
             return ((Number) tenantObj).intValue();
         }
-        throw new IllegalStateException("Invalid tenant type: " + tenantObj.getClass());
-    }
-
-    public boolean hasTenant() {
-        return tenant != 0;
+        throw new InvalidTenantTypeException(tenantObj.getClass().toString());
     }
 }

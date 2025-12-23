@@ -1,7 +1,6 @@
 package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserCredentials;
-import in.lekhai.core.entity.SuperAdminMaster;
 import in.lekhai.core.entity.TenantDetails;
 import in.lekhai.core.entity.UserDetails;
 import in.lekhai.core.model.enums.Roles;
@@ -11,7 +10,6 @@ import in.lekhai.core.repository.UserDetailsRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -20,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static in.lekhai.common.JwtConstants.*;
 
 @Service
 public class JwtTokenService {
@@ -53,13 +51,13 @@ public class JwtTokenService {
         Roles role = findRole(uuid);
 
         JwtClaimsSet claim = JwtClaimsSet.builder()
-                .issuer("self")
+                .issuer(ISSUER)
                 .issuedAt(now)
                 .expiresAt(now.plus(6, ChronoUnit.HOURS))
-                .claim("scope", role)
-                .claim("subject", authentication.getName())
-                .claim("uuid", uuid)
-                .claim("tenant", findTenantId(uuid, role))
+                .claim(SCOPE, role)
+                .claim(SUBJECT, authentication.getName())
+                .claim(UUID, uuid)
+                .claim(TENANT_ID, findTenantId(uuid, role))
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claim)).getTokenValue();
@@ -79,7 +77,7 @@ public class JwtTokenService {
     }
 
     private Integer findTenantId(String uuid, Roles role) {
-        if(Roles.SUPER_ADMIN.equals(role)) return 0; // Return 0 for SUPERADMIN, This will be handled in JwtClaims.java
+        if(Roles.SUPER_ADMIN.equals(role)) return 0; // Return 0 for SUPER ADMIN, This will be handled in JwtClaims.java
 
         if(Roles.ADMIN.equals(role)) {
             return tenantDetailsRepo.findByUuid(uuid)
