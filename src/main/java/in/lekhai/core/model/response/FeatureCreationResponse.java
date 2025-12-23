@@ -6,6 +6,6 @@ public record FeatureCreationResponse(
         Integer bitPosition,
         String title,
         String icon,
-        String parentFeatureKey
+        String route
 ) { }
 

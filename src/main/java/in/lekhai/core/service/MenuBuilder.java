@@ -88,20 +88,18 @@ public class MenuBuilder {
                 .toList();
 
         if (childFeatures.isEmpty()) {
-            return createLeafMenuItem(feature, allFeaturesMap);
+            return createLeafMenuItem(feature);
         } else {
             return createBranchMenuItem(feature, childFeatures, childrenByParentId, allFeaturesMap);
         }
     }
 
-    private MenuItem createLeafMenuItem(FeatureMaster feature, Map<Long, FeatureMaster> allFeaturesMap) {
-        String route = buildRoutePath(feature, allFeaturesMap);
-
+    private MenuItem createLeafMenuItem(FeatureMaster feature) {
         return new MenuItem(
                 feature.getFeatureKey(),
                 feature.getTitle(),
                 feature.getIcon(),
-                route,
+                feature.getRoute(),
                 null
         );
     }
@@ -123,21 +121,5 @@ public class MenuBuilder {
                 null,
                 childMenuItems
         );
-    }
-
-    private String buildRoutePath(FeatureMaster leafFeature, Map<Long, FeatureMaster> featureMap) {
-        List<String> pathSegments = new ArrayList<>();
-        FeatureMaster currentFeature = leafFeature;
-
-        while (currentFeature != null) {
-            pathSegments.add(currentFeature.getFeatureKey());
-
-            Long parentId = currentFeature.getParentFeatureId();
-            currentFeature = parentId != null ? featureMap.get(parentId) : null;
-        }
-
-        Collections.reverse(pathSegments);
-
-        return "/" + String.join("/", pathSegments);
     }
 }

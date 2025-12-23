@@ -29,6 +29,8 @@ public class FeatureMaster {
 
     String icon;
 
+    String route;
+
     Integer bitPosition;
 
     Long sortOrder;
