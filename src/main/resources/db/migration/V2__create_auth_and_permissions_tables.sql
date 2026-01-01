@@ -2,7 +2,7 @@
 -- AUTHENTICATION & CREDENTIALS
 -- ============================================
 
-CREATE TABLE user_credentials (
+CREATE TABLE user_accounts (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     pass_hash VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE user_credentials (
     is_account_active BOOLEAN DEFAULT TRUE NOT NULL
 );
 
-CREATE INDEX idx_user_credentials_username ON user_credentials(username);
+CREATE INDEX idx_user_accounts_username ON user_accounts(username);
 
 -- ============================================
 -- CATEGORY MASTER

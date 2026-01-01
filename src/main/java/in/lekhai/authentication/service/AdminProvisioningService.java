@@ -1,10 +1,10 @@
 package in.lekhai.authentication.service;
 
-import in.lekhai.authentication.entity.UserCredentials;
-import in.lekhai.authentication.repository.UserCredentialRepository;
-import in.lekhai.core.entity.SuperAdminMaster;
-import in.lekhai.core.model.enums.Roles;
-import in.lekhai.core.repository.SuperAdminMasterRepo;
+import in.lekhai.authentication.entity.UserAccounts;
+import in.lekhai.authentication.repository.UserAccountRepository;
+import in.lekhai.core.domain.superadmin.SuperAdminMaster;
+import in.lekhai.core.enums.Roles;
+import in.lekhai.core.repository.superadmin.SuperAdminMasterRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +24,7 @@ public class AdminProvisioningService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final PasswordEncoder passwordEncoder;
-    private final UserCredentialRepository userCredentialRepository;
+    private final UserAccountRepository userAccountRepository;
     private final SuperAdminMasterRepo superAdminMasterRepo;
 
     private final String username;
@@ -33,14 +33,14 @@ public class AdminProvisioningService {
 
     public AdminProvisioningService(
             PasswordEncoder passwordEncoder,
-            UserCredentialRepository userCredentialRepository,
+            UserAccountRepository userAccountRepository,
             SuperAdminMasterRepo superAdminMasterRepo,
             @Value("${super-admin.username}") String username,
             @Value("${super-admin.password}") String password,
             @Value("${super-admin.name}") String name
     ) {
         this.passwordEncoder = passwordEncoder;
-        this.userCredentialRepository = userCredentialRepository;
+        this.userAccountRepository = userAccountRepository;
         this.superAdminMasterRepo = superAdminMasterRepo;
         this.username = username;
         this.password = password;
@@ -50,22 +50,22 @@ public class AdminProvisioningService {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void provisionSuperAdmin() {
-        Optional<UserCredentials> userCredentials = userCredentialRepository.findByUsername(username);
+        Optional<UserAccounts> userCredentials = userAccountRepository.findByUsername(username);
         if(userCredentials.isPresent()) {
             log.info("SUPER ADMIN ALREADY {} EXISTS", username);
             return;
         }
 
-        UserCredentials superAdminCredentials = UserCredentials.builder()
+        UserAccounts superAdminCredentials = UserAccounts.builder()
                 .username(username)
                 .passHash(passwordEncoder.encode(password))
                 .uuid(createUUID(Roles.SUPER_ADMIN))
                 .build();
-        UserCredentials userCredentialsSaved = userCredentialRepository.save(superAdminCredentials);
+        UserAccounts userAccountsSaved = userAccountRepository.save(superAdminCredentials);
 
         SuperAdminMaster superAdminMaster = SuperAdminMaster.builder()
                 .name(name)
-                .uuid(userCredentialsSaved.getUuid())
+                .uuid(userAccountsSaved.getUuid())
                 .build();
 
         superAdminMasterRepo.save(superAdminMaster);

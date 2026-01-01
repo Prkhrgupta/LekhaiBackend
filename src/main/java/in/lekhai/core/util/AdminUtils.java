@@ -1,6 +1,6 @@
 package in.lekhai.core.util;
 
-import in.lekhai.core.model.enums.Roles;
+import in.lekhai.core.enums.Roles;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
