@@ -1,7 +1,7 @@
 package in.lekhai.authentication.service;
 
-import in.lekhai.authentication.entity.UserCredentials;
-import in.lekhai.authentication.repository.UserCredentialRepository;
+import in.lekhai.authentication.entity.UserAccounts;
+import in.lekhai.authentication.repository.UserAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,17 +12,17 @@ import org.springframework.stereotype.Service;
 public class UserService implements UserDetailsService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    public final UserCredentialRepository userCredentialRepository;
+    public final UserAccountRepository userAccountRepository;
 
     public UserService(
-            UserCredentialRepository userCredentialRepository
+            UserAccountRepository userAccountRepository
     ) {
-        this.userCredentialRepository = userCredentialRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @Override
-    public UserCredentials loadUserByUsername(String username) {
-        return userCredentialRepository
+    public UserAccounts loadUserByUsername(String username) {
+        return userAccountRepository
                 .findByUsername(username)
                 .orElseThrow(() -> {
                     log.error("User '{}' does not exist", username);

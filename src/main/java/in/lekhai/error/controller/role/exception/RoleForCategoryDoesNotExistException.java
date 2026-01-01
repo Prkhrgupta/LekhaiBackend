@@ -1,6 +1,6 @@
 package in.lekhai.error.controller.role.exception;
 
-import in.lekhai.core.model.enums.Roles;
+import in.lekhai.core.enums.Roles;
 import in.lekhai.error.controller.LekhaiException;
 
 public class RoleForCategoryDoesNotExistException extends LekhaiException {
