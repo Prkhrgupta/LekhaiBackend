@@ -9,5 +9,5 @@ public record AdminRegistrationResponse(
         @JsonIgnore
         String uuid,
         @JsonIgnore
-        Long categoryId
+        Integer categoryId
 ) { }

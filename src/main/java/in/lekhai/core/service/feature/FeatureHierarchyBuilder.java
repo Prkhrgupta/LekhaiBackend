@@ -1,6 +1,6 @@
 package in.lekhai.core.service.feature;
 
-import in.lekhai.core.domain.feature.FeatureMaster;
+import in.lekhai.core.domain.feature.Features;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
@@ -14,12 +14,12 @@ public class FeatureHierarchyBuilder {
     /**
      * Builds parent-to-child hierarchy from a feature
      */
-    public List<FeatureMaster> buildParentHierarchy(
-            FeatureMaster feature,
-            Map<Long, FeatureMaster> featureMap
+    public List<Features> buildParentHierarchy(
+            Features feature,
+            Map<Long, Features> featureMap
     ) {
-        LinkedList<FeatureMaster> hierarchy = new LinkedList<>();
-        FeatureMaster current = feature;
+        LinkedList<Features> hierarchy = new LinkedList<>();
+        Features current = feature;
 
         while (current != null) {
             hierarchy.addFirst(current);
@@ -33,18 +33,18 @@ public class FeatureHierarchyBuilder {
     /**
      * Builds route from hierarchy
      */
-    public String buildRoute(List<FeatureMaster> hierarchy) {
+    public String buildRoute(List<Features> hierarchy) {
         return hierarchy.stream()
-                .map(FeatureMaster::getFeatureKey)
+                .map(Features::getFeatureKey)
                 .collect(Collectors.joining("/", "/", ""));
     }
 
     /**
      * Gets parent titles in order
      */
-    public List<String> getParentTitles(List<FeatureMaster> hierarchy) {
+    public List<String> getParentTitles(List<Features> hierarchy) {
         return hierarchy.stream()
-                .map(FeatureMaster::getTitle)
+                .map(Features::getTitle)
                 .collect(Collectors.toList());
     }
 }

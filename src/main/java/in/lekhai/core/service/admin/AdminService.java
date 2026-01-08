@@ -2,15 +2,15 @@ package in.lekhai.core.service.admin;
 
 import in.lekhai.authentication.entity.UserAccounts;
 import in.lekhai.authentication.repository.UserAccountRepository;
-import in.lekhai.core.domain.admin.AdminDetails;
-import in.lekhai.core.domain.category.CategoryMaster;
-import in.lekhai.core.domain.category.RoleCategoryMaster;
+import in.lekhai.core.domain.category.Categories;
+import in.lekhai.core.domain.category.RolePermissions;
+import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.dto.admin.AdminRegistrationRequest;
 import in.lekhai.core.dto.admin.AdminRegistrationResponse;
 import in.lekhai.core.enums.Roles;
-import in.lekhai.core.repository.admin.AdminDetailsRepo;
-import in.lekhai.core.repository.category.CategoryMasterRepo;
-import in.lekhai.core.repository.category.RoleCategoryMasterRepo;
+import in.lekhai.core.repository.category.CategoriesRepo;
+import in.lekhai.core.repository.category.RolePermissionsRepo;
+import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.util.AdminUtils;
 import in.lekhai.core.util.JwtUtil;
 import in.lekhai.error.controller.category.exception.CategoryDoesNotExistException;
@@ -22,32 +22,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminService {
 
-    private final CategoryMasterRepo categoryMasterRepo;
-    private final RoleCategoryMasterRepo roleCategoryMasterRepo;
+    private final CategoriesRepo categoriesRepo;
+    private final RolePermissionsRepo rolePermissionsRepo;
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AdminDetailsRepo adminDetailsRepo;
+    private final UsersRepo userRepo;
 
-    public AdminService(CategoryMasterRepo categoryMasterRepo,
-                        RoleCategoryMasterRepo roleCategoryMasterRepo,
+    public AdminService(CategoriesRepo categoriesRepo,
+                        RolePermissionsRepo rolePermissionsRepo,
                         UserAccountRepository userAccountRepository,
                         PasswordEncoder passwordEncoder,
-                        JwtUtil jwtUtil,
-                        AdminDetailsRepo adminDetailsRepo
+                        UsersRepo userRepo
     ) {
-        this.categoryMasterRepo = categoryMasterRepo;
-        this.roleCategoryMasterRepo = roleCategoryMasterRepo;
+        this.categoriesRepo = categoriesRepo;
+        this.rolePermissionsRepo = rolePermissionsRepo;
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.adminDetailsRepo = adminDetailsRepo;
+        this.userRepo = userRepo;
     }
 
     @Transactional
-    public AdminRegistrationResponse registerAdmin(AdminRegistrationRequest request, Integer tenant) {
-        CategoryMaster category = categoryMasterRepo
-                .findByCategory(request.category())
+    public AdminRegistrationResponse registerAdmin(AdminRegistrationRequest request, Integer shopCode) {
+        Categories category = categoriesRepo
+                .findByName(request.category())
                 .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));
 
         userAccountRepository
@@ -56,36 +53,38 @@ public class AdminService {
                     throw new UserAlreadyExistException(request.username());
                 });
 
-        RoleCategoryMaster roleCategoryMaster = roleCategoryMasterRepo
-                .findByRoleAndCategoryId(category.getId(), Roles.ADMIN)
+
+        RolePermissions rolePermissions = rolePermissionsRepo
+                .findByCategoryIdAndRoleId(category.getId(), Roles.ADMIN)
                 .orElseGet(() -> {
-                    RoleCategoryMaster adminEntryForCategory = RoleCategoryMaster.builder()
+                    RolePermissions adminEntryForCategory = RolePermissions.builder()
                             .categoryId(category.getId())
                             .role(Roles.ADMIN)
-                            .permission(category.getPermission())
+                            .permissions(category.getPermissions())
                             .build();
-                    return roleCategoryMasterRepo.save(adminEntryForCategory);
+                    return rolePermissionsRepo.save(adminEntryForCategory);
                 });
 
         UserAccounts adminUserAccount = userAccountRepository.save(UserAccounts.builder()
-                .uuid(AdminUtils.createUUID(roleCategoryMaster.getRole()))
+                .uuid(AdminUtils.createUUID(Roles.ADMIN))
                 .username(request.username())
                 .passHash(passwordEncoder.encode(request.password()))
                 .build());
 
-        AdminDetails adminToBeRegistered = new AdminDetails();
+        Users adminToBeRegistered = new Users();
         adminToBeRegistered.setCategoryId(category.getId());
-        adminToBeRegistered.setName(request.name());
-        adminToBeRegistered.setTenant(tenant == null ? jwtUtil.extractJwtClaim().tenant() : tenant); // whichever tenant this admin is created from
-        adminToBeRegistered.setPermissionBit(category.getPermission());
+        adminToBeRegistered.setRole(Roles.ADMIN);
+        adminToBeRegistered.setFullName(request.name());
+        adminToBeRegistered.setShopCode(shopCode == null ? JwtUtil.extractJwtClaim().shopCode() : shopCode); // whichever shopCode this admin is created from
+        adminToBeRegistered.setPermissions(category.getPermissions());
         adminToBeRegistered.setUuid(adminUserAccount.getUuid());
 
-        AdminDetails savedAdminDetails = adminDetailsRepo.save(adminToBeRegistered);
+        Users savedAdminDetails = userRepo.save(adminToBeRegistered);
 
         return new AdminRegistrationResponse(
                 adminUserAccount.getUsername(),
-                category.getCategory(),
-                savedAdminDetails.getTenant(),
+                category.getName(),
+                savedAdminDetails.getShopCode(),
                 savedAdminDetails.getUuid(),
                 savedAdminDetails.getCategoryId()
         );

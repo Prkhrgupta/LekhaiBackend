@@ -1,7 +1,7 @@
 package in.lekhai.authentication.filter;
 
-import in.lekhai.authentication.model.TenantContext;
 import in.lekhai.authentication.model.JwtClaims;
+import in.lekhai.authentication.model.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,12 +11,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @Component
 public class TenantContextFilter extends OncePerRequestFilter {
@@ -47,7 +45,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
         try {
             Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             JwtClaims claims = JwtClaims.fromJwt(token);
-            TenantContext.setTenantId(claims.tenant().toString());
+            TenantContext.setTenantId(claims.shopCode().toString());
             filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();

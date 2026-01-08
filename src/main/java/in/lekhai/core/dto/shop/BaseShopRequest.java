@@ -1,7 +1,7 @@
-package in.lekhai.core.dto.tenant;
+package in.lekhai.core.dto.shop;
 
 
-public interface BaseTenantRequest {
+public interface BaseShopRequest {
     String firmName();
     String gstIn();
     String address();

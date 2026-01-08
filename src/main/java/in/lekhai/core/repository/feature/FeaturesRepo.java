@@ -1,25 +1,16 @@
 package in.lekhai.core.repository.feature;
 
-import in.lekhai.core.domain.feature.FeatureMaster;
+import in.lekhai.core.domain.feature.Features;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface FeatureMasterRepo extends ListCrudRepository<FeatureMaster, Long> {
-    Optional<FeatureMaster> findByFeatureKey(String featureKey);
-    List<FeatureMaster> findByBitPositionIn(Set<Integer> bitPositions);
-
-    @Query(value = """
-            SELECT *
-            FROM features
-            WHERE bit_position is NOT NULL
-            """)
-    List<FeatureMaster> findAllRootFeatures();
+public interface FeaturesRepo extends ListCrudRepository<Features, Long> {
+    List<Features> findByBitPositionIn(Set<Integer> bitPositions);
 
     @Query(value = """
         SELECT COALESCE(MAX(bit_position) + 1, 0)

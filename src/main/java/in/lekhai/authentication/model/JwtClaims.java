@@ -10,7 +10,7 @@ import static in.lekhai.common.JwtConstants.*;
 public record JwtClaims(
         String uuid,
         Roles role,
-        Integer tenant,
+        Integer shopCode,
         String username
 ) {
     public static JwtClaims fromJwt(Jwt token) {

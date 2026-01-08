@@ -1,10 +1,10 @@
 package in.lekhai.core.service.feature;
 
-import in.lekhai.core.domain.feature.FeatureMaster;
+import in.lekhai.core.domain.feature.Features;
 import in.lekhai.core.dto.feature.FeatureCreationResponse;
 import in.lekhai.core.dto.feature.FeatureResponse;
 import in.lekhai.core.dto.feature.ScreenFeatureCreationRequest;
-import in.lekhai.core.repository.feature.FeatureMasterRepo;
+import in.lekhai.core.repository.feature.FeaturesRepo;
 import in.lekhai.error.controller.feature.exception.ParentIdDoesNotExistException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,15 +18,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FeatureService {
 
-    private final FeatureMasterRepo featureMasterRepo;
+    private final FeaturesRepo featuresRepo;
     private final FeatureMapService featureMapService;
     private final FeatureHierarchyBuilder featureHierarchyBuilder;
 
-    public FeatureService(FeatureMasterRepo featureMasterRepo,
+    public FeatureService(FeaturesRepo featuresRepo,
                           FeatureMapService featureMapService,
                           FeatureHierarchyBuilder featureHierarchyBuilder
     ) {
-        this.featureMasterRepo = featureMasterRepo;
+        this.featuresRepo = featuresRepo;
         this.featureMapService = featureMapService;
         this.featureHierarchyBuilder = featureHierarchyBuilder;
     }
@@ -38,41 +38,41 @@ public class FeatureService {
         Long parentFeatureId = null;
         String route = null;
         if(request.parentId() != null) {
-            FeatureMaster parentFeatureMaster = featureMasterRepo.findById(request.parentId())
+            Features parentFeatures = featuresRepo.findById(request.parentId())
                     .orElseThrow(() -> new ParentIdDoesNotExistException(request.parentId()));
-            parentFeatureId = parentFeatureMaster.getId();
+            parentFeatureId = parentFeatures.getId();
             if(request.isScreen()) {
                 route = generateRouteForScreenFeature(parentFeatureId, request.featureKey());
             }
         }
 
-        FeatureMaster featureMasterToBeCreated = FeatureMaster.builder()
+        Features featuresToBeCreated = Features.builder()
                 .featureKey(request.featureKey())
                 .parentFeatureId(parentFeatureId)
-                .bitPosition(request.isScreen() ? featureMasterRepo.findNextAvailableBitPosition() : null)
+                .bitPosition(request.isScreen() ? featuresRepo.findNextAvailableBitPosition() : null)
                 .icon(request.icon())
                 .title(request.title())
                 .route(route)
                 .build();
 
-        FeatureMaster savedFeatureMaster = featureMasterRepo.save(featureMasterToBeCreated);
+        Features savedFeatures = featuresRepo.save(featuresToBeCreated);
         return new FeatureCreationResponse(
-                savedFeatureMaster.getId(),
-                savedFeatureMaster.getFeatureKey(),
-                savedFeatureMaster.getBitPosition(),
-                savedFeatureMaster.getTitle(),
-                savedFeatureMaster.getIcon(),
-                savedFeatureMaster.getRoute()
+                savedFeatures.getId(),
+                savedFeatures.getFeatureKey(),
+                savedFeatures.getBitPosition(),
+                savedFeatures.getTitle(),
+                savedFeatures.getIcon(),
+                savedFeatures.getRoute()
         );
     }
 
     private String generateRouteForScreenFeature(Long id, String featureKey) {
-        List<String> parents = featureMasterRepo.findAllParentsLink(id);
+        List<String> parents = featuresRepo.findAllParentsLink(id);
         parents.add(featureKey);
         return "/" + String.join("/", parents);
     }
     public List<FeatureResponse> getAllFeatures() {
-        Map<Long, FeatureMaster> featureMap = featureMapService.getFeatureMap();
+        Map<Long, Features> featureMap = featureMapService.getFeatureMap();
 
         return featureMapService.getRootFeatures()
                 .stream()
@@ -80,8 +80,8 @@ public class FeatureService {
                 .collect(Collectors.toList());
     }
 
-    private FeatureResponse buildFeatureResponse(FeatureMaster feature, Map<Long, FeatureMaster> featureMap) {
-        List<FeatureMaster> hierarchy = featureHierarchyBuilder.buildParentHierarchy(feature, featureMap);
+    private FeatureResponse buildFeatureResponse(Features feature, Map<Long, Features> featureMap) {
+        List<Features> hierarchy = featureHierarchyBuilder.buildParentHierarchy(feature, featureMap);
 
         return new FeatureResponse(
                 feature.getId(),

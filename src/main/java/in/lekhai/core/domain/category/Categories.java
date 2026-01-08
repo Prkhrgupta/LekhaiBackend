@@ -15,15 +15,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table("category_master")
-public class CategoryMaster {
+@Table("categories")
+public class Categories {
     @Id
-    private Long id;
+    private Integer id;
 
-    private String category;
+    private String name;
 
     @Builder.Default
-    private List<Long> permission = new ArrayList<>();
+    private List<Long> permissions = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createdAt;
