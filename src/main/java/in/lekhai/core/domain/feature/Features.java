@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 @Table(name = "features")
-public class FeatureMaster {
+public class Features {
     @Id
     Long id;
 
@@ -33,7 +33,7 @@ public class FeatureMaster {
 
     Integer bitPosition;
 
-    Long sortOrder;
+    Long displayOrder;
 
     @Builder.Default
     Boolean isActive = Boolean.TRUE;

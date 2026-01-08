@@ -3,11 +3,10 @@ package in.lekhai.core.util;
 import in.lekhai.authentication.model.JwtClaims;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class JwtUtil {
-    public JwtClaims extractJwtClaim() {
+    public static JwtClaims extractJwtClaim() {
         Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return JwtClaims.fromJwt(token);
     }

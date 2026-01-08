@@ -16,14 +16,14 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table("role_category_master")
-public class RoleCategoryMaster {
+@Table("role_permissions")
+public class RolePermissions {
     @Id
     private Long id;
     private Roles role;
-    private Long categoryId; // FK for CategoryMaster
+    private Integer categoryId; // FK for CategoryMaster
     @Builder.Default
-    private List<Long> permission = new ArrayList<>();
+    private List<Long> permissions = new ArrayList<>();
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate

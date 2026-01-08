@@ -43,9 +43,8 @@ public class UserAccounts implements UserDetails {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Column("is_account_active")
     @Builder.Default
-    private Boolean isAccountActive = true;
+    private Boolean isActive = Boolean.TRUE;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

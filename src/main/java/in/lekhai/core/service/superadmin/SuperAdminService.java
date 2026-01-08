@@ -2,16 +2,16 @@ package in.lekhai.core.service.superadmin;
 
 import in.lekhai.authentication.entity.UserAccounts;
 import in.lekhai.authentication.repository.UserAccountRepository;
-import in.lekhai.core.domain.superadmin.SuperAdminMaster;
+import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.dto.superadmin.SuperAdminRegistrationRequest;
 import in.lekhai.core.dto.superadmin.SuperAdminRegistrationResponse;
 import in.lekhai.core.enums.Roles;
-import in.lekhai.core.repository.admin.AdminDetailsRepo;
-import in.lekhai.core.repository.category.CategoryMasterRepo;
-import in.lekhai.core.repository.category.RoleCategoryMasterRepo;
-import in.lekhai.core.repository.superadmin.SuperAdminMasterRepo;
-import in.lekhai.core.repository.tenant.TenantDetailsRepo;
+import in.lekhai.core.repository.category.CategoriesRepo;
+import in.lekhai.core.repository.category.RolePermissionsRepo;
+import in.lekhai.core.repository.shop.ShopsRepo;
+import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.service.admin.AdminService;
+import in.lekhai.core.util.JwtUtil;
 import in.lekhai.error.controller.user.exception.UserAlreadyExistException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,33 +24,30 @@ import static in.lekhai.core.util.AdminUtils.createUUID;
 @Slf4j
 public class SuperAdminService {
 
-    private final CategoryMasterRepo categoryMasterRepo;
-    private final RoleCategoryMasterRepo roleCategoryMasterRepo;
+    private final CategoriesRepo categoriesRepo;
+    private final RolePermissionsRepo rolePermissionsRepo;
     private final UserAccountRepository userAccountRepository;
-    private final TenantDetailsRepo tenantDetailsRepo;
+    private final ShopsRepo shopsRepo;
     private final PasswordEncoder passwordEncoder;
-    private final SuperAdminMasterRepo superAdminMasterRepo;
     private final AdminService adminService;
-    private final AdminDetailsRepo adminDetailsRepo;
+    private final UsersRepo usersRepo;
 
     public SuperAdminService(
-            CategoryMasterRepo categoryMasterRepo,
-            RoleCategoryMasterRepo roleCategoryMasterRepo,
+            CategoriesRepo categoriesRepo,
+            RolePermissionsRepo rolePermissionsRepo,
             UserAccountRepository userAccountRepository,
-            TenantDetailsRepo tenantDetailsRepo,
+            ShopsRepo shopsRepo,
             PasswordEncoder passwordEncoder,
-            SuperAdminMasterRepo superAdminMasterRepo,
             AdminService adminService,
-            AdminDetailsRepo adminDetailsRepo
+            UsersRepo usersRepo
     ) {
-        this.categoryMasterRepo = categoryMasterRepo;
-        this.roleCategoryMasterRepo = roleCategoryMasterRepo;
+        this.categoriesRepo = categoriesRepo;
+        this.rolePermissionsRepo = rolePermissionsRepo;
         this.userAccountRepository = userAccountRepository;
-        this.tenantDetailsRepo = tenantDetailsRepo;
+        this.shopsRepo = shopsRepo;
         this.passwordEncoder = passwordEncoder;
-        this.superAdminMasterRepo = superAdminMasterRepo;
         this.adminService = adminService;
-        this.adminDetailsRepo = adminDetailsRepo;
+        this.usersRepo = usersRepo;
     }
 
     @Transactional
@@ -69,14 +66,17 @@ public class SuperAdminService {
                         .build()
         );
 
-        SuperAdminMaster superAdminMasterResponse = superAdminMasterRepo.save(
-                SuperAdminMaster.builder()
-                        .name(request.name())
-                        .uuid(superAdminRegistrationResponse.getUuid())
-                        .build()
+        Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
+
+        Users superAdminMasterResponse = usersRepo.save(
+                Users.createDefaultUsers(superAdminRegistrationResponse.getUuid(),
+                        request.name(),
+                        Roles.SUPER_ADMIN,
+                        shopCode
+                )
         );
 
-        return new SuperAdminRegistrationResponse(superAdminMasterResponse.getName(),
+        return new SuperAdminRegistrationResponse(superAdminMasterResponse.getFullName(),
                 superAdminRegistrationResponse.getUsername());
     }
 }

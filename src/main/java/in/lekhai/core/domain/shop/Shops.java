@@ -1,4 +1,4 @@
-package in.lekhai.core.domain.tenant;
+package in.lekhai.core.domain.shop;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -7,59 +7,52 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-@Table("tenant_details")
-public class TenantDetails {
+@Table("shops")
+public class Shops {
     @Id
     private Long id;
-    private String uuid;
-    private Long categoryId;
-    private Boolean isDefault;
-    private String gstIn;
+    private Integer categoryId;
+    private Boolean isActive;
+    private String gstNumber;
     private String firmName;
     private String registeredAddress;
-    private Integer tenant;
+    private Integer shopCode;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public TenantDetails() { }
+    public Shops() { }
 
-    public TenantDetails(String uuid,
-                         Long categoryId,
-                         Boolean isDefault,
-                         String gstIn,
-                         String firmName,
-                         String registeredAddress,
-                         Integer tenant
+    public Shops(Integer categoryId,
+                 Boolean isActive,
+                 String gstNumber,
+                 String firmName,
+                 String registeredAddress,
+                 Integer shopCode
     ) {
-        this.uuid = uuid;
         this.categoryId = categoryId;
-        this.isDefault = isDefault;
-        this.gstIn = gstIn;
+        this.isActive = isActive;
+        this.gstNumber = gstNumber;
         this.firmName = firmName;
         this.registeredAddress = registeredAddress;
-        this.tenant = tenant;
+        this.shopCode = shopCode;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public Long getCategoryId() {
+    public Integer getCategoryId() {
         return categoryId;
     }
 
     public Boolean getDefault() {
-        return isDefault;
+        return isActive;
     }
 
-    public String getGstIn() {
-        return gstIn;
+    public String getGstNumber() {
+        return gstNumber;
     }
 
     public String getFirmName() {
@@ -70,8 +63,8 @@ public class TenantDetails {
         return registeredAddress;
     }
 
-    public Integer getTenant() {
-        return tenant;
+    public Integer getShopCode() {
+        return shopCode;
     }
 
     public LocalDateTime getCreatedAt() {

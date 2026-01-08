@@ -9,7 +9,7 @@ public final class TenantContext {
     private static final ThreadLocal<String> tenantId = new ThreadLocal<>();
 
     public static void setTenantId(String value) {
-        log.info("Setting tenant id :: {}", value);         // TODO: remove
+        log.info("Setting shopCode id :: {}", value);         // TODO: remove
         tenantId.set(value);
     }
 
@@ -18,7 +18,7 @@ public final class TenantContext {
     }
 
     public static void clear() {
-        log.info("Clearing tenant id");             // TODO: remove
+        log.info("Clearing shopCode id");             // TODO: remove
         tenantId.remove();
     }
 
