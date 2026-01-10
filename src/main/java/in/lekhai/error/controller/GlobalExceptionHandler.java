@@ -10,6 +10,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -21,8 +23,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Result.error(exception.getLocalizedMessage()));
     }
 
-    @ExceptionHandler(PSQLException.class)
-    public ResponseEntity<Result<?>> handlePSQLException(PSQLException exception) {
+    @ExceptionHandler(SQLException.class)
+    public ResponseEntity<Result<?>> handlePSQLException(SQLException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.internalServerError().body(Result.error("[PSQLException] Internal Server Error"));
     }

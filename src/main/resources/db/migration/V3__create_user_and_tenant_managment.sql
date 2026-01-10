@@ -55,6 +55,12 @@ ALTER TABLE user_details
     ADD CONSTRAINT fk_user_details_category
     FOREIGN KEY (category_id) REFERENCES category_master(id) ON DELETE RESTRICT;
 
+ALTER TABLE user_details ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation_all ON user_details
+    FOR ALL
+    USING (tenant = current_setting('app.tenant_id', false)::INTEGER)           -- for select, update and delete
+    WITH CHECK (tenant = current_setting('app.tenant_id', false)::INTEGER);     -- for insert and update
+
 CREATE INDEX idx_user_details_uuid ON user_details(uuid);
 CREATE INDEX idx_user_details_tenant ON user_details(tenant);
 CREATE INDEX idx_user_details_tenant_role ON user_details(tenant, role);
