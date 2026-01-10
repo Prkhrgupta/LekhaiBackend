@@ -45,7 +45,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
         try {
             Jwt token = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             JwtClaims claims = JwtClaims.fromJwt(token);
-            TenantContext.setTenantId(claims.tenant());
+            TenantContext.setTenantId(claims.shopCode());
             filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();

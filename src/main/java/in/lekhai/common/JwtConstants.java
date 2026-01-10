@@ -5,5 +5,5 @@ public class JwtConstants {
     public static String SCOPE = "scope";
     public static String ISSUER = "self";
     public static String SUBJECT = "subject";
-    public static String UUID = "uuid";
+    public static String UUID = "adminUuid";
 }

@@ -1,0 +1,31 @@
+package in.lekhai.core.controller.menu;
+
+import in.lekhai.authentication.utils.SecurityExpressions;
+import in.lekhai.common.Result;
+import in.lekhai.core.domain.menu.MenuResponse;
+import in.lekhai.core.service.menu.MenuService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/menu")
+public class MenuController {
+
+    private final MenuService menuService;
+
+    public MenuController(
+            MenuService menuService
+    ) {
+        this.menuService = menuService;
+    }
+
+    @GetMapping
+    @PreAuthorize(SecurityExpressions.NOT_SUPER_ADMIN)
+    public ResponseEntity<Result<MenuResponse>> getMenu() {
+        MenuResponse menuResponse = menuService.generateMenu();
+        return ResponseEntity.ok(Result.success(menuResponse));
+    }
+}

@@ -1,10 +1,10 @@
 package in.lekhai.authentication.service;
 
-import in.lekhai.authentication.entity.UserCredentials;
-import in.lekhai.authentication.repository.UserCredentialRepository;
-import in.lekhai.core.entity.SuperAdminMaster;
-import in.lekhai.core.model.enums.Roles;
-import in.lekhai.core.repository.SuperAdminMasterRepo;
+import in.lekhai.authentication.entity.UserAccounts;
+import in.lekhai.authentication.repository.UserAccountRepository;
+import in.lekhai.core.domain.users.Users;
+import in.lekhai.core.enums.Roles;
+import in.lekhai.core.repository.users.UsersRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +24,8 @@ public class AdminProvisioningService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final PasswordEncoder passwordEncoder;
-    private final UserCredentialRepository userCredentialRepository;
-    private final SuperAdminMasterRepo superAdminMasterRepo;
+    private final UserAccountRepository userAccountRepository;
+    private final UsersRepo userRepo;
 
     private final String username;
     private final String password;
@@ -33,15 +33,15 @@ public class AdminProvisioningService {
 
     public AdminProvisioningService(
             PasswordEncoder passwordEncoder,
-            UserCredentialRepository userCredentialRepository,
-            SuperAdminMasterRepo superAdminMasterRepo,
+            UserAccountRepository userAccountRepository,
+            UsersRepo userRepo,
             @Value("${super-admin.username}") String username,
             @Value("${super-admin.password}") String password,
             @Value("${super-admin.name}") String name
     ) {
         this.passwordEncoder = passwordEncoder;
-        this.userCredentialRepository = userCredentialRepository;
-        this.superAdminMasterRepo = superAdminMasterRepo;
+        this.userAccountRepository = userAccountRepository;
+        this.userRepo = userRepo;
         this.username = username;
         this.password = password;
         this.name = name;
@@ -50,25 +50,27 @@ public class AdminProvisioningService {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void provisionSuperAdmin() {
-        Optional<UserCredentials> userCredentials = userCredentialRepository.findByUsername(username);
+        Optional<UserAccounts> userCredentials = userAccountRepository.findByUsername(username);
         if(userCredentials.isPresent()) {
             log.info("SUPER ADMIN ALREADY {} EXISTS", username);
             return;
         }
 
-        UserCredentials superAdminCredentials = UserCredentials.builder()
+        UserAccounts superAdminCredentials = UserAccounts.builder()
                 .username(username)
                 .passHash(passwordEncoder.encode(password))
                 .uuid(createUUID(Roles.SUPER_ADMIN))
                 .build();
-        UserCredentials userCredentialsSaved = userCredentialRepository.save(superAdminCredentials);
+        UserAccounts userAccountsSaved = userAccountRepository.save(superAdminCredentials);
 
-        SuperAdminMaster superAdminMaster = SuperAdminMaster.builder()
-                .name(name)
-                .uuid(userCredentialsSaved.getUuid())
-                .build();
+        Users superAdmin = Users.createDefaultUsers(
+                userAccountsSaved.getUuid(),
+                name,
+                Roles.SUPER_ADMIN,
+                -1
+        );
 
-        superAdminMasterRepo.save(superAdminMaster);
+        userRepo.save(superAdmin);
         log.info("CREATED SUPER ADMIN {}", username);
     }
 }

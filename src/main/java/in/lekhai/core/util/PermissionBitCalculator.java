@@ -1,6 +1,6 @@
 package in.lekhai.core.util;
 
-import in.lekhai.core.model.enums.Roles;
+import in.lekhai.core.enums.Roles;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
