@@ -28,6 +28,8 @@ CREATE TABLE user_shop_access (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     shop_id BIGINT NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    permissions BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uq_user_shop_access UNIQUE(user_id, shop_id)

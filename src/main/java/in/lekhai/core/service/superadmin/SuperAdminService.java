@@ -24,59 +24,51 @@ import static in.lekhai.core.util.AdminUtils.createUUID;
 @Slf4j
 public class SuperAdminService {
 
-    private final CategoriesRepo categoriesRepo;
-    private final RolePermissionsRepo rolePermissionsRepo;
-    private final UserAccountRepository userAccountRepository;
-    private final ShopsRepo shopsRepo;
-    private final PasswordEncoder passwordEncoder;
-    private final AdminService adminService;
-    private final UsersRepo usersRepo;
+        private final CategoriesRepo categoriesRepo;
+        private final RolePermissionsRepo rolePermissionsRepo;
+        private final UserAccountRepository userAccountRepository;
+        private final ShopsRepo shopsRepo;
+        private final PasswordEncoder passwordEncoder;
+        private final AdminService adminService;
+        private final UsersRepo usersRepo;
 
-    public SuperAdminService(
-            CategoriesRepo categoriesRepo,
-            RolePermissionsRepo rolePermissionsRepo,
-            UserAccountRepository userAccountRepository,
-            ShopsRepo shopsRepo,
-            PasswordEncoder passwordEncoder,
-            AdminService adminService,
-            UsersRepo usersRepo
-    ) {
-        this.categoriesRepo = categoriesRepo;
-        this.rolePermissionsRepo = rolePermissionsRepo;
-        this.userAccountRepository = userAccountRepository;
-        this.shopsRepo = shopsRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.adminService = adminService;
-        this.usersRepo = usersRepo;
-    }
+        public SuperAdminService(
+                        CategoriesRepo categoriesRepo,
+                        RolePermissionsRepo rolePermissionsRepo,
+                        UserAccountRepository userAccountRepository,
+                        ShopsRepo shopsRepo,
+                        PasswordEncoder passwordEncoder,
+                        AdminService adminService,
+                        UsersRepo usersRepo) {
+                this.categoriesRepo = categoriesRepo;
+                this.rolePermissionsRepo = rolePermissionsRepo;
+                this.userAccountRepository = userAccountRepository;
+                this.shopsRepo = shopsRepo;
+                this.passwordEncoder = passwordEncoder;
+                this.adminService = adminService;
+                this.usersRepo = usersRepo;
+        }
 
-    @Transactional
-    public SuperAdminRegistrationResponse registerSuperAdmin(SuperAdminRegistrationRequest request) {
-        userAccountRepository
-                .findByUsername(request.username())
-                .ifPresent(user -> {
-                    throw new UserAlreadyExistException(request.username());
-                });
+        @Transactional
+        public SuperAdminRegistrationResponse registerSuperAdmin(SuperAdminRegistrationRequest request) {
+                userAccountRepository
+                                .findByUsername(request.username())
+                                .ifPresent(user -> {
+                                        throw new UserAlreadyExistException(request.username());
+                                });
 
-        UserAccounts superAdminRegistrationResponse = userAccountRepository.save(
-                UserAccounts.builder()
-                        .username(request.username())
-                        .passHash(passwordEncoder.encode(request.password())).
-                        uuid(createUUID(Roles.SUPER_ADMIN))
-                        .build()
-        );
+                UserAccounts superAdminRegistrationResponse = userAccountRepository.save(
+                                UserAccounts.builder()
+                                                .username(request.username())
+                                                .passHash(passwordEncoder.encode(request.password()))
+                                                .uuid(createUUID(Roles.SUPER_ADMIN))
+                                                .build());
 
-        Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
+                Users superAdminMasterResponse = usersRepo.save(
+                                Users.createSuperAdminUser(superAdminRegistrationResponse.getUuid(),
+                                                request.name()));
 
-        Users superAdminMasterResponse = usersRepo.save(
-                Users.createDefaultUsers(superAdminRegistrationResponse.getUuid(),
-                        request.name(),
-                        Roles.SUPER_ADMIN,
-                        shopCode
-                )
-        );
-
-        return new SuperAdminRegistrationResponse(superAdminMasterResponse.getFullName(),
-                superAdminRegistrationResponse.getUsername());
-    }
+                return new SuperAdminRegistrationResponse(superAdminMasterResponse.getFullName(),
+                                superAdminRegistrationResponse.getUsername());
+        }
 }
