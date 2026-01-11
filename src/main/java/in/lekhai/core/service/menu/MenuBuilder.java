@@ -4,19 +4,23 @@ import in.lekhai.core.domain.feature.Features;
 import in.lekhai.core.domain.menu.MenuItem;
 import in.lekhai.core.domain.menu.MenuResponse;
 import in.lekhai.core.repository.feature.FeaturesRepo;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@Slf4j
-@RequiredArgsConstructor
 public class MenuBuilder {
 
+    private static final Logger log = LoggerFactory.getLogger(MenuBuilder.class);
+
     private final FeaturesRepo featuresRepo;
+
+    public MenuBuilder(FeaturesRepo featuresRepo) {
+        this.featuresRepo = featuresRepo;
+    }
 
     public MenuResponse buildMenu(List<Features> enabledLeafFeatures) {
         Map<Long, Features> allFeatures = fetchAllFeaturesWithParents(enabledLeafFeatures);
@@ -79,8 +83,7 @@ public class MenuBuilder {
     private MenuItem buildMenuItem(
             Features feature,
             Map<Long, List<Features>> childrenByParentId,
-            Map<Long, Features> allFeaturesMap
-    ) {
+            Map<Long, Features> allFeaturesMap) {
         List<Features> childFeatures = childrenByParentId
                 .getOrDefault(feature.getId(), List.of())
                 .stream()
@@ -100,16 +103,14 @@ public class MenuBuilder {
                 feature.getTitle(),
                 feature.getIcon(),
                 feature.getRoute(),
-                null
-        );
+                null);
     }
 
     private MenuItem createBranchMenuItem(
             Features feature,
             List<Features> childFeatures,
             Map<Long, List<Features>> childrenByParentId,
-            Map<Long, Features> allFeaturesMap
-    ) {
+            Map<Long, Features> allFeaturesMap) {
         List<MenuItem> childMenuItems = childFeatures.stream()
                 .map(child -> buildMenuItem(child, childrenByParentId, allFeaturesMap))
                 .toList();
@@ -119,7 +120,6 @@ public class MenuBuilder {
                 feature.getTitle(),
                 feature.getIcon(),
                 null,
-                childMenuItems
-        );
+                childMenuItems);
     }
 }

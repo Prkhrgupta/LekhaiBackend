@@ -13,7 +13,7 @@ import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.service.admin.AdminService;
 import in.lekhai.core.util.JwtUtil;
 import in.lekhai.error.controller.user.exception.UserAlreadyExistException;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import static in.lekhai.core.util.AdminUtils.createUUID;
 
 @Service
-@Slf4j
 public class SuperAdminService {
 
         private final CategoriesRepo categoriesRepo;
