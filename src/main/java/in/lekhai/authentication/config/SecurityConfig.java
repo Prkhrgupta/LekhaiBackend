@@ -8,7 +8,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import in.lekhai.authentication.config.properties.RsaKeyProperties;
 import in.lekhai.authentication.converter.JwtAuthenticationConverter;
-import in.lekhai.authentication.filter.TenantContextFilter;
+import in.lekhai.shop.context.filter.ShopContextFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,16 +33,16 @@ public class SecurityConfig {
 
     private final RsaKeyProperties rsaKeyProperties;
     private final JwtAuthenticationConverter converter;
-    private final TenantContextFilter tenantContextFilter;
+    private final ShopContextFilter shopContextFilter;
 
     public SecurityConfig(
             RsaKeyProperties rsaKeyProperties,
             JwtAuthenticationConverter jwtAuthenticationConverter,
-            TenantContextFilter tenantContextFilter
+            ShopContextFilter shopContextFilter
     ) {
         this.rsaKeyProperties = rsaKeyProperties;
         this.converter = jwtAuthenticationConverter;
-        this.tenantContextFilter = tenantContextFilter;
+        this.shopContextFilter = shopContextFilter;
     }
 
     @Bean
@@ -53,7 +53,7 @@ public class SecurityConfig {
                         auth.requestMatchers("/lekhai/login").permitAll().anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)))
-                .addFilterAfter(tenantContextFilter, BearerTokenAuthenticationFilter.class)
+                .addFilterAfter(shopContextFilter, BearerTokenAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }

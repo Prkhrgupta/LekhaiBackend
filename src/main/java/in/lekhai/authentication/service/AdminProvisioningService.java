@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static in.lekhai.common.SuperAdminConstants.SUPER_ADMIN_SHOP_CODE;
 import static in.lekhai.core.util.AdminUtils.createUUID;
 
 @Service
@@ -67,7 +68,7 @@ public class AdminProvisioningService {
                 userAccountsSaved.getUuid(),
                 name,
                 Roles.SUPER_ADMIN,
-                -1
+                SUPER_ADMIN_SHOP_CODE
         );
 
         userRepo.save(superAdmin);

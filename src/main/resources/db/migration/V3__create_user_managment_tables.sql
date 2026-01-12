@@ -40,3 +40,19 @@ ALTER TABLE users
 
 CREATE INDEX idx_users_uuid ON users(uuid);
 CREATE INDEX idx_users_is_superadmin ON users(is_super_admin);
+
+-- RLS shop_code
+-- By Pass RLS for super admin --> ShopCodeTransactionManager.class
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+CREATE POLICY shop_isolation ON users
+    FOR ALL
+    USING (-- for select, update and delete
+        current_setting('app.bypass_rls', false)::BOOLEAN = true
+        OR
+        shop_code = current_setting('app.shop_code', false)::INTEGER
+    )
+    WITH CHECK (-- for insert and update
+        current_setting('app.bypass_rls', false)::BOOLEAN = true
+        OR
+        shop_code = current_setting('app.shop_code', false)::INTEGER
+    );

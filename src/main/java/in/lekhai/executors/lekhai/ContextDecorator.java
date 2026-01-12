@@ -1,18 +1,18 @@
 package in.lekhai.executors.lekhai;
 
-import tenant.context.model.TenantContext;
+import in.lekhai.shop.context.model.ShopContext;
 import org.springframework.core.task.TaskDecorator;
 
 public class ContextDecorator implements TaskDecorator {
     @Override
     public Runnable decorate(Runnable runnableTask) {
-        Integer tenantId = TenantContext.getTenantId();
+        Integer tenantId = ShopContext.getShopCode();
         return () -> {
             try {
-                TenantContext.setTenantId(tenantId);
+                ShopContext.setShopCode(tenantId);
                 runnableTask.run();
             } finally {
-                TenantContext.clear();
+                ShopContext.clear();
             }
         };
     }

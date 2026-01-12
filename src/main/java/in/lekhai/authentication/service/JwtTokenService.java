@@ -1,8 +1,9 @@
 package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserAccounts;
-import in.lekhai.core.enums.Roles;
+import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.repository.users.UsersRepo;
+import in.lekhai.error.controller.shop.exception.TenantDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -38,28 +40,23 @@ public class JwtTokenService {
 
         UserAccounts principal = (UserAccounts) authentication.getPrincipal();
         String uuid = principal.getUuid();
-        Roles role = usersRepo.findByUuid(uuid)
-                .orElseThrow(() -> new RuntimeException(String.format("Can't find user with uuid : %s", uuid)))
-                .getRole();
+        Users user = findTenant(uuid);
 
         JwtClaimsSet claim = JwtClaimsSet.builder()
                 .issuer(ISSUER)
                 .issuedAt(now)
-                .expiresAt(now.plus(6, ChronoUnit.HOURS))
-                .claim(SCOPE, role)
+                .expiresAt(now.plus(JWT_EXPIRY, ChronoUnit.HOURS))
+                .claim(SCOPE, user.getRole())
                 .claim(SUBJECT, authentication.getName())
                 .claim(UUID, uuid)
-                .claim(TENANT_ID, findTenantId(uuid))
+                .claim(SHOP_CODE, user.getShopCode())
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claim)).getTokenValue();
     }
 
-    private Integer findTenantId(String uuid) {
-        return usersRepo.findByUuid(uuid)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        String.format("Missing entry for Role ADMIN in tenant_details, adminUuid : %s", uuid)
-                ))
-                .getShopCode();
+    @Transactional
+    private Users findTenant(String uuid) {
+        return usersRepo.findByUuid(uuid).orElseThrow(() -> new TenantDoesNotExistException(uuid));
     }
 }
