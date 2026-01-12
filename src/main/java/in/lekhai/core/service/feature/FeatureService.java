@@ -6,7 +6,7 @@ import in.lekhai.core.dto.feature.FeatureResponse;
 import in.lekhai.core.dto.feature.ScreenFeatureCreationRequest;
 import in.lekhai.core.repository.feature.FeaturesRepo;
 import in.lekhai.error.controller.feature.exception.ParentIdDoesNotExistException;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class FeatureService {
 
     private final FeaturesRepo featuresRepo;
@@ -23,25 +22,23 @@ public class FeatureService {
     private final FeatureHierarchyBuilder featureHierarchyBuilder;
 
     public FeatureService(FeaturesRepo featuresRepo,
-                          FeatureMapService featureMapService,
-                          FeatureHierarchyBuilder featureHierarchyBuilder
-    ) {
+            FeatureMapService featureMapService,
+            FeatureHierarchyBuilder featureHierarchyBuilder) {
         this.featuresRepo = featuresRepo;
         this.featureMapService = featureMapService;
         this.featureHierarchyBuilder = featureHierarchyBuilder;
     }
-
 
     @Transactional
     public FeatureCreationResponse createScreenFeature(ScreenFeatureCreationRequest request) {
         // TODO --> check for parent circular reference,
         Long parentFeatureId = null;
         String route = null;
-        if(request.parentId() != null) {
+        if (request.parentId() != null) {
             Features parentFeatures = featuresRepo.findById(request.parentId())
                     .orElseThrow(() -> new ParentIdDoesNotExistException(request.parentId()));
             parentFeatureId = parentFeatures.getId();
-            if(request.isScreen()) {
+            if (request.isScreen()) {
                 route = generateRouteForScreenFeature(parentFeatureId, request.featureKey());
             }
         }
@@ -62,8 +59,7 @@ public class FeatureService {
                 savedFeatures.getBitPosition(),
                 savedFeatures.getTitle(),
                 savedFeatures.getIcon(),
-                savedFeatures.getRoute()
-        );
+                savedFeatures.getRoute());
     }
 
     private String generateRouteForScreenFeature(Long id, String featureKey) {
@@ -71,6 +67,7 @@ public class FeatureService {
         parents.add(featureKey);
         return "/" + String.join("/", parents);
     }
+
     public List<FeatureResponse> getAllFeatures() {
         Map<Long, Features> featureMap = featureMapService.getFeatureMap();
 
@@ -90,7 +87,6 @@ public class FeatureService {
                 feature.getBitPosition(),
                 feature.getIsActive(),
                 featureHierarchyBuilder.getParentTitles(hierarchy),
-                featureHierarchyBuilder.buildRoute(hierarchy)
-        );
+                featureHierarchyBuilder.buildRoute(hierarchy));
     }
 }
