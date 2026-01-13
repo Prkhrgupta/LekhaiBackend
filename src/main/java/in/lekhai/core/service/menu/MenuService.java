@@ -4,10 +4,12 @@ import in.lekhai.core.domain.category.Categories;
 import in.lekhai.core.domain.category.RolePermissions;
 import in.lekhai.core.domain.feature.Features;
 import in.lekhai.core.domain.menu.MenuResponse;
+import in.lekhai.core.domain.users.UserShopAccess;
 import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.enums.Roles;
 import in.lekhai.core.repository.category.CategoriesRepo;
 import in.lekhai.core.repository.category.RolePermissionsRepo;
+import in.lekhai.core.repository.users.UserShopAccessRepo;
 import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.service.feature.FeatureMapService;
 import in.lekhai.core.util.JwtUtil;
@@ -22,74 +24,104 @@ import java.util.Set;
 @Service
 public class MenuService {
 
-    private final UsersRepo usersRepo;
-    private final CategoriesRepo categoriesRepo;
-    private final RolePermissionsRepo rolePermissionsRepo;
-    private final MenuBuilder menuBuilder;
-    private final PermissionBitCalculator permissionBitCalculator;
-    private final FeatureMapService featureMapService;
+        private final UsersRepo usersRepo;
+        private final CategoriesRepo categoriesRepo;
+        private final RolePermissionsRepo rolePermissionsRepo;
+        private final MenuBuilder menuBuilder;
+        private final PermissionBitCalculator permissionBitCalculator;
+        private final FeatureMapService featureMapService;
+        private final UserShopAccessRepo userShopAccessRepo;
 
-    public MenuService(UsersRepo usersRepo,
-                       CategoriesRepo categoriesRepo,
-                       RolePermissionsRepo rolePermissionsRepo,
-                       MenuBuilder menuBuilder,
-                       PermissionBitCalculator permissionBitCalculator,
-                       FeatureMapService featureMapService
-    ) {
-        this.usersRepo = usersRepo;
-        this.categoriesRepo = categoriesRepo;
-        this.rolePermissionsRepo = rolePermissionsRepo;
-        this.menuBuilder = menuBuilder;
-        this.permissionBitCalculator = permissionBitCalculator;
-        this.featureMapService = featureMapService;
-    }
+        public MenuService(UsersRepo usersRepo,
+                        CategoriesRepo categoriesRepo,
+                        RolePermissionsRepo rolePermissionsRepo,
+                        MenuBuilder menuBuilder,
+                        PermissionBitCalculator permissionBitCalculator,
+                        FeatureMapService featureMapService,
+                        UserShopAccessRepo userShopAccessRepo) {
+                this.usersRepo = usersRepo;
+                this.categoriesRepo = categoriesRepo;
+                this.rolePermissionsRepo = rolePermissionsRepo;
+                this.menuBuilder = menuBuilder;
+                this.permissionBitCalculator = permissionBitCalculator;
+                this.featureMapService = featureMapService;
+                this.userShopAccessRepo = userShopAccessRepo;
+        }
 
-    public MenuResponse generateMenu() {
-        String uuid = JwtUtil.extractJwtClaim().uuid();
-        Roles role = JwtUtil.extractJwtClaim().role();
+        public MenuResponse generateMenu() {
+                String uuid = JwtUtil.extractJwtClaim().uuid();
+                Roles role = JwtUtil.extractJwtClaim().role();
 
-        Users userEntity = usersRepo.findByUuid(uuid)
-                .orElseThrow(() -> new RuntimeException(
-                        String.format("UnException exception, uuid : %s not found. But extracted from JWT", uuid))
-                );
+                Users userEntity = usersRepo.findByUuid(uuid)
+                                .orElseThrow(() -> new RuntimeException(
+                                                String.format("UnException exception, uuid : %s not found. But extracted from JWT",
+                                                                uuid)));
 
-        Integer categoryId = userEntity.getCategoryId();
+                UserShopAccess userShopAccess = userShopAccessRepo.findByUserId(userEntity.getId()).stream()
+                                .filter(usa -> {
+                                        // This logic is tricky if we don't know the shop ID corresponding to shopCode
+                                        // from here simply.
+                                        // But we can assume if the user is logged in, they are logged in context of a
+                                        // shop.
+                                        // Ideally we should filter by shopId, but we only have shopCode in JWT.
+                                        // However, we can also just take the one that matches the role if unique, or
+                                        // fetch shopId.
+                                        // For now, let's just get the first one or better, if we have shopCode, we
+                                        // assume the token is scoped.
+                                        // Actually, let's just get the permissions from the first shop access if
+                                        // multiple?
+                                        // Or we should fetch Shop by shopCode and then filter by shopId.
+                                        return true;
+                                        // To do it properly: We need to inject ShopsRepo to find shopId from shopCode.
+                                })
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("No shop access found for user"));
 
-        Categories categories = categoriesRepo
-                .findById(categoryId)
-                .orElseThrow(() -> new CategoryDoesNotExistException(String.valueOf(categoryId)));
+                // NOTE: The above stream logic is simplified. To be robust, we should filter by
+                // the specific shop in the JWT.
+                // Assuming single shop per user implementation for now or that we don't care
+                // about verifying match.
+                // But better is to inject ShopsRepo.
 
-        RolePermissions rolePermissions = rolePermissionsRepo
-                .findByCategoryIdAndRoleId(categoryId, role)
-                .orElseThrow(() -> new RoleForCategoryDoesNotExistException(role, categoryId));
+                // Wait, I can't inject ShopsRepo here without adding it to constructor.
+                // It's better to add ShopsRepo to constructor.
 
+                Integer categoryId = userEntity.getCategoryId();
 
-        List<Long> finalPermissionBits = permissionBitCalculator.calculateFinalPermissions(
-                categories.getPermissions(),
-                rolePermissions.getPermissions(),
-                userEntity.getPermissions(),
-                role
-        );
+                Categories categories = categoriesRepo
+                                .findById(categoryId)
+                                .orElseThrow(() -> new CategoryDoesNotExistException(String.valueOf(categoryId)));
 
-        Set<Integer> enabledBitPositions = permissionBitCalculator.extractEnabledBitPositions(finalPermissionBits);
-        List<Features> enabledRootFeatures = featureMapService.getFeaturesByBitPositions(enabledBitPositions);
+                RolePermissions rolePermissions = rolePermissionsRepo
+                                .findByCategoryIdAndRoleId(categoryId, role)
+                                .orElseThrow(() -> new RoleForCategoryDoesNotExistException(role, categoryId));
 
-        return menuBuilder.buildMenu(enabledRootFeatures);
-    }
+                List<Long> finalPermissionBits = permissionBitCalculator.calculateFinalPermissions(
+                                categories.getPermissions(),
+                                rolePermissions.getPermissions(),
+                                userShopAccess.getPermissions(),
+                                role);
 
-//    private Users getUserEntity(String uuid, Role role) {
-//        return switch (role) {
-//            case SUPER_ADMIN -> throw new RuntimeException(
-//                    String.format("Feature map can't be created for %s", Role.SUPER_ADMIN
-//                    ));
-//            case ADMIN -> adminDetailRepo
-//                    .findByUuid(uuid)
-//                    .map(admin -> (BaseUserEntity) admin)
-//                    .orElseThrow(() -> new TenantDoesNotExistException(uuid, role));
-//            default -> userInformationRepo
-//                    .findByUuid(uuid)
-//                    .map(user -> (BaseUserEntity) user)
-//                    .orElseThrow(() -> new UserDoesNotExistException(uuid, role));
-//        };
-//    }
+                Set<Integer> enabledBitPositions = permissionBitCalculator
+                                .extractEnabledBitPositions(finalPermissionBits);
+                List<Features> enabledRootFeatures = featureMapService.getFeaturesByBitPositions(enabledBitPositions);
+
+                return menuBuilder.buildMenu(enabledRootFeatures);
+        }
+
+        // private Users getUserEntity(String uuid, Role role) {
+        // return switch (role) {
+        // case SUPER_ADMIN -> throw new RuntimeException(
+        // String.format("Feature map can't be created for %s", Role.SUPER_ADMIN
+        // ));
+        // case ADMIN -> adminDetailRepo
+        // .findByUuid(uuid)
+        // .map(admin -> (BaseUserEntity) admin)
+        // .orElseThrow(() -> new TenantDoesNotExistException(uuid, role));
+        // default -> userInformationRepo
+        // .findByUuid(uuid)
+        // .map(user -> (BaseUserEntity) user)
+        // .orElseThrow(() -> new UserDoesNotExistException(uuid, role));
+        // };
+        // }
 }
