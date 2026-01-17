@@ -4,6 +4,7 @@ import in.lekhai.core.enums.Roles;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -17,17 +18,20 @@ public class UserShopAccess {
     private Long userId;
     private Long shopId;
     private Roles role;
+    @Column("is_selected_default")
+    private boolean isSelectedAsDefault;
     private List<Long> permissions = new ArrayList<>();
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public UserShopAccess(Long userId, Long shopId, Roles role, List<Long> permissions) {
+    public UserShopAccess(Long userId, Long shopId, Roles role, boolean isSelectedAsDefault, List<Long> permissions) {
         this.userId = userId;
         this.shopId = shopId;
         this.role = role;
         this.permissions = permissions;
+        this.isSelectedAsDefault = isSelectedAsDefault;
     }
 
     public UserShopAccess() {
@@ -83,6 +87,14 @@ public class UserShopAccess {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public boolean getSelectedAsDefault() {
+        return isSelectedAsDefault;
+    }
+
+    public void setSelectedAsDefault(boolean selectedAsDefault) {
+        isSelectedAsDefault = selectedAsDefault;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

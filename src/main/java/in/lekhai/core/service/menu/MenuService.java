@@ -33,12 +33,12 @@ public class MenuService {
         private final UserShopAccessRepo userShopAccessRepo;
 
         public MenuService(UsersRepo usersRepo,
-                        CategoriesRepo categoriesRepo,
-                        RolePermissionsRepo rolePermissionsRepo,
-                        MenuBuilder menuBuilder,
-                        PermissionBitCalculator permissionBitCalculator,
-                        FeatureMapService featureMapService,
-                        UserShopAccessRepo userShopAccessRepo) {
+                           CategoriesRepo categoriesRepo,
+                           RolePermissionsRepo rolePermissionsRepo,
+                           MenuBuilder menuBuilder,
+                           PermissionBitCalculator permissionBitCalculator,
+                           FeatureMapService featureMapService,
+                           UserShopAccessRepo userShopAccessRepo) {
                 this.usersRepo = usersRepo;
                 this.categoriesRepo = categoriesRepo;
                 this.rolePermissionsRepo = rolePermissionsRepo;
@@ -108,20 +108,4 @@ public class MenuService {
 
                 return menuBuilder.buildMenu(enabledRootFeatures);
         }
-
-        // private Users getUserEntity(String uuid, Role role) {
-        // return switch (role) {
-        // case SUPER_ADMIN -> throw new RuntimeException(
-        // String.format("Feature map can't be created for %s", Role.SUPER_ADMIN
-        // ));
-        // case ADMIN -> adminDetailRepo
-        // .findByUuid(uuid)
-        // .map(admin -> (BaseUserEntity) admin)
-        // .orElseThrow(() -> new TenantDoesNotExistException(uuid, role));
-        // default -> userInformationRepo
-        // .findByUuid(uuid)
-        // .map(user -> (BaseUserEntity) user)
-        // .orElseThrow(() -> new UserDoesNotExistException(uuid, role));
-        // };
-        // }
 }

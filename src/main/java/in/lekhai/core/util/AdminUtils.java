@@ -16,9 +16,10 @@ public class AdminUtils {
     private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
     private static final Integer DEFAULT_RANDOM_LETTER_LENGTH = 2;
 
+    // TODO : Change this to return a UUID
     public static String createUUID(Roles role) {
         StringBuilder uuidBuilder = new StringBuilder();
-        String acronym = role.getAcronym();
+        String acronym = "ACY";
         String dateStr = LocalDate.now(DEFAULT_ZONE).format(DATE_FORMATTER);
         String randomPart = generateRandomAlphanumeric();
 
@@ -49,7 +50,7 @@ public class AdminUtils {
         }
     }
 
-    public static Integer createTenant() {
+    public static Integer createShopCode() {
         return 10000 + SECURE_RANDOM.nextInt(90000);
     }
 }
