@@ -58,8 +58,11 @@ public class AdminService {
                 .passHash(passwordEncoder.encode(request.password()))
                 .build());
 
-        RolePermissions rolePermissions = new RolePermissions(Roles.SHOP_OWNER, category.getId());
-        rolePermissionsRepo.save(rolePermissions);
+        rolePermissionsRepo.findByCategoryIdAndRoleId(category.getId(), Roles.SHOP_OWNER)
+                .orElseGet(() -> {
+                    RolePermissions rolePermissions = new RolePermissions(Roles.SHOP_OWNER, category.getId());
+                    return rolePermissionsRepo.save(rolePermissions);
+                });
 
         Users adminToBeRegistered = new Users();
         adminToBeRegistered.setCategoryId(category.getId());
