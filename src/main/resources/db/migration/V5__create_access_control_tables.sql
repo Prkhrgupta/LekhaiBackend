@@ -29,6 +29,7 @@ CREATE TABLE user_shop_access (
     user_id BIGINT NOT NULL,
     shop_id BIGINT NOT NULL,
     role VARCHAR(50) NOT NULL,
+    is_selected_default BOOLEAN, -- can be NULL, if NULL show shop select menu
     permissions BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

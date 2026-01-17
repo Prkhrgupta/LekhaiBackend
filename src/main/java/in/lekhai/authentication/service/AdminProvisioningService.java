@@ -2,13 +2,11 @@ package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserAccounts;
 import in.lekhai.authentication.repository.UserAccountRepository;
-import in.lekhai.core.domain.shop.Shops;
-import in.lekhai.core.domain.users.UserShopAccess;
-import in.lekhai.core.domain.users.Users;
+import in.lekhai.core.domain.superadmin.SuperAdminDetails;
 import in.lekhai.core.enums.Roles;
 import in.lekhai.core.repository.shop.ShopsRepo;
+import in.lekhai.core.repository.superadmin.SuperAdminDetailsRepo;
 import in.lekhai.core.repository.users.UserShopAccessRepo;
-import in.lekhai.core.repository.users.UsersRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +27,7 @@ public class AdminProvisioningService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserAccountRepository userAccountRepository;
-    private final UsersRepo userRepo;
+    private final SuperAdminDetailsRepo superAdminDetailsRepo;
 
     private final String username;
     private final String password;
@@ -38,7 +36,7 @@ public class AdminProvisioningService {
     public AdminProvisioningService(
             PasswordEncoder passwordEncoder,
             UserAccountRepository userAccountRepository,
-            UsersRepo userRepo,
+            SuperAdminDetailsRepo superAdminDetailsRepo,
             ShopsRepo shopsRepo,
             UserShopAccessRepo userShopAccessRepo,
             @Value("${super-admin.username}") String username,
@@ -46,7 +44,7 @@ public class AdminProvisioningService {
             @Value("${super-admin.name}") String name) {
         this.passwordEncoder = passwordEncoder;
         this.userAccountRepository = userAccountRepository;
-        this.userRepo = userRepo;
+        this.superAdminDetailsRepo = superAdminDetailsRepo;
         this.username = username;
         this.password = password;
         this.name = name;
@@ -61,18 +59,19 @@ public class AdminProvisioningService {
             return;
         }
 
+        String uuid = createUUID(Roles.SUPER_ADMIN);
         UserAccounts superAdminCredentials = UserAccounts.builder()
                 .username(username)
                 .passHash(passwordEncoder.encode(password))
-                .uuid(createUUID(Roles.SUPER_ADMIN))
+                .uuid(uuid)
                 .build();
-        UserAccounts userAccountsSaved = userAccountRepository.save(superAdminCredentials);
+        userAccountRepository.save(superAdminCredentials);
 
-        Users superAdmin = Users.createSuperAdminUser(
-                userAccountsSaved.getUuid(),
-                name);
+        SuperAdminDetails superAdmin = new SuperAdminDetails();
+        superAdmin.setName(name);
+        superAdmin.setUuid(uuid);
 
-        Users savedSuperAdmin = userRepo.save(superAdmin);
+        superAdminDetailsRepo.save(superAdmin);
 
         log.info("CREATED SUPER ADMIN {}", username);
     }

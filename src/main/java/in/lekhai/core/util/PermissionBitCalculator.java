@@ -47,7 +47,7 @@ public class PermissionBitCalculator {
             finalPermissionBits.add(
                     CollectionUtils.getOrDefault(categoryPermissions, i, Long.MAX_VALUE) &
                             CollectionUtils.getOrDefault(rolePermissions, i,
-                                    Roles.ADMIN.equals(role) ? Long.MAX_VALUE : 0L) &
+                                    Roles.SHOP_OWNER.equals(role) ? Long.MAX_VALUE : 0L) &
                             CollectionUtils.getOrDefault(userPermissions, i, Long.MAX_VALUE)
             );
         }

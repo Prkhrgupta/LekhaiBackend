@@ -2,7 +2,6 @@ package in.lekhai.core.domain.category;
 
 import in.lekhai.core.enums.Roles;
 import jdk.jfr.Description;
-
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -30,18 +29,22 @@ public class RolePermissions {
     public RolePermissions() {
     }
 
-    public RolePermissions(Long id, Roles role, Integer categoryId, List<Long> permissions, LocalDateTime createdAt,
-            LocalDateTime updatedAt) {
-        this.id = id;
+    public RolePermissions(
+            Roles role,
+            Integer categoryId,
+            List<Long> permissions
+    ) {
         this.role = role;
         this.categoryId = categoryId;
         this.permissions = permissions;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
-    public static RolePermissionsBuilder builder() {
-        return new RolePermissionsBuilder();
+    public RolePermissions(
+            Roles role,
+            Integer categoryId
+    ) {
+        this.role = role;
+        this.categoryId = categoryId;
     }
 
     public Long getId() {
@@ -90,57 +93,5 @@ public class RolePermissions {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public static class RolePermissionsBuilder {
-        private Long id;
-        private Roles role;
-        private Integer categoryId;
-        private List<Long> permissions = new ArrayList<>();
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
-
-        RolePermissionsBuilder() {
-        }
-
-        public RolePermissionsBuilder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public RolePermissionsBuilder role(Roles role) {
-            this.role = role;
-            return this;
-        }
-
-        public RolePermissionsBuilder categoryId(Integer categoryId) {
-            this.categoryId = categoryId;
-            return this;
-        }
-
-        public RolePermissionsBuilder permissions(List<Long> permissions) {
-            this.permissions = permissions;
-            return this;
-        }
-
-        public RolePermissionsBuilder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public RolePermissionsBuilder updatedAt(LocalDateTime updatedAt) {
-            this.updatedAt = updatedAt;
-            return this;
-        }
-
-        public RolePermissions build() {
-            return new RolePermissions(id, role, categoryId, permissions, createdAt, updatedAt);
-        }
-
-        public String toString() {
-            return "RolePermissions.RolePermissionsBuilder(id=" + this.id + ", role=" + this.role + ", categoryId="
-                    + this.categoryId + ", permissions=" + this.permissions + ", createdAt=" + this.createdAt
-                    + ", updatedAt=" + this.updatedAt + ")";
-        }
     }
 }
