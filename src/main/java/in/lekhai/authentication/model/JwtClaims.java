@@ -2,7 +2,7 @@ package in.lekhai.authentication.model;
 
 import in.lekhai.core.enums.Roles;
 import in.lekhai.error.controller.role.exception.InvalidRoleException;
-import in.lekhai.error.controller.tenant.exception.InvalidTenantTypeException;
+import in.lekhai.error.controller.shop.exception.InvalidTenantTypeException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import static in.lekhai.common.JwtConstants.*;
@@ -35,7 +35,7 @@ public record JwtClaims(
     }
 
     private static Integer parseTenant(Jwt token) {
-        Object tenantObj = token.getClaim(TENANT_ID);
+        Object tenantObj = token.getClaim(SHOP_CODE);
         if (tenantObj instanceof Number) {
             if(tenantObj.equals(-1)) return null; // SUPER ADMIN
             return ((Number) tenantObj).intValue();

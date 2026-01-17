@@ -1,4 +1,4 @@
-package in.lekhai.core.domain.users;
+package in.lekhai.core.domain.superadmin;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -7,43 +7,23 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-@Table("users")
-public class Users {
+@Table("super_admin_details")
+public class SuperAdminDetails {
     @Id
-    private Long id;
+    private Integer id;
     private String uuid;
     private String name;
-    private Integer categoryId;
     private Boolean isActive = Boolean.TRUE;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public Users() {
-    }
-
-    public static Users createDefaultUsers(String uuid,
-                                           String name) {
-        Users users = new Users();
-        users.setUuid(uuid);
-        users.setName(name);
-        return users;
-    }
-
-    public static Users createUserWithCategory(String uuid,
-                                               String fullName,
-                                               Integer categoryId) {
-        Users users = Users.createDefaultUsers(uuid, fullName);
-        users.setCategoryId(categoryId);
-        return users;
-    }
-
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -61,14 +41,6 @@ public class Users {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
     }
 
     public Boolean getActive() {

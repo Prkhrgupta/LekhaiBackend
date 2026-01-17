@@ -1,10 +1,12 @@
 package in.lekhai.authentication.controller;
 
+import in.lekhai.authentication.dto.LoginResponse;
 import in.lekhai.authentication.service.JwtTokenService;
 import in.lekhai.common.Result;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +22,16 @@ public class LoginController {
         this.jwtTokenService = jwtTokenService;
     }
 
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<Result<?>> generateToken(Authentication authentication) {
-        String token = jwtTokenService.generateJwtToken(authentication);
-        return ResponseEntity.ok(Result.success(token));
+        LoginResponse response = jwtTokenService.generateJwtToken(authentication);
+        return ResponseEntity.ok(Result.success(response));
+    }
+
+    @GetMapping("/login/withShopCode")
+    public ResponseEntity<Result<?>> generateTokenWithShopCode(Authentication authentication,
+                                                               @RequestHeader("shop-code") Integer shopCode) {
+        LoginResponse response = jwtTokenService.generateJwtToken(authentication, shopCode);
+        return ResponseEntity.ok(Result.success(response));
     }
 }

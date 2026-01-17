@@ -23,13 +23,9 @@ CREATE INDEX idx_user_accounts_uuid ON user_accounts(uuid);
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     uuid user_code NOT NULL UNIQUE,
-    full_name VARCHAR(100) NOT NULL,
-    -- role VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
     category_id INT NULL,
-    is_super_admin BOOLEAN DEFAULT FALSE,
-    -- permissions BIGINT[] DEFAULT ARRAY[]::BIGINT[] NOT NULL,
-    -- shop_code INT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -39,4 +35,12 @@ ALTER TABLE users
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT;
 
 CREATE INDEX idx_users_uuid ON users(uuid);
-CREATE INDEX idx_users_is_superadmin ON users(is_super_admin);
+
+CREATE TABLE super_admin_details (
+    id SERIAL PRIMARY KEY,
+    uuid user_code NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

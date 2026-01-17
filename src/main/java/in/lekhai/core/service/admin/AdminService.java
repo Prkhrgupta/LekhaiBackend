@@ -22,58 +22,57 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AdminService {
 
-        private final CategoriesRepo categoriesRepo;
-        private final RolePermissionsRepo rolePermissionsRepo;
-        private final UserAccountRepository userAccountRepository;
-        private final PasswordEncoder passwordEncoder;
-        private final UsersRepo userRepo;
+    private final CategoriesRepo categoriesRepo;
+    private final RolePermissionsRepo rolePermissionsRepo;
+    private final UserAccountRepository userAccountRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UsersRepo userRepo;
 
-        public AdminService(CategoriesRepo categoriesRepo,
+    public AdminService(CategoriesRepo categoriesRepo,
                         RolePermissionsRepo rolePermissionsRepo,
                         UserAccountRepository userAccountRepository,
                         PasswordEncoder passwordEncoder,
                         UsersRepo userRepo) {
-                this.categoriesRepo = categoriesRepo;
-                this.rolePermissionsRepo = rolePermissionsRepo;
-                this.userAccountRepository = userAccountRepository;
-                this.passwordEncoder = passwordEncoder;
-                this.userRepo = userRepo;
-        }
+        this.categoriesRepo = categoriesRepo;
+        this.rolePermissionsRepo = rolePermissionsRepo;
+        this.userAccountRepository = userAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userRepo = userRepo;
+    }
 
-        @Transactional
-        public AdminRegistrationResponse registerAdmin(AdminRegistrationRequest request, Integer shopCode) {
-                Categories category = categoriesRepo
-                                .findByName(request.category())
-                                .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));
+    @Transactional
+    public AdminRegistrationResponse registerAdmin(AdminRegistrationRequest request, Integer shopCode) {
+        Categories category = categoriesRepo
+                .findByName(request.category())
+                .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));
 
-                userAccountRepository
-                                .findByUsername(request.username())
-                                .ifPresent(user -> {
-                                        throw new UserAlreadyExistException(request.username());
-                                });
+        userAccountRepository
+                .findByUsername(request.username())
+                .ifPresent(user -> {
+                    throw new UserAlreadyExistException(request.username());
+                });
 
-                UserAccounts adminUserAccount = userAccountRepository.save(UserAccounts.builder()
-                                .uuid(AdminUtils.createUUID(Roles.ADMIN))
-                                .username(request.username())
-                                .passHash(passwordEncoder.encode(request.password()))
-                                .build());
+        UserAccounts adminUserAccount = userAccountRepository.save(UserAccounts.builder()
+                .uuid(AdminUtils.createUUID(Roles.SHOP_OWNER))
+                .username(request.username())
+                .passHash(passwordEncoder.encode(request.password()))
+                .build());
 
-                Users adminToBeRegistered = new Users();
-                adminToBeRegistered.setCategoryId(category.getId());
-                adminToBeRegistered.setFullName(request.name());
-                adminToBeRegistered.setUuid(adminUserAccount.getUuid());
+        RolePermissions rolePermissions = new RolePermissions(Roles.SHOP_OWNER, category.getId());
+        rolePermissionsRepo.save(rolePermissions);
 
-                Users savedAdminDetails = userRepo.save(adminToBeRegistered);
+        Users adminToBeRegistered = new Users();
+        adminToBeRegistered.setCategoryId(category.getId());
+        adminToBeRegistered.setName(request.name());
+        adminToBeRegistered.setUuid(adminUserAccount.getUuid());
 
-                return new AdminRegistrationResponse(
-                                adminUserAccount.getUsername(),
-                                category.getName(),
-                                shopCode == null ? JwtUtil.extractJwtClaim().shopCode() : shopCode,
-                                savedAdminDetails.getUuid(),
-                                savedAdminDetails.getCategoryId());
-        }
+        Users savedAdminDetails = userRepo.save(adminToBeRegistered);
 
-        public String changeCurrentTenant(Integer newTenant) {
-                return "NEW_JWT_TOKEN";
-        }
+        return new AdminRegistrationResponse(
+                adminUserAccount.getUsername(),
+                category.getName(),
+                shopCode == null ? JwtUtil.extractJwtClaim().shopCode() : shopCode,
+                savedAdminDetails.getUuid(),
+                savedAdminDetails.getCategoryId());
+    }
 }
