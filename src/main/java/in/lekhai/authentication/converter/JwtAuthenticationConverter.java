@@ -1,4 +1,4 @@
-package in.lekhai.authentication.config;
+package in.lekhai.authentication.converter;
 
 import in.lekhai.authentication.model.JwtClaims;
 import io.micrometer.common.util.StringUtils;

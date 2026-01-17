@@ -129,7 +129,7 @@ public class JwtTokenService {
         JwtClaimsSet claim = JwtClaimsSet.builder()
                 .issuer(ISSUER)
                 .issuedAt(now)
-                .expiresAt(now.plus(6, ChronoUnit.HOURS))
+                .expiresAt(now.plus(JWT_EXPIRY, ChronoUnit.HOURS))
                 .claim(SCOPE, role)
                 .claim(SUBJECT, authentication.getName())
                 .claim(UUID, uuid)

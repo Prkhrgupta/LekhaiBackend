@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize(SecurityExpressions.IS_ADMIN)
+@PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 @Validated
 public class AdminController {
 

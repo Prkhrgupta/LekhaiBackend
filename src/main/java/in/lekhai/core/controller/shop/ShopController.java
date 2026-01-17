@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/shopCode")
+@RequestMapping("/api/shop")
 @PreAuthorize(SecurityExpressions.IS_SUPER_ADMIN)
 public class ShopController {
     private final ShopService shopService;
@@ -24,14 +24,14 @@ public class ShopController {
         this.shopService = shopService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Result<?>> createTenantExisting(@RequestBody @Valid CreateShopNewAdminRequest request) {
         ShopCreationResponse response = shopService.createTenantWithNewAdmin(request);
         Result<ShopCreationResponse> success = Result.success(response);
         return ResponseEntity.ok(success);
     }
 
-    @PostMapping("/with-admin")
+    @PostMapping("/create/with-admin")
     public ResponseEntity<Result<?>> createTenantWithAdmin(@RequestBody @Valid CreateShopExistingAdminRequest request) {
         ShopCreationResponse response = shopService.createTenantWithExistingAdmin(request);
         Result<ShopCreationResponse> success = Result.success(response);

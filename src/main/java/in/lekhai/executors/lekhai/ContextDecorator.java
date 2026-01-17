@@ -1,20 +1,18 @@
 package in.lekhai.executors.lekhai;
 
-import in.lekhai.authentication.model.TenantContext;
+import in.lekhai.shop.context.model.ShopContext;
 import org.springframework.core.task.TaskDecorator;
-
-import java.net.StandardSocketOptions;
 
 public class ContextDecorator implements TaskDecorator {
     @Override
     public Runnable decorate(Runnable runnableTask) {
-        String tenantId = TenantContext.getTenantId();
+        Integer tenantId = ShopContext.getShopCode();
         return () -> {
             try {
-                TenantContext.setTenantId(tenantId);
+                ShopContext.setShopCode(tenantId);
                 runnableTask.run();
             } finally {
-                TenantContext.clear();
+                ShopContext.clear();
             }
         };
     }
