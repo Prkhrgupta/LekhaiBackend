@@ -10,6 +10,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.1'
 	id 'io.spring.dependency-management' version '1.1.7'
     id 'org.flywaydb.flyway' version '10.21.0'
+	id("com.google.cloud.tools.jib") version "3.4.7"
 }
 
 group = 'in.lekhai'
@@ -60,4 +61,18 @@ jar {
 
 flyway {
     configFiles = ['src/main/resources/flyway.conf']
+}
+
+jib {
+	from {
+		image = 'eclipse-temurin:21-jre-jammy'
+	}
+	to {
+		image = 'docker.io/prkhrgupta/lekkai-backend'
+		tags = ['latest','v1']
+	}
+	container {
+		mainClass = 'in.lekhai.LekhaiApplication'
+		jvmFlags = ['-XX:+UseContainerSupport','-XX:MaxRAMPercentage=75.0']
+	}
 }
