@@ -4,6 +4,8 @@ import in.lekhai.core.account_master.domain.AccountGroup;
 import in.lekhai.core.account_master.dto.AccountGroupRequest;
 import in.lekhai.core.account_master.dto.AccountGroupResponse;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
+import in.lekhai.error.controller.account.exception.ParentNotFoundException;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,36 +16,35 @@ public class AccountGroupService {
 
     private final AccountGroupRepository accountGroupRepository;
 
-    public AccountGroupService(AccountGroupRepository accountGroupRepository) {
+    public AccountGroupService(
+            AccountGroupRepository accountGroupRepository
+    ) {
         this.accountGroupRepository = accountGroupRepository;
     }
 
+    @ShopTransactional
     public AccountGroupResponse createAccountGroup(AccountGroupRequest request) {
-        AccountGroup accountGroup = new AccountGroup(
+        // TODO: handle duplicate key exceptions
+        AccountGroup accountGroup = accountGroupRepository
+                .findById(request.parentId())
+                .orElseThrow(() -> new ParentNotFoundException(request.parentId()));
+
+        AccountGroup createSubGroupRequest = new AccountGroup(
                 request.name(),
-                request.parentId(),
-                request.nature(),
-                request.behaviour(),
-                request.isPrimary());
-        AccountGroup saved = accountGroupRepository.save(accountGroup);
-        return mapToResponse(saved);
-    }
-
-    public List<AccountGroupResponse> listAccountGroups() {
-        return StreamSupport.stream(accountGroupRepository.findAll().spliterator(), false)
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    private AccountGroupResponse mapToResponse(AccountGroup accountGroup) {
-        return new AccountGroupResponse(
                 accountGroup.getId(),
-                accountGroup.getName(),
-                accountGroup.getParentId(),
                 accountGroup.getNature(),
                 accountGroup.getBehaviour(),
-                accountGroup.getPrimary(),
-                accountGroup.getShopCode(),
-                accountGroup.getCreatedAt());
+                Boolean.FALSE
+        );
+
+        AccountGroup subGroup = accountGroupRepository.save(createSubGroupRequest);
+        return new AccountGroupResponse(subGroup.getId(), subGroup.getName());
+    }
+
+    @ShopTransactional
+    public List<AccountGroupResponse> listAccountGroups() {
+        return StreamSupport.stream(accountGroupRepository.findAll().spliterator(), false)
+                .map(g -> new AccountGroupResponse(g.getId(), g.getName()))
+                .toList();
     }
 }

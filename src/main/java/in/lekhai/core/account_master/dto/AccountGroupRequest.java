@@ -4,9 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AccountGroupRequest(
         @NotBlank(message = "name is required") String name,
-        Long parentId,
-        String nature,
-        String behaviour,
-        Boolean isPrimary,
-        Integer shopCode) {
+        Long parentId
+) {
 }

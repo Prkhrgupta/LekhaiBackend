@@ -58,6 +58,7 @@ jar {
 	enabled = false
 }
 
+// ./gradlew flywayMigrate -Duser.timezone=UTC
 flyway {
     configFiles = ['src/main/resources/flyway.conf']
 }
