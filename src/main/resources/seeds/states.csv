@@ -1,0 +1,38 @@
+state_code,state_name,gst_code,type
+JK,Jammu and Kashmir,01,Union Territory
+HP,Himachal Pradesh,02,State
+PB,Punjab,03,State
+CH,Chandigarh,04,Union Territory
+UT,Uttarakhand,05,State
+HR,Haryana,06,State
+DL,Delhi,07,Union Territory
+RJ,Rajasthan,08,State
+UP,Uttar Pradesh,09,State
+BR,Bihar,10,State
+SK,Sikkim,11,State
+AR,Arunachal Pradesh,12,State
+NL,Nagaland,13,State
+MN,Manipur,14,State
+MZ,Mizoram,15,State
+TR,Tripura,16,State
+ML,Meghalaya,17,State
+AS,Assam,18,State
+WB,West Bengal,19,State
+JH,Jharkhand,20,State
+OD,Odisha,21,State
+CT,Chhattisgarh,22,State
+MP,Madhya Pradesh,23,State
+GJ,Gujarat,24,State
+DN,Dadra and Nagar Haveli and Daman and Diu,26,Union Territory
+MH,Maharashtra,27,State
+KA,Karnataka,29,State
+GA,Goa,30,State
+LD,Lakshadweep,31,Union Territory
+KL,Kerala,32,State
+TN,Tamil Nadu,33,State
+PY,Puducherry,34,Union Territory
+AN,Andaman and Nicobar Islands,35,Union Territory
+TG,Telangana,36,State
+AP,Andhra Pradesh,37,State
+LA,Ladakh,38,Union Territory
+OT,Other Territory,97,Union Territory

@@ -4,6 +4,7 @@ import in.lekhai.common.Result;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,19 +32,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Result.error(exception.getLocalizedMessage()));
     }
 
-    @ExceptionHandler({
-            PSQLException.class,
-            DuplicateKeyException.class
-    })
+    @ExceptionHandler(PSQLException.class)
     public ResponseEntity<Result<?>> handlePSQLException(PSQLException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.internalServerError().body(Result.error("[PSQLException] Internal Server Error"));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Result<?>> handleAllException(Exception exception) {
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<Result<?>> handleDuplicateKeyExceptions(DuplicateKeyException exception) {
         log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity.internalServerError().body(Result.error("Internal Server Error"));
+        return ResponseEntity.internalServerError().body(Result.error("Duplication entry"));
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)

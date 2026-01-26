@@ -1,0 +1,100 @@
+name: CI/CD - Build & Deploy
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: docker.io/prkhrgupta/lekkai_backend
+
+jobs:
+  build_and_push:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Cache Gradle Wrapper
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build & Push (Jib)
+        env:
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          TAG=${GITHUB_SHA::7}
+          echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
+          ./gradlew --no-daemon \
+            -Pjib.to.auth.username="${REGISTRY_USERNAME}" \
+            -Pjib.to.auth.password="${REGISTRY_PASSWORD}" \
+            -Pjib.to.tags="${TAG},latest" \
+            jib
+
+      - name: Set image tag output
+        id: image_info
+        run: echo "::set-output name=tag::${GITHUB_SHA::7}"
+
+  deploy:
+    name: Deploy to Server
+    needs: build_and_push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH (pull & up)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          script: |
+            set -e
+            DEPLOY_DIR=${{ secrets.DEPLOY_DIR:-/home/${{ secrets.SERVER_USER }}/deploy }}
+            TAG=${{ needs.build_and_push.outputs.tag }}
+            echo "Deploy dir: $DEPLOY_DIR"
+            echo "Using image tag: $TAG"
+
+            cd "$DEPLOY_DIR"
+
+            # Optional: ensure correct docker compose version
+            docker --version || exit 1
+            docker compose version || exit 1
+
+            # Export variable so docker-compose uses it
+            export IMAGE_TAG=$TAG
+
+            # Pull the exact image and bring up containers
+            docker compose pull
+            docker compose up -d --no-build
+
+            # Wait for health (basic)
+            echo "Waiting for service to become healthy..."
+            for i in {1..20}; do
+              STATUS=$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q app) || echo null)
+              echo "Health: $STATUS"
+              if [[ "$STATUS" == "\"healthy\"" ]]; then
+                echo "Service healthy"
+                exit 0
+              fi
+              sleep 3
+            done
+            echo "Health check failed (timed out), but container started. Check logs."
+            docker compose ps
+            docker compose logs --tail 200

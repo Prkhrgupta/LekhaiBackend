@@ -1,0 +1,16 @@
+name,parent_id,nature,behaviour,is_primary,shop_code
+Capital Account,,LIABILITY,CR,true,0
+Loans (Liability),,LIABILITY,CR,true,0
+Current Liabilities,,LIABILITY,CR,true,0
+Fixed Assets,,ASSET,DR,true,0
+Investments,,ASSET,DR,true,0
+Current Assets,,ASSET,DR,true,0
+Branch / Divisions,,LIABILITY,CR,true,0
+Suspense A/c,,LIABILITY,CR,true,0
+Sales Accounts,,INCOME,CR,true,0
+Purchase Accounts,,EXPENSE,DR,true,0
+Direct Incomes,,INCOME,CR,true,0
+Indirect Incomes,,INCOME,CR,true,0
+Direct Expenses,,EXPENSE,DR,true,0
+Indirect Expenses,,EXPENSE,DR,true,0
+Misc. Expenses (ASSET),,ASSET,DR,true,0
