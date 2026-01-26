@@ -4,6 +4,7 @@ import in.lekhai.core.account_master.domain.Broker;
 import in.lekhai.core.account_master.dto.BrokerRequest;
 import in.lekhai.core.account_master.dto.BrokerResponse;
 import in.lekhai.core.account_master.repository.BrokerRepository;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,15 +19,16 @@ public class BrokerService {
         this.brokerRepository = brokerRepository;
     }
 
+    @ShopTransactional
     public BrokerResponse createBroker(BrokerRequest request) {
         Broker broker = new Broker(
                 request.name(),
-                request.phone(),
-                request.shopCode());
+                request.phone());
         Broker saved = brokerRepository.save(broker);
         return mapToResponse(saved);
     }
 
+    @ShopTransactional
     public List<BrokerResponse> listBrokers() {
         return StreamSupport.stream(brokerRepository.findAll().spliterator(), false)
                 .map(this::mapToResponse)

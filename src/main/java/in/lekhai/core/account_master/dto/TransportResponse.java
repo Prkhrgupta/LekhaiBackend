@@ -1,6 +1,6 @@
 package in.lekhai.core.account_master.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record TransportResponse(
         Long id,
@@ -8,5 +8,5 @@ public record TransportResponse(
         String phone,
         String gstNo,
         Integer shopCode,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

@@ -1,11 +1,11 @@
 package in.lekhai.core.account_master.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record BrokerResponse(
         Long id,
         String name,
         String phone,
         Integer shopCode,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

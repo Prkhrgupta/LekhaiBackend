@@ -1,11 +1,9 @@
 package in.lekhai.core.account_master.dto;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record StateResponse(
+        @JsonProperty("code")
         String stateCode,
-        String stateName,
-        String gstCode,
-        String type,
-        LocalDateTime createdAt) {
+        String name) {
 }
