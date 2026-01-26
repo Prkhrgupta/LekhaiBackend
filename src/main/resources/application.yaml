@@ -8,8 +8,8 @@ spring:
   datasource:
     name: lekhai
     url: ${DB_URL:jdbc:postgresql://localhost:5432/lekhai}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:lekhai_user}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
 
   flyway:
