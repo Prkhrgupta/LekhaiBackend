@@ -69,7 +69,7 @@ jib {
 	}
 	to {
 		image = 'docker.io/prkhrgupta/lekkai-backend'
-		tags = ['latest','v1']
+		tags = ['latest']
 	}
 	container {
 		mainClass = 'in.lekhai.LekhaiApplication'
