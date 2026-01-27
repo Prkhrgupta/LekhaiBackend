@@ -12,37 +12,21 @@ public class LedgerUtils {
         return new Ledger(
                 request.name(),
                 request.legalName(),
-                request.accountGroupId(),
+                request.accountGroup(),
                 request.openingBalance(),
-                request.openingBalanceType(),
+                request.accountEntryType(),
                 request.creditLimit(),
-                request.defaultAreaId(),
-                request.defaultBrokerId(),
-                request.defaultTransportId(),
+                request.areaId(),
+                request.brokerId(),
+                request.transportId(),
                 request.pan(),
-                request.aadhaar(),
-                request.tan(),
+                request.aadhaarNumber(),
+                request.tanNumber(),
                 request.email(),
-                request.msme()
+                request.msmeNumber()
         );
     }
 
     public static LedgerResponse mapToResponse(Ledger ledger) {
-        return new LedgerResponse(
-                ledger.getId(),
-                ledger.getName(),
-                ledger.getLegalName(),
-                ledger.getAccountGroupId(),
-                ledger.getOpeningBalance(),
-                ledger.getOpeningBalanceType(),
-                ledger.getCreditLimit(),
-                ledger.getDefaultAreaId(),
-                ledger.getDefaultBrokerId(),
-                ledger.getDefaultTransportId(),
-                ledger.getPan(),
-                ledger.getAadhaar(),
-                ledger.getTan(),
-                ledger.getEmail(),
-                ledger.getMsme()
-        );
+        return null;
     }}
