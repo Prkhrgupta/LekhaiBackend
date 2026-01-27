@@ -26,9 +26,9 @@ public class LedgerController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Result<LedgerResponse>> createLedger(@RequestBody @Valid LedgerRequest request) {
-        LedgerResponse response = ledgerService.createLedger(request);
-        return ResponseEntity.ok(Result.success(response));
+    public ResponseEntity<Result<Void>> createLedger(@RequestBody @Valid LedgerRequest request) {
+        ledgerService.createLedger(request);
+        return ResponseEntity.ok(Result.success("Ledger Created"));
     }
 
     @GetMapping("/list-all")

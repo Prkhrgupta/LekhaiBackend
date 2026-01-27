@@ -1,6 +1,6 @@
 package in.lekhai.core.account_master.dto.ledger;
 
-public class GstInRegistrationType {
+public class GstInRegistration {
 
     public static enum RegistrationType {
         COMPOSITION, CUSTOMER, REGULAR, UNREGISTERED

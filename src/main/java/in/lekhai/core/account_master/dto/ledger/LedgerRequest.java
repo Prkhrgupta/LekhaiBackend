@@ -1,6 +1,7 @@
 package in.lekhai.core.account_master.dto.ledger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import in.lekhai.common.AccountEntryType;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
@@ -10,14 +11,14 @@ public record LedgerRequest(
         String gstInNumber,
         @NotBlank String name,
         @JsonProperty("account_group")
-        long accountGroup,
+        Long accountGroup,
         @JsonProperty("opening_balance")
         BigDecimal openingBalance,
         @JsonProperty("account_entry_type")
         AccountEntryType accountEntryType,
         @JsonProperty("legal_name")
         String legalName,
-        String Location,
+        String location,
         @JsonProperty("country_name")
         String countryName,
         @JsonProperty("state_and_code")
@@ -25,24 +26,27 @@ public record LedgerRequest(
         @JsonProperty("mail_to")
         MailTo mailTo,
 
-        long area,
+        @JsonProperty("area_id")
+        Long areaId,
         @JsonProperty("contact_person")
         String contactPerson,
         @JsonProperty("phone_number")
-        Integer phoneNumber,
+        Long phoneNumber,
         String pan,
         @JsonProperty("credit_limit")
         BigDecimal creditLimit,
-        long transport,
+        @JsonProperty("transport_id")
+        Long transportId,
         @JsonProperty("tan_number")
         String tanNumber,
-        long broker,
+        @JsonProperty("broker_id")
+        Long brokerId,
 
         boolean gstInDetailsPresent,
         @JsonProperty("gst_in_details")
         GstInDetail gstInDetails,
         @JsonProperty("aadhaar_number")
-        Integer aadhaarNumber,
+        String aadhaarNumber,
         @JsonProperty("image_uploaded")
         boolean imageUploaded,
         String email,
@@ -56,19 +60,17 @@ public record LedgerRequest(
             @JsonProperty("mail_to_line_2")
             String lineTwo,
             @JsonProperty("mail_to_line_3")
-            String lineThree,
-            @JsonProperty("mail_to_line_4")
-            String lineFour
+            String lineThree
             ) {}
 
     public record GstInDetail(
             @JsonProperty("registration_type")
-            GstInRegistrationType.RegistrationType registrationType,
+            GstInRegistration.RegistrationType registrationType,
             @JsonProperty("is_e_commerce_operator")
             boolean isEcommerceOperator,
             @JsonProperty("gst_in_uin")
-            Integer gstInUin,
+            String gstInUin,
             @JsonProperty("party_type")
-            GstInRegistrationType.PartyType partyType
+            GstInRegistration.PartyType partyType
     ) {}
 }

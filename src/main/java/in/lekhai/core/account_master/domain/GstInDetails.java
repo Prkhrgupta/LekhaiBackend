@@ -1,29 +1,31 @@
 package in.lekhai.core.account_master.domain;
 
+import in.lekhai.common.domain.ShopAwareEntity;
+import in.lekhai.core.account_master.dto.ledger.GstInRegistration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("gst_details")
-public class GstInDetails {
+public class GstInDetails extends ShopAwareEntity {
     @Id
     private Long id;
     private Long ledgerId;
-    private RegistrationType registrationType;
+    private GstInRegistration.RegistrationType registrationType;
     private Boolean isEcommerceOperator;
-    private String gstInOrUin;
-    private PartyType partyType;
+    private String gstinOrUin;
+    private GstInRegistration.PartyType partyType;
 
     public GstInDetails(
             Long ledgerId,
-            RegistrationType registrationType,
+            GstInRegistration.RegistrationType registrationType,
             Boolean isEcommerceOperator,
-            String gstInOrUin,
-            PartyType partyType
+            String gstinOrUin,
+            GstInRegistration.PartyType partyType
     ) {
         this.ledgerId = ledgerId;
         this.registrationType = registrationType;
         this.isEcommerceOperator = isEcommerceOperator;
-        this.gstInOrUin = gstInOrUin;
+        this.gstinOrUin = gstinOrUin;
         this.partyType = partyType;
     }
 
@@ -43,11 +45,11 @@ public class GstInDetails {
         this.ledgerId = ledgerId;
     }
 
-    public RegistrationType getRegistrationType() {
+    public GstInRegistration.RegistrationType getRegistrationType() {
         return registrationType;
     }
 
-    public void setRegistrationType(RegistrationType registrationType) {
+    public void setRegistrationType(GstInRegistration.RegistrationType registrationType) {
         this.registrationType = registrationType;
     }
 
@@ -59,33 +61,19 @@ public class GstInDetails {
         isEcommerceOperator = ecommerceOperator;
     }
 
-    public String getGstInOrUin() {
-        return gstInOrUin;
+    public String getGstinOrUin() {
+        return gstinOrUin;
     }
 
-    public void setGstInOrUin(String gstInOrUin) {
-        this.gstInOrUin = gstInOrUin;
+    public void setGstinOrUin(String gstinOrUin) {
+        this.gstinOrUin = this.gstinOrUin;
     }
 
-    public PartyType getPartyType() {
+    public GstInRegistration.PartyType getPartyType() {
         return partyType;
     }
 
-    public void setPartyType(PartyType partyType) {
+    public void setPartyType(GstInRegistration.PartyType partyType) {
         this.partyType = partyType;
-    }
-
-    public enum RegistrationType {
-        REGULAR,
-        COMPOSITION,
-        UNREGISTERED,
-        UIN
-    }
-
-    public enum PartyType {
-        SEZ,
-        NOT_APPLICABLE,
-        DEEMED_EXPORT,
-        GOVERNMENT_ENTITY
     }
 }
