@@ -85,6 +85,71 @@ public class CommodityService {
         return commodity;
     }
 
+    @ShopTransactional
+    public CommodityResponse patchCommodity(Long id, CommodityRequest request) {
+        Commodity commodity = commodityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
+
+        patchToEntity(request, commodity);
+        Commodity saved = commodityRepository.save(commodity);
+        return mapToResponse(saved);
+    }
+
+    private void patchToEntity(CommodityRequest request, Commodity commodity) {
+        if (request.itemName() != null)
+            commodity.setItemName(request.itemName());
+        if (request.hsnSacCode() != null)
+            commodity.setHsnSacCode(request.hsnSacCode());
+        if (request.description() != null)
+            commodity.setDescription(request.description());
+        if (request.uom() != null)
+            commodity.setUom(request.uom());
+        if (request.gstRateSale() != null)
+            commodity.setGstRateSale(request.gstRateSale());
+        if (request.gstRatePurchase() != null)
+            commodity.setGstRatePurchase(request.gstRatePurchase());
+        if (request.isSalePurchaseActive() != null)
+            commodity.setIsSalePurchaseActive(request.isSalePurchaseActive());
+
+        if (request.salesLedgerConfig() != null) {
+            var sales = request.salesLedgerConfig();
+            if (sales.inStateAccountId() != null)
+                commodity.setSaleAcInStateId(sales.inStateAccountId());
+            if (sales.cgstPercent() != null)
+                commodity.setSaleCgstPercent(sales.cgstPercent());
+            if (sales.sgstPercent() != null)
+                commodity.setSaleSgstPercent(sales.sgstPercent());
+            if (sales.cessPercent() != null)
+                commodity.setSaleCessPercent(sales.cessPercent());
+            if (sales.roundOffAccountId() != null)
+                commodity.setRoundOffAcId(sales.roundOffAccountId());
+            if (sales.outStateAccountId() != null)
+                commodity.setSaleAcOutStateId(sales.outStateAccountId());
+            if (sales.igstPercent() != null)
+                commodity.setSaleIgstPercent(sales.igstPercent());
+            if (sales.outCessPercent() != null)
+                commodity.setSaleCessOutPercent(sales.outCessPercent());
+        }
+
+        if (request.purchaseLedgerConfig() != null) {
+            var purchase = request.purchaseLedgerConfig();
+            if (purchase.inStateAccountId() != null)
+                commodity.setPurchaseAcInStateId(purchase.inStateAccountId());
+            if (purchase.cgstPercent() != null)
+                commodity.setPurchaseCgstPercent(purchase.cgstPercent());
+            if (purchase.sgstPercent() != null)
+                commodity.setPurchaseSgstPercent(purchase.sgstPercent());
+            if (purchase.cessPercent() != null)
+                commodity.setPurchaseCessPercent(purchase.cessPercent());
+            if (purchase.outStateAccountId() != null)
+                commodity.setPurchaseAcOutStateId(purchase.outStateAccountId());
+            if (purchase.igstPercent() != null)
+                commodity.setPurchaseIgstPercent(purchase.igstPercent());
+            if (purchase.outCessPercent() != null)
+                commodity.setPurchaseCessOutPercent(purchase.outCessPercent());
+        }
+    }
+
     private CommodityResponse mapToResponse(Commodity commodity) {
         var salesConfig = new CommodityResponse.SalesLedgerConfigDto(
                 commodity.getSaleAcInStateId(),

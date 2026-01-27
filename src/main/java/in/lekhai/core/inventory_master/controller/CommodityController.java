@@ -38,6 +38,14 @@ public class CommodityController {
         return ResponseEntity.ok(Result.success(response));
     }
 
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<Result<CommodityResponse>> patchCommodity(
+            @PathVariable Long id,
+            @RequestBody CommodityRequest request) {
+        CommodityResponse response = commodityService.patchCommodity(id, request);
+        return ResponseEntity.ok(Result.success(response));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Result<CommodityResponse>> getCommodity(@PathVariable Long id) {
         CommodityResponse response = commodityService.getCommodity(id);
