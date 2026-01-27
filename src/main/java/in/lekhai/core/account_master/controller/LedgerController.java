@@ -2,8 +2,8 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.common.Result;
-import in.lekhai.core.account_master.dto.LedgerRequest;
-import in.lekhai.core.account_master.dto.LedgerResponse;
+import in.lekhai.core.account_master.dto.ledger.LedgerRequest;
+import in.lekhai.core.account_master.dto.ledger.LedgerResponse;
 import in.lekhai.core.account_master.service.LedgerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,9 @@ public class LedgerController {
 
     private final LedgerService ledgerService;
 
-    public LedgerController(LedgerService ledgerService) {
+    public LedgerController(
+            LedgerService ledgerService
+    ) {
         this.ledgerService = ledgerService;
     }
 

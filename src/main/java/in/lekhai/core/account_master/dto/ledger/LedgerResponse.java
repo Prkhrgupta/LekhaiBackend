@@ -1,9 +1,8 @@
-package in.lekhai.core.account_master.dto;
+package in.lekhai.core.account_master.dto.ledger;
 
 import in.lekhai.core.account_master.domain.Ledger.OpeningBalanceType;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public record LedgerResponse(
                 Long id,
@@ -20,8 +19,6 @@ public record LedgerResponse(
                 String aadhaar,
                 String tan,
                 String email,
-                String msme,
-                Boolean isActive,
-                Integer shopCode,
-                LocalDateTime createdAt) {
+                String msme
+) {
 }
