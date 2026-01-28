@@ -52,7 +52,10 @@ public record LedgerRequest(
         String email,
         @JsonProperty("msme_number")
         String msmeNumber,
-        int distance        // calculate
+        double distance,        // calculate
+        @JsonProperty("pin_code")
+        String pinCode,
+        String city
 ) {
     public record MailTo(
             @JsonProperty("mail_to_line_1")
