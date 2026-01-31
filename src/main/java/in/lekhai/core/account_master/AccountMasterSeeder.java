@@ -34,7 +34,6 @@ public class AccountMasterSeeder implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         seedStates();
-        seedAccountGroups();
     }
 
     private void seedStates() {
@@ -61,36 +60,6 @@ public class AccountMasterSeeder implements ApplicationRunner {
 
         } catch (Exception e) {
             log.error("Failed to seed states", e);
-        }
-    }
-
-    private void seedAccountGroups() {
-        jdbcTemplate.execute("SET app.shop_code = '0'");
-        Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM account_group WHERE is_primary = true",
-                Integer.class);
-        if (count != null && count > 0) {
-            log.info("Shared Account groups already exist. Skipping seeding.");
-            return;
-        }
-
-        log.info("Seeding account groups via COPY...");
-        try (Connection connection = dataSource.getConnection();
-                Reader reader = new InputStreamReader(
-                        resourceLoader.getResource("classpath:seeds/account_groups.csv").getInputStream(),
-                        StandardCharsets.UTF_8)) {
-
-            BaseConnection pgConnection = connection.unwrap(BaseConnection.class);
-            CopyManager copyManager = new CopyManager(pgConnection);
-
-            // CSV columns: name,parent_id,nature,behaviour,is_primary,shop_code
-            copyManager.copyIn(
-                    "COPY account_group (name, parent_id, nature, behaviour, is_primary, shop_code) FROM STDIN WITH CSV HEADER",
-                    reader);
-
-            log.info("Seeding account groups completed.");
-
-        } catch (Exception e) {
-            log.error("Failed to seed account groups", e);
         }
     }
 }

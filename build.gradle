@@ -69,7 +69,7 @@ jib {
 		image = 'eclipse-temurin:21-jre-jammy'
 	}
 	to {
-		image = 'docker.io/prkhrgupta/lekkai-backend'
+		image = 'docker.io/prkhrgupta/lekhai-backend'
 		tags = ['latest']
 	}
 	container {
