@@ -1,22 +1,21 @@
 package in.lekhai.core.account_master.domain;
 
-import org.springframework.data.annotation.CreatedDate;
+import in.lekhai.common.AccountEntryType;
+import in.lekhai.common.domain.ShopAwareEntity;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Table("ledger")
-public class Ledger {
+public class Ledger extends ShopAwareEntity {
     @Id
     private Long id;
     private String name;
     private String legalName;
     private Long accountGroupId;
-    private BigDecimal openingBalance = BigDecimal.ZERO;
-    private OpeningBalanceType openingBalanceType;
+    private BigDecimal openingBalance;
+    private AccountEntryType openingBalanceType;
     private BigDecimal creditLimit;
     private Long defaultAreaId;
     private Long defaultBrokerId;
@@ -26,15 +25,39 @@ public class Ledger {
     private String tan;
     private String email;
     private String msme;
-    private Boolean isActive = true;
-    private Integer shopCode;
+    private Boolean isActive;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
-    public Ledger() {
+    public Ledger(
+            String name,
+            String legalName,
+            Long accountGroupId,
+            BigDecimal openingBalance,
+            AccountEntryType openingBalanceType,
+            BigDecimal creditLimit,
+            Long defaultAreaId,
+            Long defaultBrokerId,
+            Long defaultTransportId,
+            String pan,
+            String aadhaar,
+            String tan,
+            String email,
+            String msme
+    ) {
+        this.name = name;
+        this.legalName = legalName;
+        this.accountGroupId = accountGroupId;
+        this.openingBalance = openingBalance;
+        this.openingBalanceType = openingBalanceType;
+        this.creditLimit = creditLimit;
+        this.defaultAreaId = defaultAreaId;
+        this.defaultBrokerId = defaultBrokerId;
+        this.defaultTransportId = defaultTransportId;
+        this.pan = pan;
+        this.aadhaar = aadhaar;
+        this.tan = tan;
+        this.email = email;
+        this.msme = msme;
+        this.isActive = Boolean.TRUE;
     }
 
     public Long getId() {
@@ -77,11 +100,11 @@ public class Ledger {
         this.openingBalance = openingBalance;
     }
 
-    public OpeningBalanceType getOpeningBalanceType() {
+    public AccountEntryType getOpeningBalanceType() {
         return openingBalanceType;
     }
 
-    public void setOpeningBalanceType(OpeningBalanceType openingBalanceType) {
+    public void setOpeningBalanceType(AccountEntryType openingBalanceType) {
         this.openingBalanceType = openingBalanceType;
     }
 
@@ -163,33 +186,5 @@ public class Ledger {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public Integer getShopCode() {
-        return shopCode;
-    }
-
-    public void setShopCode(Integer shopCode) {
-        this.shopCode = shopCode;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public enum OpeningBalanceType {
-        DR, CR
     }
 }

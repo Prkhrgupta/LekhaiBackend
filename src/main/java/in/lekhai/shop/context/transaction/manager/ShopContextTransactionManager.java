@@ -64,7 +64,7 @@ public class ShopContextTransactionManager extends DataSourceTransactionManager 
             String bypassRLS = superAdminBypass(shopCode);
             statement.execute(String.format("SET LOCAL app.shop_code = '%s'", shopCode));
             statement.execute(String.format("SET LOCAL app.bypass_rls = '%s'", bypassRLS));
-            log.info("Set shop code [{}] for current transaction", shopCode);                   // TODO: info >> debug
+            log.debug("Set shop code [{}] for current transaction", shopCode);
         }
     }
 
