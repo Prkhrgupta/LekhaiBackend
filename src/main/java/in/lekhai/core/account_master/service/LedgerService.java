@@ -40,10 +40,14 @@ public class LedgerService {
     public void createLedger(LedgerRequest request) {
         Ledger ledger = ledgerRepository.save(createLedgerObject(request));
         log.info("Saved ledger for shop {} :: ledger id {}", request.name(), ledger.getId());
-        gstDetailsRepository.save(createGstInDetailsObject(request, ledger.getId()));
-        log.info("Saved gst in details for shop {} :: {}", request.name(), ledger.getId());
-        addressRepository.save(createAddressObject(request, ledger.getId()));
-        log.info("Saved address details for shop {} :: {}", request.name(), ledger.getId());
+        if(request.gstInDetailsPresent() && request.gstInDetails() != null) {
+            gstDetailsRepository.save(createGstInDetailsObject(request.gstInDetails(), ledger.getId()));
+            log.info("Saved gst in details for shop {} :: {}", request.name(), ledger.getId());
+        }
+        if(request.mailTo() != null) {
+            addressRepository.save(createAddressObject(request, ledger.getId()));
+            log.info("Saved address details for shop {} :: {}", request.name(), ledger.getId());
+        }
     }
 
     @ShopTransactional

@@ -29,13 +29,13 @@ public class LedgerUtils {
         );
     }
 
-    public static GstInDetails createGstInDetailsObject(LedgerRequest request, Long ledgerId) {
+    public static GstInDetails createGstInDetailsObject(LedgerRequest.GstInDetail request, Long ledgerId) {
         return new GstInDetails(
                 ledgerId,
-                request.gstInDetails().registrationType(),
-                request.gstInDetails().isEcommerceOperator(),
-                request.gstInDetails().gstInUin(),
-                request.gstInDetails().partyType()
+                request.registrationType(),
+                request.isEcommerceOperator(),
+                request.gstInUin(),
+                request.partyType()
         );
     }
 
