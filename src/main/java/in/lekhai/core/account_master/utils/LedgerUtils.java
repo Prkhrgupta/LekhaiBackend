@@ -1,14 +1,13 @@
 package in.lekhai.core.account_master.utils;
 
-import in.lekhai.core.account_master.domain.Address;
-import in.lekhai.core.account_master.domain.GstInDetails;
-import in.lekhai.core.account_master.domain.Ledger;
+import in.lekhai.core.account_master.domain.*;
 import in.lekhai.core.account_master.dto.ledger.LedgerRequest;
 import in.lekhai.core.account_master.dto.ledger.LedgerResponse;
 
 public class LedgerUtils {
 
-    private LedgerUtils() {}
+    private LedgerUtils() {
+    }
 
     public static Ledger createLedgerObject(LedgerRequest request) {
         return new Ledger(
@@ -25,8 +24,7 @@ public class LedgerUtils {
                 request.aadhaarNumber(),
                 request.tanNumber(),
                 request.email(),
-                request.msmeNumber()
-        );
+                request.msmeNumber());
     }
 
     public static GstInDetails createGstInDetailsObject(LedgerRequest.GstInDetail request, Long ledgerId) {
@@ -35,8 +33,7 @@ public class LedgerUtils {
                 request.registrationType(),
                 request.isEcommerceOperator(),
                 request.gstInUin(),
-                request.partyType()
-        );
+                request.partyType());
     }
 
     public static Address createAddressObject(LedgerRequest request, Long ledgerId) {
@@ -49,10 +46,34 @@ public class LedgerUtils {
                 request.distance(),
                 request.areaId(),
                 request.stateAndCode(),
-                request.city()
-        );
+                request.city());
     }
 
-    public static LedgerResponse mapToResponse(Ledger ledger) {
-        return null;
-    }}
+    public static LedgerResponse mapToResponse(
+            Ledger ledger,
+            Area area,
+            Broker broker,
+            Transport transport) {
+        return new LedgerResponse(
+                ledger.getId(),
+                ledger.getName(),
+                ledger.getLegalName(),
+                ledger.getAccountGroupId(),
+                ledger.getOpeningBalance(),
+                ledger.getOpeningBalanceType(),
+                ledger.getCreditLimit(),
+                ledger.getPan(),
+                ledger.getAadhaar(),
+                ledger.getTan(),
+                ledger.getEmail(),
+                ledger.getMsme(),
+                ledger.getActive(),
+                area != null ? new LedgerResponse.Area(area.getId(), area.getAreaName(), area.getStateCode()) : null,
+                broker != null ? new LedgerResponse.Broker(broker.getId(), broker.getName(), broker.getPhone()) : null,
+                transport != null
+                        ? new LedgerResponse.Transport(transport.getId(), transport.getName(), transport.getPhone(),
+                                transport.getGstNo())
+                        : null,
+                ledger.getCreatedAt());
+    }
+}
