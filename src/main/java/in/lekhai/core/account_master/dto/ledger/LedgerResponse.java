@@ -10,7 +10,7 @@ public record LedgerResponse(
         Long id,
         String name,
         @JsonProperty("legal_name") String legalName,
-        @JsonProperty("account_group_id") Long accountGroupId,
+        @JsonProperty("account_group_name") String accountGroupName,
         @JsonProperty("opening_balance") BigDecimal openingBalance,
         @JsonProperty("opening_balance_type") AccountEntryType openingBalanceType,
         @JsonProperty("credit_limit") BigDecimal creditLimit,

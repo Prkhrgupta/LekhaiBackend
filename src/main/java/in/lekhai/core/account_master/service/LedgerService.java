@@ -74,7 +74,11 @@ public class LedgerService {
                                 ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
                                 : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport);
+                AccountGroup accountGroup = ledger.getAccountGroupId() != null
+                        ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
+                        : null;
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
         }
 
         @ShopTransactional
@@ -127,7 +131,11 @@ public class LedgerService {
                                 ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
                                 : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport);
+                AccountGroup accountGroup = ledger.getAccountGroupId() != null
+                        ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
+                        : null;
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
         }
 
         @ShopTransactional
@@ -145,7 +153,11 @@ public class LedgerService {
                                 ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
                                 : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport);
+                AccountGroup accountGroup = ledger.getAccountGroupId() != null
+                                ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
+                                : null;
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
         }
 
         @ShopTransactional
@@ -159,13 +171,17 @@ public class LedgerService {
                 Map<Long, Transport> transports = StreamSupport
                                 .stream(transportRepository.findAll().spliterator(), false)
                                 .collect(Collectors.toMap(Transport::getId, transport -> transport));
+                Map<Long, AccountGroup> accountGroups = StreamSupport
+                        .stream(accountGroupRepository.findAll().spliterator(), false)
+                        .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
 
                 return ledgers.stream()
                                 .map(ledger -> LedgerUtils.mapToResponse(
                                                 ledger,
                                                 areas.get(ledger.getDefaultAreaId()),
                                                 brokers.get(ledger.getDefaultBrokerId()),
-                                                transports.get(ledger.getDefaultTransportId())))
+                                                transports.get(ledger.getDefaultTransportId()),
+                                                accountGroups.get(ledger.getAccountGroupId())))
                                 .toList();
         }
 

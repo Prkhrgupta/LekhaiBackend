@@ -70,12 +70,13 @@ public class LedgerUtils {
                         Ledger ledger,
                         Area area,
                         Broker broker,
-                        Transport transport) {
+                        Transport transport,
+                        AccountGroup accountGroup) {
                 return new LedgerResponse(
                                 ledger.getId(),
                                 ledger.getName(),
                                 ledger.getLegalName(),
-                                ledger.getAccountGroupId(),
+                                accountGroup != null ? accountGroup.getName() : null,
                                 ledger.getOpeningBalance(),
                                 ledger.getOpeningBalanceType(),
                                 ledger.getCreditLimit(),
