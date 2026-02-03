@@ -71,7 +71,8 @@ public class LedgerUtils {
                         Area area,
                         Broker broker,
                         Transport transport,
-                        AccountGroup accountGroup) {
+                        AccountGroup accountGroup,
+                        GstInDetails gstInDetails) {
                 return new LedgerResponse(
                                 ledger.getId(),
                                 ledger.getName(),
@@ -94,6 +95,13 @@ public class LedgerUtils {
                                                 ? new LedgerResponse.Transport(transport.getId(), transport.getName(),
                                                                 transport.getPhone(),
                                                                 transport.getGstNo())
+                                                : null,
+                                gstInDetails != null
+                                                ? new LedgerResponse.GstInDetailResponse(
+                                                                gstInDetails.getRegistrationType(),
+                                                                gstInDetails.getIsEcommerceOperator(),
+                                                                gstInDetails.getGstinOrUin(),
+                                                                gstInDetails.getPartyType())
                                                 : null,
                                 ledger.getCreatedAt());
         }

@@ -75,10 +75,12 @@ public class LedgerService {
                                 : null;
 
                 AccountGroup accountGroup = ledger.getAccountGroupId() != null
-                        ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
-                        : null;
+                                ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
+                                : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
+                GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
         }
 
         @ShopTransactional
@@ -132,10 +134,12 @@ public class LedgerService {
                                 : null;
 
                 AccountGroup accountGroup = ledger.getAccountGroupId() != null
-                        ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
-                        : null;
+                                ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
+                                : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
+                GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
         }
 
         @ShopTransactional
@@ -157,7 +161,9 @@ public class LedgerService {
                                 ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
                                 : null;
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup);
+                GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
         }
 
         @ShopTransactional
@@ -172,8 +178,11 @@ public class LedgerService {
                                 .stream(transportRepository.findAll().spliterator(), false)
                                 .collect(Collectors.toMap(Transport::getId, transport -> transport));
                 Map<Long, AccountGroup> accountGroups = StreamSupport
-                        .stream(accountGroupRepository.findAll().spliterator(), false)
-                        .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
+                                .stream(accountGroupRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
+                Map<Long, GstInDetails> gstInDetailsMap = StreamSupport
+                                .stream(gstDetailsRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(GstInDetails::getLedgerId, gst -> gst));
 
                 return ledgers.stream()
                                 .map(ledger -> LedgerUtils.mapToResponse(
@@ -181,7 +190,8 @@ public class LedgerService {
                                                 areas.get(ledger.getDefaultAreaId()),
                                                 brokers.get(ledger.getDefaultBrokerId()),
                                                 transports.get(ledger.getDefaultTransportId()),
-                                                accountGroups.get(ledger.getAccountGroupId())))
+                                                accountGroups.get(ledger.getAccountGroupId()),
+                                                gstInDetailsMap.get(ledger.getId())))
                                 .toList();
         }
 
@@ -201,13 +211,16 @@ public class LedgerService {
                                                 (a, b) -> a));
                 Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
                                 .collect(Collectors.toMap(State::getStateCode, State::getStateName));
+                Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
 
                 List<LedgerSummaryResponse.Column> columns = List.of(
                                 new LedgerSummaryResponse.Column("ID", "number", 80),
                                 new LedgerSummaryResponse.Column("Name", "text", 150),
                                 new LedgerSummaryResponse.Column("State", "text", 120),
                                 new LedgerSummaryResponse.Column("Area", "text", 120),
-                                new LedgerSummaryResponse.Column("AccountGroup", "text", 160));
+                                new LedgerSummaryResponse.Column("AccountGroup", "text", 160),
+                                new LedgerSummaryResponse.Column("GSTIN", "text", 150));
 
                 List<LedgerSummaryResponse.Item> data = ledgers.stream()
                                 .map(ledger -> new LedgerSummaryResponse.Item(
@@ -215,7 +228,8 @@ public class LedgerService {
                                                 ledger.getName(),
                                                 states.getOrDefault(ledgerToStateId.get(ledger.getId()), ""),
                                                 areas.getOrDefault(ledger.getDefaultAreaId(), ""),
-                                                accountGroups.getOrDefault(ledger.getAccountGroupId(), "")))
+                                                accountGroups.getOrDefault(ledger.getAccountGroupId(), ""),
+                                                gstinMap.getOrDefault(ledger.getId(), "")))
                                 .toList();
 
                 return new LedgerSummaryResponse(columns, data);
