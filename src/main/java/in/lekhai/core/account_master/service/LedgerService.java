@@ -1,9 +1,6 @@
 package in.lekhai.core.account_master.service;
 
-import in.lekhai.core.account_master.domain.Area;
-import in.lekhai.core.account_master.domain.Broker;
-import in.lekhai.core.account_master.domain.Ledger;
-import in.lekhai.core.account_master.domain.Transport;
+import in.lekhai.core.account_master.domain.*;
 import in.lekhai.core.account_master.dto.ledger.LedgerRequest;
 import in.lekhai.core.account_master.dto.ledger.LedgerResponse;
 import in.lekhai.core.account_master.repository.*;
@@ -48,7 +45,7 @@ public class LedgerService {
     }
 
     @ShopTransactional
-    public void createLedger(LedgerRequest request) {
+    public LedgerResponse createLedger(LedgerRequest request) {
         Ledger ledger = ledgerRepository.save(createLedgerObject(request));
         log.info("Saved ledger for shop {} :: ledger id {}", request.name(), ledger.getId());
         if (request.gstInDetailsPresent() && request.gstInDetails() != null) {
@@ -59,6 +56,85 @@ public class LedgerService {
             addressRepository.save(createAddressObject(request, ledger.getId()));
             log.info("Saved address details for shop {} :: {}", request.name(), ledger.getId());
         }
+
+        Area area = ledger.getDefaultAreaId() != null ? areaRepository.findById(ledger.getDefaultAreaId()).orElse(null)
+                : null;
+        Broker broker = ledger.getDefaultBrokerId() != null
+                ? brokerRepository.findById(ledger.getDefaultBrokerId()).orElse(null)
+                : null;
+        Transport transport = ledger.getDefaultTransportId() != null
+                ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
+                : null;
+
+        return LedgerUtils.mapToResponse(ledger, area, broker, transport);
+    }
+
+    @ShopTransactional
+    public LedgerResponse updateLedger(Long id, LedgerRequest request) {
+        Ledger ledger = ledgerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ledger not found with id: " + id));
+
+        updateLedgerFromRequest(ledger, request);
+        ledgerRepository.save(ledger);
+        log.info("Updated ledger for shop {} :: ledger id {}", request.name(), ledger.getId());
+
+        if (request.gstInDetailsPresent() && request.gstInDetails() != null) {
+            GstInDetails gstDetails = gstDetailsRepository.findByLedgerId(ledger.getId())
+                    .orElseGet(() -> new GstInDetails(ledger.getId(), null, null, null, null));
+
+            gstDetails.setRegistrationType(request.gstInDetails().registrationType());
+            gstDetails.setIsEcommerceOperator(request.gstInDetails().isEcommerceOperator());
+            gstDetails.setGstinOrUin(request.gstInDetails().gstInUin());
+            gstDetails.setPartyType(request.gstInDetails().partyType());
+
+            gstDetailsRepository.save(gstDetails);
+            log.info("Updated gst in details for shop {} :: {}", request.name(), ledger.getId());
+        }
+
+        if (request.mailTo() != null) {
+            Address address = addressRepository.findByLedgerId(ledger.getId())
+                    .orElseGet(() -> new Address(ledger.getId(), null, null, null, null, null, null, null, null));
+
+            address.setAddressLine1(request.mailTo().lineOne());
+            address.setAddressLine2(request.mailTo().lineTwo());
+            address.setAddressLine3(request.mailTo().lineThree());
+            address.setPincode(request.pinCode());
+            address.setDistance(request.distance());
+            address.setAreaId(request.areaId());
+            address.setStateId(request.stateAndCode());
+            address.setCity(request.city());
+
+            addressRepository.save(address);
+            log.info("Updated address details for shop {} :: {}", request.name(), ledger.getId());
+        }
+
+        Area area = ledger.getDefaultAreaId() != null ? areaRepository.findById(ledger.getDefaultAreaId()).orElse(null)
+                : null;
+        Broker broker = ledger.getDefaultBrokerId() != null
+                ? brokerRepository.findById(ledger.getDefaultBrokerId()).orElse(null)
+                : null;
+        Transport transport = ledger.getDefaultTransportId() != null
+                ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
+                : null;
+
+        return LedgerUtils.mapToResponse(ledger, area, broker, transport);
+    }
+
+    @ShopTransactional
+    public LedgerResponse getLedgerById(Long id) {
+        Ledger ledger = ledgerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ledger not found with id: " + id));
+
+        Area area = ledger.getDefaultAreaId() != null ? areaRepository.findById(ledger.getDefaultAreaId()).orElse(null)
+                : null;
+        Broker broker = ledger.getDefaultBrokerId() != null
+                ? brokerRepository.findById(ledger.getDefaultBrokerId()).orElse(null)
+                : null;
+        Transport transport = ledger.getDefaultTransportId() != null
+                ? transportRepository.findById(ledger.getDefaultTransportId()).orElse(null)
+                : null;
+
+        return LedgerUtils.mapToResponse(ledger, area, broker, transport);
     }
 
     @ShopTransactional

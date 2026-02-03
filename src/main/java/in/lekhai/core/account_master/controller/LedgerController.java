@@ -24,22 +24,37 @@ public class LedgerController {
     private final LedgerService ledgerService;
 
     public LedgerController(
-            LedgerService ledgerService
-    ) {
+            LedgerService ledgerService) {
         this.ledgerService = ledgerService;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Result<Void>> createLedger(@RequestBody @Valid LedgerRequest request) {
-        log.info("Got a request to create ledger for shop {} :: {}",request.name(), request);
-        ledgerService.createLedger(request);
+    public ResponseEntity<Result<LedgerResponse>> createLedger(@RequestBody @Valid LedgerRequest request) {
+        log.info("Got a request to create ledger for shop {} :: {}", request.name(), request);
+        LedgerResponse response = ledgerService.createLedger(request);
         log.info("Successfully created ledger for shop {}", request.name());
-        return ResponseEntity.ok(Result.success(String.format("Ledger Created for %s", request.name())));
+        return ResponseEntity.ok(Result.success(String.format("Ledger Created for %s", request.name()), response));
     }
 
     @GetMapping("/list-all")
     public ResponseEntity<Result<List<LedgerResponse>>> listLedgers() {
         List<LedgerResponse> response = ledgerService.listLedgers();
         return ResponseEntity.ok(Result.success(response));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Result<LedgerResponse>> getLedger(@PathVariable Long id) {
+        log.info("Got a request to fetch ledger with id {}", id);
+        LedgerResponse response = ledgerService.getLedgerById(id);
+        return ResponseEntity.ok(Result.success(response));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Result<LedgerResponse>> updateLedger(@PathVariable Long id,
+            @RequestBody @Valid LedgerRequest request) {
+        log.info("Got a request to update ledger with id {} :: {}", id, request);
+        LedgerResponse response = ledgerService.updateLedger(id, request);
+        log.info("Successfully updated ledger with id {}", id);
+        return ResponseEntity.ok(Result.success(String.format("Ledger Updated for %s", request.name()), response));
     }
 }

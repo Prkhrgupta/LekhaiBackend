@@ -76,4 +76,10 @@ public record LedgerRequest(
             @JsonProperty("party_type")
             GstInRegistration.PartyType partyType
     ) {}
+
+    public LedgerRequest {
+        if(openingBalance == null) {
+            openingBalance = BigDecimal.ZERO;
+        }
+    }
 }

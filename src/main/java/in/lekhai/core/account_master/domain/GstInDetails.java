@@ -20,8 +20,7 @@ public class GstInDetails extends ShopAwareEntity {
             GstInRegistration.RegistrationType registrationType,
             Boolean isEcommerceOperator,
             String gstinOrUin,
-            GstInRegistration.PartyType partyType
-    ) {
+            GstInRegistration.PartyType partyType) {
         this.ledgerId = ledgerId;
         this.registrationType = registrationType;
         this.isEcommerceOperator = isEcommerceOperator;
@@ -66,7 +65,7 @@ public class GstInDetails extends ShopAwareEntity {
     }
 
     public void setGstinOrUin(String gstinOrUin) {
-        this.gstinOrUin = this.gstinOrUin;
+        this.gstinOrUin = gstinOrUin;
     }
 
     public GstInRegistration.PartyType getPartyType() {
