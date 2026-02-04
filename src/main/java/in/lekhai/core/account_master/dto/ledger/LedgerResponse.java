@@ -24,7 +24,19 @@ public record LedgerResponse(
                 Broker broker,
                 Transport transport,
                 @JsonProperty("gstin_details") GstInDetailResponse gstinDetails,
+                LedgerAddress address,
                 @JsonProperty("created_at") Instant createdAt) {
+        public record LedgerAddress(
+                        @JsonProperty("address_line_1") String addressLine1,
+                        @JsonProperty("address_line_2") String addressLine2,
+                        @JsonProperty("address_line_3") String addressLine3,
+                        String city,
+                        @JsonProperty("state_id") String stateId,
+                        @JsonProperty("area_id") Long areaId,
+                        String pincode,
+                        Double distance) {
+        }
+
         public record Area(
                         Long id,
                         String name,

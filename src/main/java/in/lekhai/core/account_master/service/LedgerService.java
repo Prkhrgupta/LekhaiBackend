@@ -80,7 +80,7 @@ public class LedgerService {
 
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
         }
 
         @ShopTransactional
@@ -139,7 +139,7 @@ public class LedgerService {
 
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
         }
 
         @ShopTransactional
@@ -161,9 +161,11 @@ public class LedgerService {
                                 ? accountGroupRepository.findById(ledger.getAccountGroupId()).orElse(null)
                                 : null;
 
+                Address address = addressRepository.findByLedgerId(ledger.getId()).orElse(null);
+
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails);
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, address);
         }
 
         @ShopTransactional
@@ -180,6 +182,9 @@ public class LedgerService {
                 Map<Long, AccountGroup> accountGroups = StreamSupport
                                 .stream(accountGroupRepository.findAll().spliterator(), false)
                                 .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
+                Map<Long, Address> addressMap = StreamSupport
+                                .stream(addressRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(Address::getLedgerId, addr -> addr));
                 Map<Long, GstInDetails> gstInDetailsMap = StreamSupport
                                 .stream(gstDetailsRepository.findAll().spliterator(), false)
                                 .collect(Collectors.toMap(GstInDetails::getLedgerId, gst -> gst));
@@ -191,7 +196,8 @@ public class LedgerService {
                                                 brokers.get(ledger.getDefaultBrokerId()),
                                                 transports.get(ledger.getDefaultTransportId()),
                                                 accountGroups.get(ledger.getAccountGroupId()),
-                                                gstInDetailsMap.get(ledger.getId())))
+                                                gstInDetailsMap.get(ledger.getId()),
+                                                addressMap.get(ledger.getId())))
                                 .toList();
         }
 
