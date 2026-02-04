@@ -59,10 +59,8 @@ public class LedgerService {
                         gstDetailsRepository.save(createGstInDetailsObject(request.gstInDetails(), ledger.getId()));
                         log.info("Saved gst in details for shop {} :: {}", request.name(), ledger.getId());
                 }
-                if (request.mailTo() != null) {
-                        addressRepository.save(createAddressObject(request, ledger.getId()));
-                        log.info("Saved address details for shop {} :: {}", request.name(), ledger.getId());
-                }
+                addressRepository.save(createAddressObject(request, ledger.getId()));
+                log.info("Saved address details for shop {} :: {}", request.name(), ledger.getId());
 
                 Area area = ledger.getDefaultAreaId() != null
                                 ? areaRepository.findById(ledger.getDefaultAreaId()).orElse(null)
