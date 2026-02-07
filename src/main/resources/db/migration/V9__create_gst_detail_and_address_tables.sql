@@ -4,7 +4,7 @@
 CREATE TABLE ledger_address (
     id BIGSERIAL PRIMARY KEY,
     ledger_id BIGINT NOT NULL REFERENCES ledger(id),
-    address_line1 TEXT NOT NULL,
+    address_line1 TEXT,
     address_line2 TEXT,
     address_line3 TEXT,
     city VARCHAR(50),
