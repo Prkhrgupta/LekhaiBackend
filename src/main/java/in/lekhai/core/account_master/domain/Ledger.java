@@ -28,6 +28,10 @@ public class Ledger {
     private String tan;
     private String email;
     private String msme;
+    private String contactPerson;
+    private Long phoneNumber;
+    private String gstInNumber;
+    private String location;
     private Boolean isActive;
 
     @CreatedDate
@@ -50,8 +54,11 @@ public class Ledger {
             String aadhaar,
             String tan,
             String email,
-            String msme
-    ) {
+            String msme,
+            String contactPerson,
+            Long phoneNumber,
+            String gstInNumber,
+            String location) {
         this.name = name;
         this.legalName = legalName;
         this.accountGroupId = accountGroupId;
@@ -66,6 +73,10 @@ public class Ledger {
         this.tan = tan;
         this.email = email;
         this.msme = msme;
+        this.contactPerson = contactPerson;
+        this.phoneNumber = phoneNumber;
+        this.gstInNumber = gstInNumber;
+        this.location = location;
         this.isActive = Boolean.TRUE;
     }
 
@@ -187,6 +198,38 @@ public class Ledger {
 
     public void setMsme(String msme) {
         this.msme = msme;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    public Long getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(Long phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getGstInNumber() {
+        return gstInNumber;
+    }
+
+    public void setGstInNumber(String gstInNumber) {
+        this.gstInNumber = gstInNumber;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public Boolean getActive() {
