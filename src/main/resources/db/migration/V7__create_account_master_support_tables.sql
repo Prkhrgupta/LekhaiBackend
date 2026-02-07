@@ -69,7 +69,7 @@ CREATE TABLE account_group (
         behaviour IN ('CR', 'DR')
     ),
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-    shop_code INTEGER NOT NULL,
+    shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
