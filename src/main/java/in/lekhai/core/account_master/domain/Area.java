@@ -1,6 +1,5 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.common.domain.ShopAwareEntity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
