@@ -5,6 +5,7 @@ import in.lekhai.core.account_master.repository.AreaRepository;
 import in.lekhai.csv.upload.dto.AreaCsvDto;
 import in.lekhai.csv.upload.model.CsvUploadTypes;
 import in.lekhai.csv.upload.service.CsvUploadService;
+import in.lekhai.shop.context.transaction.manager.ShopContextTransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -12,22 +13,13 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
-import org.springframework.batch.item.data.RepositoryItemWriter;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.batch.core.launch.JobLauncher;
 
 @Component
 public class UploadAreaCsv extends CsvUploadService<AreaCsvDto, Area> {
@@ -38,7 +30,7 @@ public class UploadAreaCsv extends CsvUploadService<AreaCsvDto, Area> {
 
     protected UploadAreaCsv(
             JobRepository jobRepository,
-            PlatformTransactionManager transactionManager,
+            ShopContextTransactionManager transactionManager,
             JobLauncher jobLauncher,
             AreaRepository areaRepository
     ) {
@@ -68,7 +60,7 @@ public class UploadAreaCsv extends CsvUploadService<AreaCsvDto, Area> {
 
     @Override
     protected ItemProcessor<AreaCsvDto, Area> createProcessor() {
-        return dto -> new Area(dto.areaName(), null);
+        return dto -> new Area(dto.getAreaName(), null);
     }
 
     @Override

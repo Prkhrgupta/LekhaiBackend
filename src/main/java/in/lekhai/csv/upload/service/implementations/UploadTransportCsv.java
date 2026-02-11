@@ -2,19 +2,19 @@ package in.lekhai.csv.upload.service.implementations;
 
 import in.lekhai.csv.upload.model.CsvUploadTypes;
 import in.lekhai.csv.upload.service.CsvUploadService;
+import in.lekhai.shop.context.transaction.manager.ShopContextTransactionManager;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.transaction.PlatformTransactionManager;
 
 public class UploadTransportCsv extends CsvUploadService {
 
     protected UploadTransportCsv(
             JobRepository jobRepository,
-            PlatformTransactionManager transactionManager,
+            ShopContextTransactionManager transactionManager,
             JobLauncher jobLauncher
     ) {
         super(jobRepository, transactionManager, jobLauncher);

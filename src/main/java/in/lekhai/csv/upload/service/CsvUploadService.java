@@ -1,22 +1,22 @@
 package in.lekhai.csv.upload.service;
 
 import in.lekhai.csv.upload.model.CsvUploadTypes;
+import in.lekhai.shop.context.transaction.manager.ShopContextTransactionManager;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -27,12 +27,12 @@ import java.util.Date;
 public abstract class CsvUploadService<I, O> {
 
     protected final JobRepository jobRepository;
-    protected final PlatformTransactionManager transactionManager;
+    protected final ShopContextTransactionManager transactionManager;
     protected final JobLauncher jobLauncher;
 
     protected CsvUploadService(
             JobRepository jobRepository,
-            PlatformTransactionManager transactionManager,
+            ShopContextTransactionManager transactionManager,
             JobLauncher jobLauncher
     ) {
         this.jobRepository = jobRepository;

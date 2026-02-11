@@ -6,6 +6,5 @@ public record AreaResponse(
         Long id,
         String areaName,
         String stateCode,
-        Integer shopCode,
         Instant createdAt) {
 }

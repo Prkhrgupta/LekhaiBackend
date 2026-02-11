@@ -13,7 +13,7 @@ public class Area {
     private Long id;
     private String areaName;
     private String stateCode;
-    private Integer shopCode;
+//    private Integer shopCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -57,7 +57,7 @@ public class Area {
         this.updatedAt = updatedAt;
     }
 
-    public Integer getShopCode() {
-        return shopCode;
-    }
+//    public Integer getShopCode() {
+//        return shopCode;
+//    }
 }

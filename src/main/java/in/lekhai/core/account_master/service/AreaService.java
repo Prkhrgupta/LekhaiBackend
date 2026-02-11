@@ -40,7 +40,6 @@ public class AreaService {
                 area.getId(),
                 area.getAreaName(),
                 area.getStateCode(),
-                area.getShopCode(),
                 area.getCreatedAt());
     }
 }
