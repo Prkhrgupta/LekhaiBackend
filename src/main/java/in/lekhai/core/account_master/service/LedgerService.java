@@ -6,7 +6,7 @@ import in.lekhai.core.account_master.dto.ledger.LedgerResponse;
 import in.lekhai.core.account_master.dto.ledger.LedgerSummaryResponse;
 import in.lekhai.core.account_master.repository.*;
 import in.lekhai.core.account_master.utils.LedgerUtils;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -51,7 +51,7 @@ public class LedgerService {
                 this.stateRepository = stateRepository;
         }
 
-        @ShopTransactional
+        @ShopContextTransactional
         public LedgerResponse createLedger(LedgerRequest request) {
                 Ledger ledger = ledgerRepository.save(createLedgerObject(request));
                 log.info("Saved ledger for shop {} :: ledger id {}", request.name(), ledger.getId());
@@ -81,7 +81,7 @@ public class LedgerService {
                 return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
         }
 
-        @ShopTransactional
+        @ShopContextTransactional
         public LedgerResponse updateLedger(Long id, LedgerRequest request) {
                 Ledger ledger = ledgerRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Ledger not found with id: " + id));
@@ -140,7 +140,7 @@ public class LedgerService {
                 return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
         }
 
-        @ShopTransactional
+        @ShopContextTransactional
         public LedgerResponse getLedgerById(Long id) {
                 Ledger ledger = ledgerRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Ledger not found with id: " + id));
@@ -166,7 +166,7 @@ public class LedgerService {
                 return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, address);
         }
 
-        @ShopTransactional
+        @ShopContextTransactional
         public List<LedgerResponse> listLedgers() {
                 List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
 
@@ -199,7 +199,7 @@ public class LedgerService {
                                 .toList();
         }
 
-        @ShopTransactional
+        @ShopContextTransactional
         public LedgerSummaryResponse listLedgerSummaries() {
                 List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
                 Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)

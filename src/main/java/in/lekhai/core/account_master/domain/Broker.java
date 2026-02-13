@@ -1,6 +1,5 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.common.domain.ShopAwareEntity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,7 +13,6 @@ public class Broker {
     private Long id;
     private String name;
     private String phone;
-    private Integer shopCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -56,9 +54,5 @@ public class Broker {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Integer getShopCode() {
-        return shopCode;
     }
 }

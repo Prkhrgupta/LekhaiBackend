@@ -43,15 +43,15 @@ public class UploadAreaCsv extends CsvUploadService<AreaCsvDto, Area> {
         FlatFileItemReader<AreaCsvDto> fileItemReader = new FlatFileItemReader<>();
         fileItemReader.setResource(resource);
         fileItemReader.setLinesToSkip(1);
-        DefaultLineMapper<AreaCsvDto> lineMapper = new DefaultLineMapper<>();
 
         DelimitedLineTokenizer delimitedLineTokenizer = new DelimitedLineTokenizer();
-        delimitedLineTokenizer.setNames("code", "name");
-        delimitedLineTokenizer.setStrict(false);
+        delimitedLineTokenizer.setNames("areaCode", "areaName");
+        delimitedLineTokenizer.setStrict(true);
 
         BeanWrapperFieldSetMapper<AreaCsvDto> beanWrapperFieldSetMapper = new BeanWrapperFieldSetMapper<>();
         beanWrapperFieldSetMapper.setTargetType(AreaCsvDto.class);
 
+        DefaultLineMapper<AreaCsvDto> lineMapper = new DefaultLineMapper<>();
         lineMapper.setLineTokenizer(delimitedLineTokenizer);
         lineMapper.setFieldSetMapper(beanWrapperFieldSetMapper);
         fileItemReader.setLineMapper(lineMapper);

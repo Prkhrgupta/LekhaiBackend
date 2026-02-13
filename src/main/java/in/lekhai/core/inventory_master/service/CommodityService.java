@@ -4,7 +4,7 @@ import in.lekhai.core.inventory_master.domain.Commodity;
 import in.lekhai.core.inventory_master.dto.CommodityRequest;
 import in.lekhai.core.inventory_master.dto.CommodityResponse;
 import in.lekhai.core.inventory_master.repository.CommodityRepository;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,14 +19,14 @@ public class CommodityService {
         this.commodityRepository = commodityRepository;
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public CommodityResponse createCommodity(CommodityRequest request) {
         Commodity commodity = mapToEntity(request, new Commodity());
         Commodity saved = commodityRepository.save(commodity);
         return mapToResponse(saved);
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public CommodityResponse updateCommodity(Long id, CommodityRequest request) {
         Commodity commodity = commodityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
@@ -36,14 +36,14 @@ public class CommodityService {
         return mapToResponse(saved);
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public CommodityResponse getCommodity(Long id) {
         Commodity commodity = commodityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
         return mapToResponse(commodity);
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public List<CommodityResponse> listCommodities() {
         return StreamSupport.stream(commodityRepository.findAll().spliterator(), false)
                 .map(this::mapToResponse)
@@ -85,7 +85,7 @@ public class CommodityService {
         return commodity;
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public CommodityResponse patchCommodity(Long id, CommodityRequest request) {
         Commodity commodity = commodityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));

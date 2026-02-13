@@ -4,7 +4,7 @@ import in.lekhai.core.account_master.domain.Transport;
 import in.lekhai.core.account_master.dto.TransportRequest;
 import in.lekhai.core.account_master.dto.TransportResponse;
 import in.lekhai.core.account_master.repository.TransportRepository;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class TransportService {
         this.transportRepository = transportRepository;
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public TransportResponse createTransport(TransportRequest request) {
         Transport transport = new Transport(
                 request.name(),
@@ -29,7 +29,7 @@ public class TransportService {
         return mapToResponse(saved);
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public List<TransportResponse> listTransports() {
         return StreamSupport.stream(transportRepository.findAll().spliterator(), false)
                 .map(this::mapToResponse)

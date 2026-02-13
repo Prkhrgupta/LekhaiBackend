@@ -5,7 +5,7 @@ import in.lekhai.core.account_master.dto.AccountGroupRequest;
 import in.lekhai.core.account_master.dto.AccountGroupResponse;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
 import in.lekhai.error.controller.account.exception.ParentNotFoundException;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class AccountGroupService {
         this.accountGroupRepository = accountGroupRepository;
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public AccountGroupResponse createAccountGroup(AccountGroupRequest request) {
         // TODO: handle duplicate key exceptions
         AccountGroup accountGroup = accountGroupRepository
@@ -41,7 +41,7 @@ public class AccountGroupService {
         return new AccountGroupResponse(subGroup.getId(), subGroup.getName());
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public List<AccountGroupResponse> listAccountGroups() {
         return StreamSupport.stream(accountGroupRepository.findAll().spliterator(), false)
                 .map(g -> new AccountGroupResponse(g.getId(), g.getName()))

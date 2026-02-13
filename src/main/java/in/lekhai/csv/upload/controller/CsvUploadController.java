@@ -45,16 +45,16 @@ public class CsvUploadController {
     ) throws IOException, JobInstanceAlreadyCompleteException,
             JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
         if(csvFile.isEmpty()) {
-            log.error("Empty csv file uploaded {} :: {}", csvFile.getName(), csvUploadTypes);
+            log.error("Empty csv file uploaded {} for {}", csvFile.getOriginalFilename(), csvUploadTypes);
             return ResponseEntity.badRequest().body(Result.error("Empty CSV uploaded"));
         }
         if(!Objects.requireNonNull(csvFile.getOriginalFilename()).toLowerCase().endsWith(".csv")) {
-            log.error("Invalid csv format for {} :: {}", csvFile.getName(), csvUploadTypes);
+            log.error("Invalid csv format for {} for {}", csvFile.getOriginalFilename(), csvUploadTypes);
             return ResponseEntity.badRequest().body(Result.error("Invalid format, only .csv files are supported"));
         }
-        log.info("Request to upload csv {} :: {}", csvFile.getName(), csvUploadTypes);
+        log.info("Request to upload csv {} for {}", csvFile.getOriginalFilename(), csvUploadTypes);
         csvUploadFactory.get(csvUploadTypes).processCsv(csvFile, csvUploadTypes);
-        log.info("Successfully upload csv {} :: {}", csvFile.getName(), csvUploadTypes);
-        return ResponseEntity.ok(Result.success(String.format("Successfully upload %s csv", csvUploadTypes)));
+        log.info("Successfully upload csv {} for {}", csvFile.getOriginalFilename(), csvUploadTypes);
+        return ResponseEntity.ok(Result.success(String.format("Successfully upload %s", csvFile.getOriginalFilename())));
     }
 }
