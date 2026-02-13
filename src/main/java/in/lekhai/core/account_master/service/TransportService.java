@@ -42,7 +42,6 @@ public class TransportService {
                 transport.getName(),
                 transport.getPhone(),
                 transport.getGstNo(),
-                transport.getShopCode(),
                 transport.getCreatedAt());
     }
 }

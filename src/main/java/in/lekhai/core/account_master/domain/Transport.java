@@ -15,7 +15,6 @@ public class Transport {
     private String name;
     private String phone;
     private String gstNo;
-    private Integer shopCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -62,9 +61,5 @@ public class Transport {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Integer getShopCode() {
-        return shopCode;
     }
 }
