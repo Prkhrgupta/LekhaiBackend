@@ -25,7 +25,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
-@PreAuthorize(SecurityExpressions.IS_SUPER_ADMIN)
+@PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class CsvUploadController {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
