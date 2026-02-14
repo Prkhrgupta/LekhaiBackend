@@ -6,6 +6,6 @@ public record BrokerResponse(
         Long id,
         String name,
         String phone,
-        Integer shopCode,
-        Instant createdAt) {
+        Instant createdAt
+) {
 }

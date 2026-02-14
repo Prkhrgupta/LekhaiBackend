@@ -7,6 +7,6 @@ public record TransportResponse(
         String name,
         String phone,
         String gstNo,
-        Integer shopCode,
-        Instant createdAt) {
+        Instant createdAt
+) {
 }

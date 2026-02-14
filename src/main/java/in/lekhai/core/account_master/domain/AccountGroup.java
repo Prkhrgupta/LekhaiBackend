@@ -6,10 +6,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Table("account_group")
-public class AccountGroup extends ShopAwareEntity {
+public class AccountGroup {
     @Id
     private Long id;
     private String name;
@@ -17,6 +18,12 @@ public class AccountGroup extends ShopAwareEntity {
     private String nature;
     private String behaviour;
     private Boolean isPrimary;
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 
     public AccountGroup() {
     }
@@ -51,5 +58,21 @@ public class AccountGroup extends ShopAwareEntity {
 
     public Boolean getPrimary() {
         return isPrimary;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

@@ -2,13 +2,16 @@ package in.lekhai.core.account_master.domain;
 
 import in.lekhai.common.AccountEntryType;
 import in.lekhai.common.domain.ShopAwareEntity;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Table("ledger")
-public class Ledger extends ShopAwareEntity {
+public class Ledger {
     @Id
     private Long id;
     private String name;
@@ -30,6 +33,12 @@ public class Ledger extends ShopAwareEntity {
     private String gstInNumber;
     private String location;
     private Boolean isActive;
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 
     public Ledger(
             String name,
@@ -229,5 +238,21 @@ public class Ledger extends ShopAwareEntity {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

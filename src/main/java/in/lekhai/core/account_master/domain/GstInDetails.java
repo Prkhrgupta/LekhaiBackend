@@ -2,11 +2,15 @@ package in.lekhai.core.account_master.domain;
 
 import in.lekhai.common.domain.ShopAwareEntity;
 import in.lekhai.core.account_master.dto.ledger.GstInRegistration;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
+
 @Table("gst_details")
-public class GstInDetails extends ShopAwareEntity {
+public class GstInDetails {
     @Id
     private Long id;
     private Long ledgerId;
@@ -14,6 +18,12 @@ public class GstInDetails extends ShopAwareEntity {
     private Boolean isEcommerceOperator;
     private String gstinOrUin;
     private GstInRegistration.PartyType partyType;
+
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 
     public GstInDetails(
             Long ledgerId,
@@ -74,5 +84,21 @@ public class GstInDetails extends ShopAwareEntity {
 
     public void setPartyType(GstInRegistration.PartyType partyType) {
         this.partyType = partyType;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

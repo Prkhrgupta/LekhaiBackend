@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Transactional("shop-context-transaction-manager")
-public @interface ShopTransactional {
+public @interface ShopContextTransactional {
 }

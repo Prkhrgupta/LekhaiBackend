@@ -3,6 +3,8 @@ spring:
     name: lekhai
   server:
     port: 8080
+  batch:
+    initialize-schema: never
 
 # Database Configuration
   datasource:

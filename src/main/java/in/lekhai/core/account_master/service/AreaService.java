@@ -4,7 +4,7 @@ import in.lekhai.core.account_master.domain.Area;
 import in.lekhai.core.account_master.dto.AreaRequest;
 import in.lekhai.core.account_master.dto.AreaResponse;
 import in.lekhai.core.account_master.repository.AreaRepository;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopTransactional;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public class AreaService {
         this.areaRepository = areaRepository;
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public AreaResponse createArea(AreaRequest request) {
         Area area = new Area(
                 request.areaName(),
@@ -28,7 +28,7 @@ public class AreaService {
         return mapToResponse(saved);
     }
 
-    @ShopTransactional
+    @ShopContextTransactional
     public List<AreaResponse> listAreas() {
         return StreamSupport.stream(areaRepository.findAll().spliterator(), false)
                 .map(this::mapToResponse)
@@ -40,7 +40,6 @@ public class AreaService {
                 area.getId(),
                 area.getAreaName(),
                 area.getStateCode(),
-                area.getShopCode(),
                 area.getCreatedAt());
     }
 }
