@@ -4,11 +4,10 @@ import in.lekhai.accountmaster.area.dto.AreaRequest;
 import in.lekhai.accountmaster.area.dto.AreaResponse;
 import in.lekhai.core.account_master.domain.Area;
 import in.lekhai.core.account_master.repository.AreaRepository;
+import in.lekhai.core.account_master.utils.DateUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -42,6 +41,6 @@ public class AreaService {
                 .id(area.getId())
                 .areaName(area.getAreaName())
                 .stateCode(area.getStateCode())
-                .createdAt(OffsetDateTime.ofInstant(area.getCreatedAt(), ZoneId.of(ZoneId.SHORT_IDS.get("IST"))));
+                .createdAt(DateUtils.getCreatedAt(area.getCreatedAt()));
     }
 }

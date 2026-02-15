@@ -1,10 +1,10 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.accountmaster.broker.dto.BrokerRequest;
+import in.lekhai.accountmaster.broker.dto.BrokerResponse;
 import in.lekhai.core.account_master.domain.Broker;
-import in.lekhai.core.account_master.dto.BrokerRequest;
-import in.lekhai.core.account_master.dto.BrokerResponse;
 import in.lekhai.core.account_master.repository.BrokerRepository;
-import in.lekhai.shop.context.model.ShopContext;
+import in.lekhai.core.account_master.utils.DateUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +22,7 @@ public class BrokerService {
 
     @ShopContextTransactional
     public BrokerResponse createBroker(BrokerRequest request) {
-        Broker broker = new Broker(
-                request.name(),
-                request.phone());
+        Broker broker = new Broker(request.getName(), request.getPhone());
         Broker saved = brokerRepository.save(broker);
         return mapToResponse(saved);
     }
@@ -37,11 +35,10 @@ public class BrokerService {
     }
 
     private BrokerResponse mapToResponse(Broker broker) {
-        return new BrokerResponse(
-                broker.getId(),
-                broker.getName(),
-                broker.getPhone(),
-                broker.getCreatedAt()
-        );
+        return new BrokerResponse()
+                .id(broker.getId())
+                .name(broker.getName())
+                .phone(broker.getPhone())
+                .createdAt(DateUtils.getCreatedAt(broker.getCreatedAt()));
     }
 }

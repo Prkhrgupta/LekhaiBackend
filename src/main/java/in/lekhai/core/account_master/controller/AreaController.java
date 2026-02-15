@@ -5,7 +5,10 @@ import in.lekhai.accountmaster.area.dto.AreaRequest;
 import in.lekhai.accountmaster.area.dto.AreaResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.core.account_master.service.AreaService;
+import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.util.List;
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class AreaController implements AreaApi {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final AreaService areaService;
 
     public AreaController(AreaService areaService) {
@@ -24,13 +28,17 @@ public class AreaController implements AreaApi {
 
     @Override
     public ResponseEntity<AreaResponse> createArea(@Valid AreaRequest request) {
+        log.info("Got a request to create are {} :: {}", ShopContext.getShopCode(), request.toString());
         AreaResponse response = areaService.createArea(request);
+        log.info("Successfully created area {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<List<AreaResponse>> listAreas() {
+        log.info("Got a request to list all areas {}", ShopContext.getShopCode());
         List<AreaResponse> response = areaService.listAreas();
+        log.info("Successfully listed all areas {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }
 }
