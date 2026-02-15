@@ -1,8 +1,8 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.accountmaster.accountgroup.dto.AccountGroupRequest;
+import in.lekhai.accountmaster.accountgroup.dto.AccountGroupResponse;
 import in.lekhai.core.account_master.domain.AccountGroup;
-import in.lekhai.core.account_master.dto.AccountGroupRequest;
-import in.lekhai.core.account_master.dto.AccountGroupResponse;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
 import in.lekhai.error.controller.account.exception.ParentNotFoundException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
@@ -26,11 +26,11 @@ public class AccountGroupService {
     public AccountGroupResponse createAccountGroup(AccountGroupRequest request) {
         // TODO: handle duplicate key exceptions
         AccountGroup accountGroup = accountGroupRepository
-                .findById(request.parentId())
-                .orElseThrow(() -> new ParentNotFoundException(request.parentId()));
+                .findById(request.getParentId())
+                .orElseThrow(() -> new ParentNotFoundException(request.getParentId()));
 
         AccountGroup createSubGroupRequest = new AccountGroup(
-                request.name(),
+                request.getName(),
                 accountGroup.getId(),
                 accountGroup.getNature(),
                 accountGroup.getBehaviour(),
@@ -38,13 +38,15 @@ public class AccountGroupService {
         );
 
         AccountGroup subGroup = accountGroupRepository.save(createSubGroupRequest);
-        return new AccountGroupResponse(subGroup.getId(), subGroup.getName());
+        return new AccountGroupResponse()
+                .id(subGroup.getId())
+                .name(subGroup.getName());
     }
 
     @ShopContextTransactional
     public List<AccountGroupResponse> listAccountGroups() {
         return StreamSupport.stream(accountGroupRepository.findAll().spliterator(), false)
-                .map(g -> new AccountGroupResponse(g.getId(), g.getName()))
+                .map(group -> new AccountGroupResponse().id(group.getId()).name(group.getName()))
                 .toList();
     }
 }

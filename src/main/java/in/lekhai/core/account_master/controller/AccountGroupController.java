@@ -1,11 +1,14 @@
 package in.lekhai.core.account_master.controller;
 
+import in.lekhai.accountmaster.accountgroup.api.AccountGroupApi;
+import in.lekhai.accountmaster.accountgroup.dto.AccountGroupRequest;
+import in.lekhai.accountmaster.accountgroup.dto.AccountGroupResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
-import in.lekhai.common.Result;
-import in.lekhai.core.account_master.dto.AccountGroupRequest;
-import in.lekhai.core.account_master.dto.AccountGroupResponse;
 import in.lekhai.core.account_master.service.AccountGroupService;
+import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,26 +16,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/account-group")
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
-public class AccountGroupController {
+public class AccountGroupController implements AccountGroupApi {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final AccountGroupService accountGroupService;
 
-    public AccountGroupController(AccountGroupService accountGroupService) {
+    public AccountGroupController(
+            AccountGroupService accountGroupService
+    ) {
         this.accountGroupService = accountGroupService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Result<AccountGroupResponse>> createAccountGroup(
-            @RequestBody @Valid AccountGroupRequest request) {
+    @Override
+    public ResponseEntity<AccountGroupResponse> createAccountGroup(@Valid AccountGroupRequest request) {
+        log.info("Got a request to create account group {} :: {}", ShopContext.getShopCode(), request.toString());
         AccountGroupResponse response = accountGroupService.createAccountGroup(request);
-        return ResponseEntity.ok(Result.success(response));
+        log.info("Successfully created account group {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/list-all")
-    public ResponseEntity<Result<List<AccountGroupResponse>>> listAccountGroups() {
+    @Override
+    public ResponseEntity<List<AccountGroupResponse>> listAccountGroups() {
+        log.info("Got a request to list all account groups {}", ShopContext.getShopCode());
         List<AccountGroupResponse> response = accountGroupService.listAccountGroups();
-        return ResponseEntity.ok(Result.success(response));
+        log.info("Successfully listed all account groups {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
     }
 }
