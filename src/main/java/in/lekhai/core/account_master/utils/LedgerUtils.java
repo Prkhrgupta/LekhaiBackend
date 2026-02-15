@@ -1,8 +1,7 @@
 package in.lekhai.core.account_master.utils;
 
+import in.lekhai.accountmaster.ledger.dto.*;
 import in.lekhai.core.account_master.domain.*;
-import in.lekhai.core.account_master.dto.ledger.LedgerRequest;
-import in.lekhai.core.account_master.dto.ledger.LedgerResponse;
 
 public class LedgerUtils {
 
@@ -11,122 +10,133 @@ public class LedgerUtils {
 
         public static Ledger createLedgerObject(LedgerRequest request) {
                 return new Ledger(
-                                request.name(),
-                                request.legalName(),
-                                request.accountGroup(),
-                                request.openingBalance(),
-                                request.accountEntryType(),
-                                request.creditLimit(),
-                                request.areaId(),
-                                request.brokerId(),
-                                request.transportId(),
-                                request.pan(),
-                                request.aadhaarNumber(),
-                                request.tanNumber(),
-                                request.email(),
-                                request.msmeNumber(),
-                                request.contactPerson(),
-                                request.phoneNumber(),
-                                request.gstInNumber(),
-                                request.location());
+                                request.getName(),
+                                request.getLegalName(),
+                                request.getAccountGroup(),
+                                request.getOpeningBalance(),
+                                request.getAccountEntryType(),
+                                request.getCreditLimit(),
+                                request.getAreaId(),
+                                request.getBrokerId(),
+                                request.getTransportId(),
+                                request.getPan(),
+                                request.getAadhaarNumber(),
+                                request.getTanNumber(),
+                                request.getEmail(),
+                                request.getMsmeNumber(),
+                                request.getContactPerson(),
+                                request.getPhoneNumber(),
+                                request.getGstInNumber(),
+                                request.getLocation());
         }
 
-        public static GstInDetails createGstInDetailsObject(LedgerRequest.GstInDetail request, Long ledgerId) {
+        public static GstInDetails createGstInDetailsObject(GstInDetail request, Long ledgerId) {
                 return new GstInDetails(
                                 ledgerId,
-                                request.registrationType(),
-                                request.isEcommerceOperator(),
-                                request.gstInUin(),
-                                request.partyType());
+                                request.getRegistrationType(),
+                                request.getIsECommerceOperator(),
+                                request.getGstInUin(),
+                                request.getPartyType());
         }
 
         public static Address createAddressObject(LedgerRequest request, Long ledgerId) {
                 return new Address(
                                 ledgerId,
-                                request.mailTo() != null ? request.mailTo().lineOne() : null,
-                                request.mailTo() != null ? request.mailTo().lineTwo() : null,
-                                request.mailTo() != null ? request.mailTo().lineThree() : null,
-                                request.pinCode(),
-                                request.distance(),
-                                request.areaId(),
-                                request.stateAndCode(),
-                                request.city());
+                                request.getMailTo() != null ? request.getMailTo().getMailToLine1() : null,
+                                request.getMailTo() != null ? request.getMailTo().getMailToLine2() : null,
+                                request.getMailTo() != null ? request.getMailTo().getMailToLine3() : null,
+                                request.getPinCode(),
+                                request.getDistance(),
+                                request.getAreaId(),
+                                request.getStateAndCode(),
+                                request.getCity());
         }
 
         public static void updateLedgerFromRequest(Ledger ledger, LedgerRequest request) {
-                ledger.setName(request.name());
-                ledger.setLegalName(request.legalName());
-                ledger.setAccountGroupId(request.accountGroup());
-                ledger.setOpeningBalance(request.openingBalance());
-                ledger.setOpeningBalanceType(request.accountEntryType());
-                ledger.setCreditLimit(request.creditLimit());
-                ledger.setDefaultAreaId(request.areaId());
-                ledger.setDefaultBrokerId(request.brokerId());
-                ledger.setDefaultTransportId(request.transportId());
-                ledger.setPan(request.pan());
-                ledger.setAadhaar(request.aadhaarNumber());
-                ledger.setTan(request.tanNumber());
-                ledger.setEmail(request.email());
-                ledger.setMsme(request.msmeNumber());
-                ledger.setContactPerson(request.contactPerson());
-                ledger.setPhoneNumber(request.phoneNumber());
-                ledger.setGstInNumber(request.gstInNumber());
-                ledger.setLocation(request.location());
+                ledger.setName(request.getName());
+                ledger.setLegalName(request.getLegalName());
+                ledger.setAccountGroupId(request.getAccountGroup());
+                ledger.setOpeningBalance(request.getOpeningBalance());
+                ledger.setOpeningBalanceType(request.getAccountEntryType());
+                ledger.setCreditLimit(request.getCreditLimit());
+                ledger.setDefaultAreaId(request.getAreaId());
+                ledger.setDefaultBrokerId(request.getBrokerId());
+                ledger.setDefaultTransportId(request.getTransportId());
+                ledger.setPan(request.getPan());
+                ledger.setAadhaar(request.getAadhaarNumber());
+                ledger.setTan(request.getTanNumber());
+                ledger.setEmail(request.getEmail());
+                ledger.setMsme(request.getMsmeNumber());
+                ledger.setContactPerson(request.getContactPerson());
+                ledger.setPhoneNumber(request.getPhoneNumber());
+                ledger.setGstInNumber(request.getGstInNumber());
+                ledger.setLocation(request.getLocation());
         }
 
         public static LedgerResponse mapToResponse(
-                        Ledger ledger,
-                        Area area,
-                        Broker broker,
-                        Transport transport,
-                        AccountGroup accountGroup,
-                        GstInDetails gstInDetails,
-                        Address address) {
-                return new LedgerResponse(
-                                ledger.getId(),
-                                ledger.getName(),
-                                ledger.getLegalName(),
-                                accountGroup != null ? accountGroup.getName() : null,
-                                ledger.getOpeningBalance(),
-                                ledger.getOpeningBalanceType(),
-                                ledger.getCreditLimit(),
-                                ledger.getPan(),
-                                ledger.getAadhaar(),
-                                ledger.getTan(),
-                                ledger.getEmail(),
-                                ledger.getMsme(),
-                                ledger.getContactPerson(),
-                                ledger.getPhoneNumber(),
-                                ledger.getGstInNumber(),
-                                ledger.getLocation(),
-                                ledger.getActive(),
-                                area != null ? new LedgerResponse.Area(area.getId(), area.getAreaName(),
-                                                area.getStateCode()) : null,
-                                broker != null ? new LedgerResponse.Broker(broker.getId(), broker.getName(),
-                                                broker.getPhone()) : null,
-                                transport != null
-                                                ? new LedgerResponse.Transport(transport.getId(), transport.getName(),
-                                                                transport.getPhone(),
-                                                                transport.getGstNo())
-                                                : null,
-                                gstInDetails != null
-                                                ? new LedgerResponse.GstInDetailResponse(
-                                                                gstInDetails.getRegistrationType(),
-                                                                gstInDetails.getIsEcommerceOperator(),
-                                                                gstInDetails.getGstinOrUin(),
-                                                                gstInDetails.getPartyType())
-                                                : null,
-                                address != null
-                                                ? new LedgerResponse.LedgerAddress(
-                                                                address.getAddressLine1(),
-                                                                address.getAddressLine2(),
-                                                                address.getAddressLine3(),
-                                                                address.getCity(),
-                                                                address.getStateId(),
-                                                                address.getAreaId(),
-                                                                address.getPincode(),
-                                                                address.getDistance())
-                                                : null,
-                                ledger.getCreatedAt());
+                Ledger ledger,
+                Area area,
+                Broker broker,
+                Transport transport,
+                AccountGroup accountGroup,
+                GstInDetails gstInDetails,
+                Address address
+        ) {
+                return new LedgerResponse()
+                        .id(ledger.getId())
+                        .name(ledger.getName())
+                        .legalName(ledger.getLegalName())
+                        .accountGroupName(accountGroup != null ? accountGroup.getName() : null)
+                        .openingBalance(ledger.getOpeningBalance())
+                        .openingBalanceType(ledger.getOpeningBalanceType())
+                        .creditLimit(ledger.getCreditLimit())
+                        .pan(ledger.getPan())
+                        .aadhaar(ledger.getAadhaar())
+                        .tan(ledger.getTan())
+                        .email(ledger.getEmail())
+                        .msme(ledger.getMsme())
+                        .contactPerson(ledger.getContactPerson())
+                        .phoneNumber(ledger.getPhoneNumber())
+                        .gstInNumber(ledger.getGstInNumber())
+                        .location(ledger.getLocation())
+                        .isActive(ledger.getActive())
+                        .area(area != null
+                                ? new LedgerArea()
+                                .id(area.getId())
+                                .name(area.getAreaName())
+                                .stateCode(area.getStateCode())
+                                : null)
+                        .broker(broker != null
+                                ? new LedgerBroker()
+                                .id(broker.getId())
+                                .name(broker.getName())
+                                .phone(broker.getPhone())
+                                : null)
+                        .transport(transport != null
+                                ? new LedgerTransport()
+                                .id(transport.getId())
+                                .name(transport.getName())
+                                .phone(transport.getPhone())
+                                .gst(transport.getGstNo())
+                                : null)
+                        .gstinDetails(gstInDetails != null
+                                ? new GstInDetailResponse()
+                                .registrationType(gstInDetails.getRegistrationType())
+                                .isECommerceOperator(gstInDetails.getIsEcommerceOperator())
+                                .gstInUin(gstInDetails.getGstinOrUin())
+                                .partyType(gstInDetails.getPartyType())
+                                : null)
+                        .address(address != null
+                                ? new LedgerAddress()
+                                .addressLine1(address.getAddressLine1())
+                                .addressLine2(address.getAddressLine2())
+                                .addressLine3(address.getAddressLine3())
+                                .city(address.getCity())
+                                .stateId(address.getStateId())
+                                .areaId(address.getAreaId())
+                                .pincode(address.getPincode())
+                                .distance(address.getDistance())
+                                : null)
+                        .createdAt(DateUtils.getCreatedAt(ledger.getCreatedAt()));
         }
 }

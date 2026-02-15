@@ -31,6 +31,13 @@ public class Transport {
         this.gstNo = gstNo;
     }
 
+    public Transport(Long id, String name, String phone, String gstNo) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.gstNo = gstNo;
+    }
+
     public Long getId() {
         return id;
     }

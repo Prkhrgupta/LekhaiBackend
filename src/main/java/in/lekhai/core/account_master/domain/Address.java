@@ -3,6 +3,8 @@ package in.lekhai.core.account_master.domain;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
+
 @Table("ledger_address")
 public class Address {
     @Id
@@ -15,7 +17,7 @@ public class Address {
     String stateId;
     Long areaId;
     String pincode;
-    Double distance;
+    BigDecimal distance;
 
     public Address(
             Long ledgerId,
@@ -23,7 +25,7 @@ public class Address {
             String addressLine2,
             String addressLine3,
             String pincode,
-            Double distance,
+            BigDecimal distance,
             Long areaId,
             String stateId,
             String city
@@ -47,11 +49,11 @@ public class Address {
         this.pincode = pincode;
     }
 
-    public Double getDistance() {
+    public BigDecimal getDistance() {
         return distance;
     }
 
-    public void setDistance(Double distance) {
+    public void setDistance(BigDecimal distance) {
         this.distance = distance;
     }
 

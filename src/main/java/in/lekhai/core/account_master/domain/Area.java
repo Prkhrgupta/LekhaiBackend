@@ -29,6 +29,12 @@ public class Area {
         this.stateCode = stateCode;
     }
 
+    public Area(Long id, String areaName, String stateCode) {
+        this.id = id;
+        this.areaName = areaName;
+        this.stateCode = stateCode;
+    }
+
     public Long getId() {
         return id;
     }
