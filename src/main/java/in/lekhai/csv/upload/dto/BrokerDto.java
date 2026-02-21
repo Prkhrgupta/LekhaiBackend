@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class BrokerDto {
 
     @JsonProperty("code")
-    private Long brokerCode;
+    private Integer brokerCode;
 
     @JsonProperty("name")
     private String brokerName;
@@ -13,7 +13,7 @@ public class BrokerDto {
     public BrokerDto() {
     }
 
-    public BrokerDto(String brokerName, Long brokerCode) {
+    public BrokerDto(String brokerName, Integer brokerCode) {
         this.brokerName = brokerName;
         this.brokerCode = brokerCode;
     }
@@ -26,11 +26,11 @@ public class BrokerDto {
         this.brokerName = brokerName;
     }
 
-    public Long getBrokerCode() {
+    public Integer getBrokerCode() {
         return brokerCode;
     }
 
-    public void setBrokerCode(Long brokerCode) {
+    public void setBrokerCode(Integer brokerCode) {
         this.brokerCode = brokerCode;
     }
 }
