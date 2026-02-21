@@ -15,6 +15,7 @@ public class Transport {
     private String name;
     private String phone;
     private String gstNo;
+    private Integer csvId;
 
     @CreatedDate
     private Instant createdAt;
@@ -23,6 +24,12 @@ public class Transport {
     private Instant updatedAt;
 
     public Transport() {
+    }
+
+    public Transport(String name, String gstNo, Integer csvId) {
+        this.name = name;
+        this.gstNo = gstNo;
+        this.csvId = csvId;
     }
 
     public Transport(String name, String phone, String gstNo) {

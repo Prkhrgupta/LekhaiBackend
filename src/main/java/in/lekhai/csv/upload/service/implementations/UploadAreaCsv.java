@@ -60,7 +60,7 @@ public class UploadAreaCsv extends CsvUploadService<AreaCsvDto, Area> {
 
     @Override
     protected ItemProcessor<AreaCsvDto, Area> createProcessor() {
-        return dto -> new Area(dto.getAreaName(), null);
+        return dto -> new Area(dto.getAreaName(), dto.getAreaCode());
     }
 
     @Override

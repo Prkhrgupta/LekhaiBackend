@@ -4,23 +4,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AreaCsvDto {
     @JsonProperty("code")
-    private Long areaCode;
+    private Integer areaCode;
     @JsonProperty("name")
     private String areaName;
 
     public AreaCsvDto() {
     }
 
-    public AreaCsvDto(Long areaCode, String areaName) {
+    public AreaCsvDto(Integer areaCode, String areaName) {
         this.areaCode = areaCode;
         this.areaName = areaName;
     }
 
-    public Long getAreaCode() {
+    public Integer getAreaCode() {
         return areaCode;
     }
 
-    public void setAreaCode(Long areaCode) {
+    public void setAreaCode(Integer areaCode) {
         this.areaCode = areaCode;
     }
 

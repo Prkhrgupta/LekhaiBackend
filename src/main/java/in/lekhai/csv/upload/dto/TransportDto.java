@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TransportDto {
     @JsonProperty("code")
-    private Long transportCode;
+    private Integer transportCode;
 
     @JsonProperty("name")
     private String transportName;
@@ -18,18 +18,18 @@ public class TransportDto {
     public TransportDto() {
     }
 
-    public TransportDto(Long transportCode, String transportName, String transportAddress, String gstNumber) {
+    public TransportDto(Integer transportCode, String transportName, String transportAddress, String gstNumber) {
         this.transportCode = transportCode;
         this.transportName = transportName;
         this.transportAddress = transportAddress;
         this.gstNumber = gstNumber;
     }
 
-    public Long getTransportCode() {
+    public Integer getTransportCode() {
         return transportCode;
     }
 
-    public void setTransportCode(Long transportCode) {
+    public void setTransportCode(Integer transportCode) {
         this.transportCode = transportCode;
     }
 
