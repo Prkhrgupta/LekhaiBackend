@@ -1,7 +1,7 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.accountmaster.state.dto.StateResponse;
 import in.lekhai.core.account_master.domain.State;
-import in.lekhai.core.account_master.dto.StateResponse;
 import in.lekhai.core.account_master.repository.StateRepository;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +23,8 @@ public class StateService {
     }
 
     private StateResponse mapToResponse(State state) {
-        return new StateResponse(state.getStateCode(), state.getStateName());
+        return new StateResponse()
+                .code(state.getStateCode())
+                .name(state.getStateName());
     }
 }

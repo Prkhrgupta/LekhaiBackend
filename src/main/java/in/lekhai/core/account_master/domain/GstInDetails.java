@@ -1,7 +1,7 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.common.domain.ShopAwareEntity;
-import in.lekhai.core.account_master.dto.ledger.GstInRegistration;
+import in.lekhai.accountmaster.ledger.dto.PartyType;
+import in.lekhai.accountmaster.ledger.dto.RegistrationType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,10 +14,10 @@ public class GstInDetails {
     @Id
     private Long id;
     private Long ledgerId;
-    private GstInRegistration.RegistrationType registrationType;
+    private RegistrationType registrationType;
     private Boolean isEcommerceOperator;
     private String gstinOrUin;
-    private GstInRegistration.PartyType partyType;
+    private PartyType partyType;
 
     @CreatedDate
     private Instant createdAt;
@@ -27,10 +27,10 @@ public class GstInDetails {
 
     public GstInDetails(
             Long ledgerId,
-            GstInRegistration.RegistrationType registrationType,
+            RegistrationType registrationType,
             Boolean isEcommerceOperator,
             String gstinOrUin,
-            GstInRegistration.PartyType partyType) {
+            PartyType partyType) {
         this.ledgerId = ledgerId;
         this.registrationType = registrationType;
         this.isEcommerceOperator = isEcommerceOperator;
@@ -54,11 +54,11 @@ public class GstInDetails {
         this.ledgerId = ledgerId;
     }
 
-    public GstInRegistration.RegistrationType getRegistrationType() {
+    public RegistrationType getRegistrationType() {
         return registrationType;
     }
 
-    public void setRegistrationType(GstInRegistration.RegistrationType registrationType) {
+    public void setRegistrationType(RegistrationType registrationType) {
         this.registrationType = registrationType;
     }
 
@@ -78,11 +78,11 @@ public class GstInDetails {
         this.gstinOrUin = gstinOrUin;
     }
 
-    public GstInRegistration.PartyType getPartyType() {
+    public PartyType getPartyType() {
         return partyType;
     }
 
-    public void setPartyType(GstInRegistration.PartyType partyType) {
+    public void setPartyType(PartyType partyType) {
         this.partyType = partyType;
     }
 

@@ -1,9 +1,10 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.accountmaster.area.dto.AreaRequest;
+import in.lekhai.accountmaster.area.dto.AreaResponse;
 import in.lekhai.core.account_master.domain.Area;
-import in.lekhai.core.account_master.dto.AreaRequest;
-import in.lekhai.core.account_master.dto.AreaResponse;
 import in.lekhai.core.account_master.repository.AreaRepository;
+import in.lekhai.core.account_master.utils.DateUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,8 @@ public class AreaService {
     @ShopContextTransactional
     public AreaResponse createArea(AreaRequest request) {
         Area area = new Area(
-                request.areaName(),
-                request.stateCode());
+                request.getAreaName(),
+                request.getStateCode());
         Area saved = areaRepository.save(area);
         return mapToResponse(saved);
     }
@@ -36,10 +37,10 @@ public class AreaService {
     }
 
     private AreaResponse mapToResponse(Area area) {
-        return new AreaResponse(
-                area.getId(),
-                area.getAreaName(),
-                area.getStateCode(),
-                area.getCreatedAt());
+        return new AreaResponse()
+                .id(area.getId())
+                .areaName(area.getAreaName())
+                .stateCode(area.getStateCode())
+                .createdAt(DateUtils.getCreatedAt(area.getCreatedAt()));
     }
 }

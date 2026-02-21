@@ -28,6 +28,12 @@ public class Broker {
         this.phone = phone;
     }
 
+    public Broker(Long id, String name, String phone) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+    }
+
     public Long getId() {
         return id;
     }
