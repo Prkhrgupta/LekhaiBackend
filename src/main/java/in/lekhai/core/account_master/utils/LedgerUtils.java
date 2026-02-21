@@ -27,7 +27,8 @@ public class LedgerUtils {
                                 request.getContactPerson(),
                                 request.getPhoneNumber(),
                                 request.getGstInNumber(),
-                                request.getLocation());
+                                request.getLocation()
+                );
         }
 
         public static GstInDetails createGstInDetailsObject(GstInDetail request, Long ledgerId) {
@@ -36,7 +37,8 @@ public class LedgerUtils {
                                 request.getRegistrationType(),
                                 request.getIsECommerceOperator(),
                                 request.getGstInUin(),
-                                request.getPartyType());
+                                request.getPartyType()
+                );
         }
 
         public static Address createAddressObject(LedgerRequest request, Long ledgerId) {
@@ -49,7 +51,8 @@ public class LedgerUtils {
                                 request.getDistance(),
                                 request.getAreaId(),
                                 request.getStateAndCode(),
-                                request.getCity());
+                                request.getCity()
+                );
         }
 
         public static void updateLedgerFromRequest(Ledger ledger, LedgerRequest request) {

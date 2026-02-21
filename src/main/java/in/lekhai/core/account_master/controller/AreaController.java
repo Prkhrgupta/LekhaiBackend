@@ -28,7 +28,7 @@ public class AreaController implements AreaApi {
 
     @Override
     public ResponseEntity<AreaResponse> createArea(@Valid AreaRequest request) {
-        log.info("Got a request to create are {} :: {}", ShopContext.getShopCode(), request.toString());
+        log.info("Got a request to create area {} :: {}", ShopContext.getShopCode(), request.toString());
         AreaResponse response = areaService.createArea(request);
         log.info("Successfully created area {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);

@@ -118,7 +118,8 @@ public class LedgerService {
                                 .findByLedgerId(ledger.getId())
                                 .orElseGet(() -> new Address(
                                         ledger.getId(),
-                                        null, null, null, null, null, null, null, null
+                                        null, null, null, null,
+                                        null, null, null, null
                                 ));
 
                         address.setAddressLine1(request.getMailTo().getMailToLine1());
