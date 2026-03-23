@@ -1,9 +1,10 @@
 package in.lekhai.core.account_master.controller;
 
-import in.lekhai.accountmaster.ledger.api.LedgerApi;
-import in.lekhai.accountmaster.ledger.dto.LedgerRequest;
-import in.lekhai.accountmaster.ledger.dto.LedgerResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
+import in.lekhai.contract.api.LedgerApi;
+import in.lekhai.contract.model.LedgerRequest;
+import in.lekhai.contract.model.LedgerResponse;
+import in.lekhai.contract.model.LedgerSummaryResponse;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -11,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -42,6 +43,11 @@ public class LedgerController implements LedgerApi {
         LedgerResponse response = ledgerService.getLedgerById(id);
         log.info("Successfully fetched ledger {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries() {
+        return null;
     }
 
     @Override

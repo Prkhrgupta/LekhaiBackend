@@ -1,8 +1,7 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.*;
-import in.lekhai.accountmaster.ledger.dto.LedgerRequest;
-import in.lekhai.accountmaster.ledger.dto.LedgerResponse;
 import in.lekhai.core.account_master.repository.*;
 import in.lekhai.core.account_master.utils.LedgerUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
@@ -10,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -126,7 +126,7 @@ public class LedgerService {
                         address.setAddressLine2(request.getMailTo().getMailToLine2());
                         address.setAddressLine3(request.getMailTo().getMailToLine3());
                         address.setPincode(request.getPinCode());
-                        address.setDistance(request.getDistance());
+                        address.setDistance(BigDecimal.valueOf(request.getDistance()));
                         address.setAreaId(request.getAreaId());
                         address.setStateId(request.getStateAndCode());
                         address.setCity(request.getCity());
@@ -215,43 +215,56 @@ public class LedgerService {
                                 .toList();
         }
 
-//        @ShopContextTransactional
-//        public LedgerSummaryResponse listLedgerSummaries() {
-//                List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
-//                Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-//                                .collect(Collectors.toMap(Area::getId, Area::getAreaName));
-//                Map<Long, String> accountGroups = StreamSupport
-//                                .stream(accountGroupRepository.findAll().spliterator(), false)
-//                                .collect(Collectors.toMap(AccountGroup::getId, AccountGroup::getName));
-//                Map<Long, String> ledgerToStateId = StreamSupport
-//                                .stream(addressRepository.findAll().spliterator(), false)
-//                                .filter(address -> address.getLedgerId() != null)
-//                                .filter(address -> address.getStateId() != null)
-//                                .collect(Collectors.toMap(Address::getLedgerId, Address::getStateId,
-//                                                (a, b) -> a));
-//                Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
-//                                .collect(Collectors.toMap(State::getStateCode, State::getStateName));
-//                Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
-//                                .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
-//
-//                List<LedgerSummaryResponse.Column> columns = List.of(
-//                                new LedgerSummaryResponse.Column("ID", "number", 80),
-//                                new LedgerSummaryResponse.Column("Name", "text", 150),
-//                                new LedgerSummaryResponse.Column("State", "text", 120),
-//                                new LedgerSummaryResponse.Column("Area", "text", 120),
-//                                new LedgerSummaryResponse.Column("AccountGroup", "text", 160),
-//                                new LedgerSummaryResponse.Column("GSTIN", "text", 150));
-//
-//                List<LedgerSummaryResponse.Item> data = ledgers.stream()
-//                                .map(ledger -> new LedgerSummaryResponse.Item(
-//                                                ledger.getId(),
-//                                                ledger.getName(),
-//                                                states.getOrDefault(ledgerToStateId.get(ledger.getId()), ""),
-//                                                areas.getOrDefault(ledger.getDefaultAreaId(), ""),
-//                                                accountGroups.getOrDefault(ledger.getAccountGroupId(), ""),
-//                                                gstinMap.getOrDefault(ledger.getId(), "")))
-//                                .toList();
-//
-//                return new LedgerSummaryResponse(columns, data);
-//        }
+        @ShopContextTransactional
+        public LedgerSummaryResponse listLedgerSummaries() {
+                List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
+                Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(Area::getId, Area::getAreaName));
+                Map<Long, String> accountGroups = StreamSupport
+                                .stream(accountGroupRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(AccountGroup::getId, AccountGroup::getName));
+                Map<Long, String> ledgerToStateId = StreamSupport
+                                .stream(addressRepository.findAll().spliterator(), false)
+                                .filter(address -> address.getLedgerId() != null)
+                                .filter(address -> address.getStateId() != null)
+                                .collect(Collectors.toMap(Address::getLedgerId, Address::getStateId,
+                                                (a, b) -> a));
+                Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(State::getStateCode, State::getStateName));
+                Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
+                                .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
+
+            List<LedgerSummaryColumn> columns = List.of(
+                    new LedgerSummaryColumn().name("ID")
+                            .type("number")
+                            .width(80),
+                    new LedgerSummaryColumn().name("Name")
+                            .type("text")
+                            .width(150),
+                    new LedgerSummaryColumn().name("State")
+                            .type("text")
+                            .width(120),
+                    new LedgerSummaryColumn().name("Area")
+                            .type("text")
+                            .width(120),
+                    new LedgerSummaryColumn().name("AccountGroup")
+                            .type("text")
+                            .width(160),
+                    new LedgerSummaryColumn().name("GSTIN")
+                            .type("text")
+                            .width(150)
+            );
+
+            List<LedgerSummaryItem> data = ledgers.stream()
+                    .map(ledger -> new LedgerSummaryItem()
+                            .id(ledger.getId())
+                            .name(ledger.getName())
+                            .state(states.getOrDefault(ledgerToStateId.get(ledger.getId()), ""))
+                            .area(areas.getOrDefault(ledger.getDefaultAreaId(), ""))
+                            .accountGroup(accountGroups.getOrDefault(ledger.getAccountGroupId(), ""))
+                            .gstin(gstinMap.getOrDefault(ledger.getId(), ""))
+                    ).toList();
+
+                return new LedgerSummaryResponse().columns(columns).data(data);
+        }
 }

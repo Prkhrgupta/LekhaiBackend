@@ -1,7 +1,9 @@
 package in.lekhai.core.account_master.utils;
 
-import in.lekhai.accountmaster.ledger.dto.*;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.*;
+
+import java.math.BigDecimal;
 
 public class LedgerUtils {
 
@@ -48,7 +50,7 @@ public class LedgerUtils {
                                 request.getMailTo() != null ? request.getMailTo().getMailToLine2() : null,
                                 request.getMailTo() != null ? request.getMailTo().getMailToLine3() : null,
                                 request.getPinCode(),
-                                request.getDistance(),
+                                BigDecimal.valueOf(request.getDistance()),
                                 request.getAreaId(),
                                 request.getStateAndCode(),
                                 request.getCity()

@@ -1,10 +1,9 @@
 package in.lekhai.core.account_master.controller;
 
-import in.lekhai.accountmaster.transport.api.TransportApi;
-import in.lekhai.accountmaster.transport.dto.TransportRequest;
-import in.lekhai.accountmaster.transport.dto.TransportResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
-import in.lekhai.common.Result;
+import in.lekhai.contract.api.TransportApi;
+import in.lekhai.contract.model.TransportRequest;
+import in.lekhai.contract.model.TransportResponse;
 import in.lekhai.core.account_master.service.TransportService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -12,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.accountmaster.ledger.dto.PartyType;
-import in.lekhai.accountmaster.ledger.dto.RegistrationType;
+import in.lekhai.contract.model.PartyType;
+import in.lekhai.contract.model.RegistrationType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
