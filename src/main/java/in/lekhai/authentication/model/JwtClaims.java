@@ -42,10 +42,10 @@ public record JwtClaims(
     private static Integer parseTenant(Jwt token) {
         Object tenantObj = token.getClaim(SHOP_CODE);
         if (tenantObj instanceof Number) {
-//            if(tenantObj.equals(-1)) return null; // SUPER ADMIN
             return ((Number) tenantObj).intValue();
-        } else if (Objects.isNull(tenantObj)) {
-            return 0; // REVIEW USED in initial request. could be wrong
+        }
+        else if (Objects.isNull(tenantObj)) {
+            return -1;
         }
         throw new InvalidShopTypeException(tenantObj.getClass().toString());
     }
