@@ -1,9 +1,9 @@
 package in.lekhai.core.account_master.controller;
 
-import in.lekhai.accountmaster.area.api.AreaApi;
-import in.lekhai.accountmaster.area.dto.AreaRequest;
-import in.lekhai.accountmaster.area.dto.AreaResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
+import in.lekhai.contract.api.AreaApi;
+import in.lekhai.contract.model.AreaRequest;
+import in.lekhai.contract.model.AreaResponse;
 import in.lekhai.core.account_master.service.AreaService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

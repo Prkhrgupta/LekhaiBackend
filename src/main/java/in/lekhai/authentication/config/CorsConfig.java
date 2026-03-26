@@ -16,8 +16,10 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:8085",
-                "https://lekhaiui.sitswiftcloud.in"
+                "http://localhost:8085", // Local frontend
+                "http://localhost:5050", // Local sandbox
+                "https://lekhaisbx.sitswiftcloud.in", // UAT sandbox
+                "https://lekhaiui.sitswiftcloud.in" // UAT frontend
         ));
 
         config.setAllowedMethods(List.of(

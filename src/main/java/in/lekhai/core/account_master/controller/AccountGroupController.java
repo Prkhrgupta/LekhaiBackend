@@ -1,9 +1,9 @@
 package in.lekhai.core.account_master.controller;
 
-import in.lekhai.accountmaster.accountgroup.api.AccountGroupApi;
-import in.lekhai.accountmaster.accountgroup.dto.AccountGroupRequest;
-import in.lekhai.accountmaster.accountgroup.dto.AccountGroupResponse;
 import in.lekhai.authentication.utils.SecurityExpressions;
+import in.lekhai.contract.api.AccountGroupApi;
+import in.lekhai.contract.model.AccountGroupRequest;
+import in.lekhai.contract.model.AccountGroupResponse;
 import in.lekhai.core.account_master.service.AccountGroupService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class AccountGroupController implements AccountGroupApi {
     }
 
     @Override
-    public ResponseEntity<List<AccountGroupResponse>> listAccountGroups() {
+    public ResponseEntity<List<AccountGroupResponse>> listAllAccountGroups() {
         log.info("Got a request to list all account groups {}", ShopContext.getShopCode());
         List<AccountGroupResponse> response = accountGroupService.listAccountGroups();
         log.info("Successfully listed all account groups {}", ShopContext.getShopCode());

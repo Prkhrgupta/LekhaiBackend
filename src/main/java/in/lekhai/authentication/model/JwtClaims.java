@@ -5,6 +5,8 @@ import in.lekhai.error.controller.role.exception.InvalidRoleException;
 import in.lekhai.error.controller.shop.exception.InvalidShopTypeException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.util.Objects;
+
 import static in.lekhai.common.JwtConstants.*;
 
 public record JwtClaims(
@@ -20,6 +22,9 @@ public record JwtClaims(
                 parseTenant(token),
                 token.getClaimAsString(SUBJECT)
         );
+    }
+    public static String getUsername(Jwt token) {
+        return token.getClaimAsString(SUBJECT);
     }
 
     private static Roles parseRole(Jwt token) {
@@ -37,8 +42,10 @@ public record JwtClaims(
     private static Integer parseTenant(Jwt token) {
         Object tenantObj = token.getClaim(SHOP_CODE);
         if (tenantObj instanceof Number) {
-//            if(tenantObj.equals(-1)) return null; // SUPER ADMIN
             return ((Number) tenantObj).intValue();
+        }
+        else if (Objects.isNull(tenantObj)) {
+            return -1;
         }
         throw new InvalidShopTypeException(tenantObj.getClass().toString());
     }

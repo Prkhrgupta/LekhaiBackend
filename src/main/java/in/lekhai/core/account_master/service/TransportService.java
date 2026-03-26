@@ -1,7 +1,7 @@
 package in.lekhai.core.account_master.service;
 
-import in.lekhai.accountmaster.transport.dto.TransportRequest;
-import in.lekhai.accountmaster.transport.dto.TransportResponse;
+import in.lekhai.contract.model.TransportRequest;
+import in.lekhai.contract.model.TransportResponse;
 import in.lekhai.core.account_master.domain.Transport;
 import in.lekhai.core.account_master.repository.TransportRepository;
 import in.lekhai.core.account_master.utils.DateUtils;

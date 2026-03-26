@@ -1,18 +1,16 @@
 package in.lekhai.authentication.controller;
 
-import in.lekhai.authentication.dto.LoginResponse;
 import in.lekhai.authentication.service.JwtTokenService;
-import in.lekhai.common.Result;
+import in.lekhai.contract.api.AuthApi;
+import in.lekhai.contract.model.LoginResponse;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/lekhai")
-public class LoginController {
+public class LoginController implements AuthApi {
 
     private final JwtTokenService jwtTokenService;
 
@@ -22,16 +20,17 @@ public class LoginController {
         this.jwtTokenService = jwtTokenService;
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<Result<?>> generateToken(Authentication authentication) {
-        LoginResponse response = jwtTokenService.generateJwtToken(authentication);
-        return ResponseEntity.ok(Result.success(response));
+    @Override
+    public ResponseEntity<LoginResponse> login() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginResponse response = jwtTokenService.generateShopJwtToken(authentication);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/login/withShopCode")
-    public ResponseEntity<Result<?>> generateTokenWithShopCode(Authentication authentication,
-            @RequestHeader("shop-code") Integer shopCode) {
-        LoginResponse response = jwtTokenService.generateJwtToken(authentication, shopCode);
-        return ResponseEntity.ok(Result.success(response));
+    @Override
+    public ResponseEntity<LoginResponse> generateTokenForShopCode(@NotNull Integer shopCode) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginResponse response = jwtTokenService.generateShopJwtToken(authentication, shopCode);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,6 +1,6 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.accountmaster.ledger.dto.AccountEntryType;
+import in.lekhai.contract.model.AccountEntryType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;

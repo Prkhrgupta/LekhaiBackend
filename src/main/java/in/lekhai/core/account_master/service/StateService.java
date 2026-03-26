@@ -1,6 +1,6 @@
 package in.lekhai.core.account_master.service;
 
-import in.lekhai.accountmaster.state.dto.StateResponse;
+import in.lekhai.contract.model.StateResponse;
 import in.lekhai.core.account_master.domain.State;
 import in.lekhai.core.account_master.repository.StateRepository;
 import org.springframework.stereotype.Service;
