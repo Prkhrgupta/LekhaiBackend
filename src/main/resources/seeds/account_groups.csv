@@ -1,16 +1,45 @@
-name,parent_id,nature,behaviour,is_primary,shop_code
-Capital Account,,LIABILITY,CR,true,0
-Loans (Liability),,LIABILITY,CR,true,0
-Current Liabilities,,LIABILITY,CR,true,0
-Fixed Assets,,ASSET,DR,true,0
-Investments,,ASSET,DR,true,0
-Current Assets,,ASSET,DR,true,0
-Branch / Divisions,,LIABILITY,CR,true,0
-Suspense A/c,,LIABILITY,CR,true,0
-Sales Accounts,,INCOME,CR,true,0
-Purchase Accounts,,EXPENSE,DR,true,0
-Direct Incomes,,INCOME,CR,true,0
-Indirect Incomes,,INCOME,CR,true,0
-Direct Expenses,,EXPENSE,DR,true,0
-Indirect Expenses,,EXPENSE,DR,true,0
-Misc. Expenses (ASSET),,ASSET,DR,true,0
+account_group_name,parent_group_name,nature,behaviour
+Capital Account,,LIABILITY,CR
+Loans (Liability),,LIABILITY,CR
+Current Liabilities,,LIABILITY,CR
+Fixed Assets,,ASSET,DR
+Investments,,ASSET,DR
+Current Assets,,ASSET,DR
+Branch/Division,,ASSET,DR
+Misc. Expenses(Assets),,ASSET,DR
+Suspense A/c,,ASSET,DR
+Reserves & Surplus,Capital Account,,
+Bank OD/Ac,Loans (Liability),,
+Secured Loans,Loans (Liability),,
+Unsecured Loans,Loans (Liability),,
+Duties & Taxes,Current Liabilities,,
+Provisions,Current Liabilities,,
+Sundry Creditors,Current Liabilities,,
+Transport Name,Current Liabilities,,
+Sundry Creditors (Others),Current Liabilities,,
+Broker/Agent,Current Liabilities,,
+Loans & Advances (Asset),Current Liabilities,,
+Contractors,Current Liabilities,,
+Day Workers,Current Liabilities,,
+Sundry Creditors (Job Workers),Current Liabilities,,
+Cash in Hand,Current Assets,,
+Bank Accounts,Current Assets,,
+Deposits (Assets),Current Assets,,
+Loan & Advances,Current Assets,,
+Sundry Debtors,Current Assets,,
+Stock in Hand,Current Assets,,
+Sundry Debtors (Others),Current Assets,,
+Direct Incomes,,INCOME,CR
+Indirect Incomes,,INCOME,CR
+Direct Expenses,,EXPENSE,DR
+Indirect Expenses,,EXPENSE,DR
+Sales Account,Direct Incomes,,
+Purchase Account,Direct Expenses,,
+Stock Transfer to Branch,Direct Incomes,,
+Stock Received from Branch,Direct Expenses,,
+Stock Difference,Indirect Expenses,,
+Goods/Material Account,Direct Expenses,,
+Sales Promotion,Indirect Expenses,,
+Donar A/c,Loan & Advances,,
+Poorna Kalik Karyakartta,Loan & Advances,,
+Ansha Kalik Karyakartta,Loan & Advances,,

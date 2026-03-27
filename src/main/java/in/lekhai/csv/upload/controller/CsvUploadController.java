@@ -4,7 +4,6 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.common.Result;
 import in.lekhai.csv.upload.factory.CsvUploadFactory;
 import in.lekhai.csv.upload.model.CsvUploadTypes;
-import in.lekhai.csv.upload.service.CsvUploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParametersInvalidException;
@@ -14,17 +13,14 @@ import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api")
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class CsvUploadController {
 
