@@ -56,9 +56,6 @@ class JwtTokenServiceTest {
     @InjectMocks
     private JwtTokenService jwtTokenService;
 
-
-
-
     private Authentication authentication;
     private UserAccounts userAccount;
 
