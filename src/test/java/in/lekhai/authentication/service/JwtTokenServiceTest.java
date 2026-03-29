@@ -29,7 +29,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static in.lekhai.common.JwtConstants.SUBJECT;
+import org.mockito.ArgumentCaptor;
+import java.util.Map;
+
+import static in.lekhai.common.JwtConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -90,7 +93,18 @@ class JwtTokenServiceTest {
         assertTrue(response.getShopMenu() == null || response.getShopMenu().isEmpty()); // Based on implementation, shopMenu isn't set for SUPER_ADMIN
 
         verify(superAdminDetailsRepo, times(1)).findByUuid("test-uuid");
-        verify(jwtEncoder, times(1)).encode(any(JwtEncoderParameters.class));
+
+        ArgumentCaptor<JwtEncoderParameters> captor = ArgumentCaptor.forClass(JwtEncoderParameters.class);
+        verify(jwtEncoder, times(1)).encode(captor.capture());
+
+        Map<String, Object> claims = captor.getValue().getClaims().getClaims();
+        assertEquals(6, claims.size(), "Super Admin login token should have exactly 6 claims");
+        assertTrue(claims.containsKey("iss"), "Missing issuer claim");
+        assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
+        assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
+        assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
+        assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
+        assertTrue(claims.containsKey(UUID), "Missing uuid claim");
     }
 
     @Test
@@ -122,6 +136,19 @@ class JwtTokenServiceTest {
         assertEquals("Test Firm", response.getShopMenu().get(0).getName());
         assertEquals(12345, response.getShopMenu().get(0).getShopCode());
         assertEquals(ShopMenu.RoleEnum.SHOP_OWNER, response.getShopMenu().get(0).getRole());
+
+        ArgumentCaptor<JwtEncoderParameters> captor = ArgumentCaptor.forClass(JwtEncoderParameters.class);
+        verify(jwtEncoder, times(1)).encode(captor.capture());
+
+        Map<String, Object> claims = captor.getValue().getClaims().getClaims();
+        assertEquals(6, claims.size(), "User login token should have exactly 6 claims");
+        assertTrue(claims.containsKey("iss"), "Missing issuer claim");
+        assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
+        assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
+        assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
+        assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
+        assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertFalse(claims.containsKey(SHOP_CODE), "Login token must not contain shop_code");
     }
 
     @Test
@@ -183,6 +210,20 @@ class JwtTokenServiceTest {
         assertNotNull(response.getShopMenu());
         assertEquals(1, response.getShopMenu().size());
         assertEquals("Test Firm", response.getShopMenu().get(0).getName());
+
+        ArgumentCaptor<JwtEncoderParameters> captor = ArgumentCaptor.forClass(JwtEncoderParameters.class);
+        verify(jwtEncoder, times(1)).encode(captor.capture());
+
+        Map<String, Object> claims = captor.getValue().getClaims().getClaims();
+        assertEquals(7, claims.size(), "Shop token should have exactly 7 claims");
+        assertTrue(claims.containsKey("iss"), "Missing issuer claim");
+        assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
+        assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
+        assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
+        assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
+        assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertTrue(claims.containsKey(SHOP_CODE), "Missing shop_code claim");
+        assertEquals(12345, claims.get(SHOP_CODE));
     }
 
     @Test
