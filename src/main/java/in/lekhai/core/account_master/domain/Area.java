@@ -13,6 +13,7 @@ public class Area {
     private Long id;
     private String areaName;
     private String stateCode;
+    private Integer csvId = 0;
 //    private Integer shopCode;
 
     @CreatedDate
@@ -61,6 +62,14 @@ public class Area {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCsvId() {
+        return csvId;
+    }
+
+    public void setCsvId(Integer csvId) {
+        this.csvId = csvId;
     }
 
 //    public Integer getShopCode() {

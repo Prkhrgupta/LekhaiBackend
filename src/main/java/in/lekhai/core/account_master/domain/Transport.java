@@ -15,6 +15,7 @@ public class Transport {
     private String name;
     private String phone;
     private String gstNo;
+    private Integer csvId = 0;
 
     @CreatedDate
     private Instant createdAt;
@@ -68,5 +69,13 @@ public class Transport {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCsvId() {
+        return csvId;
+    }
+
+    public void setCsvId(Integer csvId) {
+        this.csvId = csvId;
     }
 }

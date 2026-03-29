@@ -13,6 +13,7 @@ public class Broker {
     private Long id;
     private String name;
     private String phone;
+    private Integer csvId = 0;
 
     @CreatedDate
     private Instant createdAt;
@@ -60,5 +61,13 @@ public class Broker {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCsvId() {
+        return csvId;
+    }
+
+    public void setCsvId(Integer csvId) {
+        this.csvId = csvId;
     }
 }
