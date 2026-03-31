@@ -19,7 +19,7 @@ public class LoginControllerIntegrationTest extends BaseIntegrationTest {
     void testAdminLogin_Success() throws Exception {
         // Admin credentials injected from application.yaml
         String adminUsername = "admin";
-        String adminPassword = "admin@lekxxhai.in";
+        String adminPassword = "admin@lekhai.in";
 
         mockMvc.perform(get("/login")
                 .with(httpBasic(adminUsername, adminPassword)))
