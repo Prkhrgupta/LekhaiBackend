@@ -1,0 +1,12 @@
+{
+    "firmName": "Sainath Saree Shop2",
+    "gstIn": "1",
+    "address": "Pune",
+    "isDefault": true,
+    "admin": {
+        "username": "sainath2",
+        "password": "password",
+        "category": "SAREE",
+        "name": "Sainath2"
+    }
+}
