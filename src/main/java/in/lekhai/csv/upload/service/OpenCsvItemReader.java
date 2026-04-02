@@ -2,6 +2,7 @@ package in.lekhai.csv.upload.service;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.exceptions.CsvException;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.core.io.Resource;
 
@@ -20,7 +21,13 @@ public class OpenCsvItemReader<T> implements ItemReader<T> {
                 .withType(type)
                 .withIgnoreLeadingWhiteSpace(true)
                 .withIgnoreEmptyLine(true)
+                .withThrowExceptions(false)
                 .build();
+
+        for (CsvException e : csvToBean.getCapturedExceptions()) {
+            System.out.println("Error at line: " + e.getLineNumber());
+            System.out.println("Error message: " + e.getMessage());
+        }
 
         //.withThrowExceptions(false)
 

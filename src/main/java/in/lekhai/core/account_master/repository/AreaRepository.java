@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface AreaRepository extends CrudRepository<Area, Long> {
-    Optional<Area> findByCsvId(Integer csvId);
+    Optional<Area> findBySitswiftCode(Integer sitswiftCode);
 }

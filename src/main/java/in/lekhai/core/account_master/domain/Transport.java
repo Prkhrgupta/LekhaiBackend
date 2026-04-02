@@ -1,6 +1,5 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.common.domain.ShopAwareEntity;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,7 +14,7 @@ public class Transport {
     private String name;
     private String phone;
     private String gstNo;
-    private Integer csvId;
+    private Integer sitswiftCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -26,10 +25,10 @@ public class Transport {
     public Transport() {
     }
 
-    public Transport(String name, String gstNo, Integer csvId) {
+    public Transport(String name, String gstNo, Integer sitswiftCode) {
         this.name = name;
         this.gstNo = gstNo;
-        this.csvId = csvId;
+        this.sitswiftCode = sitswiftCode;
     }
 
     public Transport(String name, String phone, String gstNo) {

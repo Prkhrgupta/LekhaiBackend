@@ -28,7 +28,7 @@ public class CorsConfig {
 
         config.setAllowedHeaders(List.of(
                 "Authorization",
-                "shop-code",
+                "shopcode",
                 "Content-Type"
         ));
 

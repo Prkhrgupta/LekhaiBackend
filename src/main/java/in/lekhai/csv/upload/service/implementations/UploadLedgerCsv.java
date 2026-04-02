@@ -20,6 +20,8 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
@@ -30,6 +32,9 @@ public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
     private final BrokerRepository brokerRepository;
     private final TransportRepository transportRepository;
     private final AccountGroupRepository accountGroupRepository;
+
+    private final Set<String> seenGstNumbers = new HashSet<>();
+
     protected UploadLedgerCsv(
             JobRepository jobRepository,
             ShopContextTransactionManager transactionManager,
@@ -64,26 +69,38 @@ public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
                     .map(AccountGroup::getId)
                     .orElseThrow(() -> new RuntimeException(String.format("no account group found with name %s", accountGroupName)));
 
-            Long brokerId = brokerRepository.findByCsvId(dto.getBrokerCsvId())
+            Long brokerId = brokerRepository.findBySitswiftCode(dto.getBrokerCsvId())
                     .map(Broker::getId)
                     .orElse(null);
 
-            Long areaId = areaRepository.findByCsvId(dto.getAreaCsvId())
+            Long areaId = areaRepository.findBySitswiftCode(dto.getAreaCsvId())
                     .map(Area::getId)
                     .orElse(null);
 
-            Long transportId = transportRepository.findByCsvId(dto.getTransportCsvId())
+            Long transportId = transportRepository.findBySitswiftCode(dto.getTransportCsvId())
                     .map(Transport::getId)
                     .orElse(null);
             String aadharNo = null;
-            String gstNo = null;
+            String gstNo = normalize(dto.getGstNo());
 
             if(!dto.getAadharNo().isBlank() && dto.getAadharNo().length() <= 12) {
                 aadharNo = dto.getAadharNo();
             }
 
-            if(!dto.getGstNo().isBlank() && dto.getGstNo().length() <= 15){
-                gstNo = dto.getGstNo();
+            String pan = dto.getPanNo().isEmpty() ? null : dto.getPanNo();
+
+            if (gstNo != null) {
+                // check within file (same chunk + previous chunks)
+                if (!seenGstNumbers.add(gstNo)) {
+                    log.warn("Skipping duplicate GST in file: {}", gstNo);
+                    return null;
+                }
+
+                // check DB
+                if (ledgerRepository.findByGstInNumber(gstNo).isPresent()) {
+                    log.warn("Skipping duplicate GST in DB: {}", gstNo);
+                    return null;
+                }
             }
 
             return new Ledger(
@@ -96,7 +113,7 @@ public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
                     areaId,
                     brokerId,
                     transportId,
-                    dto.getPanNo().isBlank() ? null : dto.getPanNo(),
+                    pan,
                     aadharNo,
                     null,
                     null,
@@ -118,5 +135,10 @@ public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
 
     public CsvUploadTypes getType() {
         return CsvUploadTypes.LEDGER;
+    }
+
+    private String normalize(String gst) {
+        if (gst == null || gst.isBlank()) return null;
+        return gst.trim().toUpperCase();
     }
 }

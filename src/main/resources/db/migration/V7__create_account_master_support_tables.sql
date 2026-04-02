@@ -19,7 +19,7 @@ CREATE TABLE area (
     area_name VARCHAR(100) NOT NULL,
     state_code CHAR(2),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -38,7 +38,7 @@ CREATE TABLE broker (
     name VARCHAR(150) NOT NULL,
     phone VARCHAR(15),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -54,7 +54,7 @@ CREATE TABLE transport (
     phone VARCHAR(15),
     gst_no VARCHAR(15),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -73,6 +73,8 @@ CREATE TABLE account_group (
     ),
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
+
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

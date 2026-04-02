@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface BrokerRepository extends CrudRepository<Broker, Long> {
-    Optional<Broker> findByCsvId(Integer csvId);
+    Optional<Broker> findBySitswiftCode(Integer sitswiftCode);
 }

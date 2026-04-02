@@ -13,7 +13,7 @@ public class Broker {
     private Long id;
     private String name;
     private String phone;
-    private Integer csvId;
+    private Integer sitswiftCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -24,9 +24,9 @@ public class Broker {
     public Broker() {
     }
 
-    public Broker(String name, Integer csvId) {
+    public Broker(String name, Integer sitswiftCode) {
         this.name = name;
-        this.csvId = csvId;
+        this.sitswiftCode = sitswiftCode;
     }
 
     public Broker(String name, String phone) {
@@ -68,11 +68,11 @@ public class Broker {
         this.updatedAt = updatedAt;
     }
 
-    public Integer getCsvId() {
-        return csvId;
+    public Integer getSitswiftCode() {
+        return sitswiftCode;
     }
 
-    public void setCsvId(Integer csvId) {
-        this.csvId = csvId;
+    public void setSitswiftCode(Integer sitswiftCode) {
+        this.sitswiftCode = sitswiftCode;
     }
 }
