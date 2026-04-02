@@ -13,6 +13,7 @@ public class Broker {
     private Long id;
     private String name;
     private String phone;
+    private Integer sitswiftCode;
 
     @CreatedDate
     private Instant createdAt;
@@ -21,6 +22,11 @@ public class Broker {
     private Instant updatedAt;
 
     public Broker() {
+    }
+
+    public Broker(String name, Integer sitswiftCode) {
+        this.name = name;
+        this.sitswiftCode = sitswiftCode;
     }
 
     public Broker(String name, String phone) {
@@ -60,5 +66,13 @@ public class Broker {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getSitswiftCode() {
+        return sitswiftCode;
+    }
+
+    public void setSitswiftCode(Integer sitswiftCode) {
+        this.sitswiftCode = sitswiftCode;
     }
 }

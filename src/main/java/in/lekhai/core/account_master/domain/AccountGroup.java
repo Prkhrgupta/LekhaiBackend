@@ -1,13 +1,12 @@
 package in.lekhai.core.account_master.domain;
 
-import in.lekhai.common.domain.ShopAwareEntity;
+import in.lekhai.common.AccountEntryType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Table("account_group")
 public class AccountGroup {
@@ -16,7 +15,7 @@ public class AccountGroup {
     private String name;
     private Long parentId;
     private String nature;
-    private String behaviour;
+    private AccountEntryType behaviour;
     private Boolean isPrimary;
 
     @CreatedDate
@@ -28,7 +27,7 @@ public class AccountGroup {
     public AccountGroup() {
     }
 
-    public AccountGroup(String name, Long parentId, String nature, String behaviour, Boolean isPrimary) {
+    public AccountGroup(String name, Long parentId, String nature, AccountEntryType behaviour, Boolean isPrimary) {
         this.name = name;
         this.parentId = parentId;
         this.nature = nature;
@@ -52,7 +51,7 @@ public class AccountGroup {
         return nature;
     }
 
-    public String getBehaviour() {
+    public AccountEntryType getBehaviour() {
         return behaviour;
     }
 

@@ -1,4 +1,4 @@
-package in.lekhai.core.account_master;
+package in.lekhai.core.account_master.seeders;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -17,15 +17,15 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 
 @Component
-public class AccountMasterSeeder implements ApplicationRunner {
+public class StatesSeeder implements ApplicationRunner {
 
-    private static final Logger log = LoggerFactory.getLogger(AccountMasterSeeder.class);
+    private static final Logger log = LoggerFactory.getLogger(StatesSeeder.class);
 
     private final DataSource dataSource;
     private final ResourceLoader resourceLoader;
     private final JdbcTemplate jdbcTemplate;
 
-    public AccountMasterSeeder(DataSource dataSource, ResourceLoader resourceLoader, JdbcTemplate jdbcTemplate) {
+    public StatesSeeder(DataSource dataSource, ResourceLoader resourceLoader, JdbcTemplate jdbcTemplate) {
         this.dataSource = dataSource;
         this.resourceLoader = resourceLoader;
         this.jdbcTemplate = jdbcTemplate;

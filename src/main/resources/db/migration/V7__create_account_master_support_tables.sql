@@ -19,7 +19,7 @@ CREATE TABLE area (
     area_name VARCHAR(100) NOT NULL,
     state_code CHAR(2),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -38,7 +38,7 @@ CREATE TABLE broker (
     name VARCHAR(150) NOT NULL,
     phone VARCHAR(15),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -54,7 +54,7 @@ CREATE TABLE transport (
     phone VARCHAR(15),
     gst_no VARCHAR(15),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
-    csv_id INTEGER NOT NULL,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -73,6 +73,8 @@ CREATE TABLE account_group (
     ),
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
+
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -82,22 +84,5 @@ CREATE TABLE account_group (
 
     CONSTRAINT uq_account_group UNIQUE (shop_code, name, parent_id)
 );
-
-INSERT INTO account_group (name, parent_id, nature, behaviour, is_primary, shop_code) VALUES
-('Capital Account', NULL, 'LIABILITY', 'CR', true, 0),
-('Loans (Liability)', NULL, 'LIABILITY', 'CR', true, 0),
-('Current Liabilities', NULL, 'LIABILITY', 'CR', true, 0),
-('Fixed Assets', NULL, 'ASSET', 'DR', true, 0),
-('Investments', NULL, 'ASSET', 'DR', true, 0),
-('Current Assets', NULL, 'ASSET', 'DR', true, 0),
-('Branch / Divisions', NULL, 'LIABILITY', 'CR', true, 0),
-('Suspense A/c', NULL, 'LIABILITY', 'CR', true, 0),
-('Sales Accounts', NULL, 'INCOME', 'CR', true, 0),
-('Purchase Accounts', NULL, 'EXPENSE', 'DR', true, 0),
-('Direct Incomes', NULL, 'INCOME', 'CR', true, 0),
-('Indirect Incomes', NULL, 'INCOME', 'CR', true, 0),
-('Direct Expenses', NULL, 'EXPENSE', 'DR', true, 0),
-('Indirect Expenses', NULL, 'EXPENSE', 'DR', true, 0),
-('Misc. Expenses (ASSET)', NULL, 'ASSET', 'DR', true, 0);
 
 CALL create_shop_isolation_policy('account_group', 'shop_isolation_account_group');

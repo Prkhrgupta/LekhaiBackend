@@ -56,7 +56,7 @@ public class UploadBrokerCsv extends CsvUploadService<BrokerDto, Broker> {
 
     @Override
     protected ItemProcessor<BrokerDto, Broker> createProcessor() {
-        return dto -> new Broker(dto.getBrokerName(), null);
+        return dto -> new Broker(dto.getBrokerName(), dto.getBrokerCode());
     }
 
     @Override

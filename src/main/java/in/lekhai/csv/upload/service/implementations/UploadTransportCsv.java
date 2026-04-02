@@ -56,7 +56,7 @@ public class UploadTransportCsv extends CsvUploadService<TransportDto, Transport
 
     @Override
     protected ItemProcessor<TransportDto, Transport> createProcessor() {
-        return dto -> new Transport(dto.getTransportName(), null, dto.getGstNumber());
+        return dto -> new Transport(dto.getTransportName(), dto.getGstNumber(), dto.getTransportCode());
     }
 
     @Override

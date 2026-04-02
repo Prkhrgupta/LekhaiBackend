@@ -25,12 +25,11 @@ CREATE TABLE ledger (
     location VARCHAR(255),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
+    sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uq_account_pan_shop UNIQUE (shop_code, pan),
-    CONSTRAINT uq_account_aadhaar_shop UNIQUE (shop_code, aadhaar),
-    CONSTRAINT uq_account_tan_shop UNIQUE (shop_code, tan)
+    CONSTRAINT uq_account_gst_shop UNIQUE (shop_code, gst_in_number)
 );
 
 CALL create_shop_isolation_policy('ledger', 'shop_isolation_ledger');

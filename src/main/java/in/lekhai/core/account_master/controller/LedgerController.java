@@ -7,7 +7,6 @@ import in.lekhai.contract.model.LedgerResponse;
 import in.lekhai.contract.model.LedgerSummaryResponse;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,7 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerResponse> createLedger(@Valid LedgerRequest request) {
+    public ResponseEntity<LedgerResponse> createLedger(LedgerRequest request) {
         log.info("Got a request to create ledger {} :: {}", ShopContext.getShopCode(), request.toString());
         LedgerResponse response = ledgerService.createLedger(request);
         log.info("Successfully created ledger {} :: {}", ShopContext.getShopCode(), response.toString());
@@ -47,7 +46,10 @@ public class LedgerController implements LedgerApi {
 
     @Override
     public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries() {
-        return null;
+        log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
+        LedgerSummaryResponse response = ledgerService.listLedgerSummaries();
+        log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerResponse> updateLedger(Long id, @Valid LedgerRequest request) {
+    public ResponseEntity<LedgerResponse> updateLedger(Long id, LedgerRequest request) {
         log.info("Got a request to update ledger {} :: {}", ShopContext.getShopCode(), request.toString());
         LedgerResponse response = ledgerService.updateLedger(id, request);
         log.info("Successfully updated ledger {} :: {}", ShopContext.getShopCode(), response.toString());
