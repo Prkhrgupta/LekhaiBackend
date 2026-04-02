@@ -9,7 +9,6 @@ public record AdminRegistrationRequest(
         String username,
         @NotBlank(message = "invalid password")
         String password,
-        String category,
         String name
 ) {
 }

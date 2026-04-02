@@ -6,5 +6,6 @@ public record CreateShopExistingAdminRequest(
         String gstIn,
         String address,
         Boolean isDefault,
+        String category,
         String adminUuid
 ) implements BaseShopRequest { }

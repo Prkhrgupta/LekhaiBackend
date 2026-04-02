@@ -8,5 +8,6 @@ public record CreateShopNewAdminRequest(
         String gstIn,
         String address,
         Boolean isDefault,
+        String category,
         AdminRegistrationRequest admin
 ) implements BaseShopRequest { }

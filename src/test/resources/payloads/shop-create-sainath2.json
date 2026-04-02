@@ -3,10 +3,10 @@
     "gstIn": "1",
     "address": "Pune",
     "isDefault": true,
+    "category": "SAREE",
     "admin": {
         "username": "sainath2",
         "password": "password",
-        "category": "SAREE",
         "name": "Sainath2"
     }
 }

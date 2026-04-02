@@ -29,7 +29,7 @@ public class AdminController {
     @PostMapping("/register/new-admin")
     public ResponseEntity<Result<?>> registerAdmin(@RequestBody @Valid AdminRegistrationRequest registrationRequest) {
         AdminRegistrationResponse adminRegistrationResponse = adminService.registerAdmin(registrationRequest,
-                null); // shopCode = null, this will be taken from JWT
+                null, null);
         Result<AdminRegistrationResponse> success = Result.success(adminRegistrationResponse);
         return ResponseEntity.ok(success);
     }

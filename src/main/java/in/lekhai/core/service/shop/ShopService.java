@@ -1,5 +1,6 @@
 package in.lekhai.core.service.shop;
 
+import in.lekhai.core.domain.category.Categories;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.domain.users.UserShopAccess;
 import in.lekhai.core.domain.users.Users;
@@ -14,6 +15,7 @@ import in.lekhai.core.repository.users.UserShopAccessRepo;
 import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.service.admin.AdminService;
 import in.lekhai.core.util.AdminUtils;
+import in.lekhai.error.controller.category.exception.CategoryDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,7 +57,7 @@ public class ShopService {
     @Transactional
     public ShopCreationResponse createTenantWithNewAdmin(CreateShopNewAdminRequest request) {
         Integer shopCode = AdminUtils.createShopCode();
-        String adminUuid = adminService.registerAdmin(request.admin(), shopCode).uuid();
+        String adminUuid = adminService.registerAdmin(request.admin(), request.category(), shopCode).uuid();
 
         Users admin = userRepo.findByUuid(adminUuid)
                 .orElseThrow(() -> new IllegalStateException("Admin creation failed"));
@@ -71,8 +73,11 @@ public class ShopService {
     private ShopCreationResponse createShop(Users admin,
                                             BaseShopRequest request,
                                             Integer shopCode) {
+        Categories category = categoriesRepo.findByName(request.category())
+                .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));
+
         Shops shop = new Shops(
-                admin.getCategoryId(),
+                category.getId(),
                 Boolean.TRUE,
                 request.gstIn(),
                 request.firmName(),
@@ -81,9 +86,10 @@ public class ShopService {
 
         Shops savedShop = shopRepo.save(shop);
 
-        List<Long> permissions = categoriesRepo.findById(admin.getCategoryId())
-                .map(category -> category.getPermissions())
-                .orElse(new ArrayList<>());
+        List<Long> permissions = category.getPermissions();
+        if (permissions == null) {
+            permissions = new ArrayList<>();
+        }
 
         UserShopAccess adminShopMapping = new UserShopAccess(
                 admin.getId(),

@@ -6,4 +6,5 @@ public interface BaseShopRequest {
     String gstIn();
     String address();
     Boolean isDefault();
+    String category();
 }
