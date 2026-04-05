@@ -12,7 +12,6 @@ public class Area {
     @Id
     private Long id;
     private String areaName;
-    private String stateCode;
     private Integer sitswiftCode;
 
     @CreatedDate
@@ -29,15 +28,13 @@ public class Area {
         this.sitswiftCode = sitswiftCode;
     }
 
-    public Area(String areaName, String stateCode) {
+    public Area(String areaName) {
         this.areaName = areaName;
-        this.stateCode = stateCode;
     }
 
-    public Area(Long id, String areaName, String stateCode) {
+    public Area(Long id, String areaName) {
         this.id = id;
         this.areaName = areaName;
-        this.stateCode = stateCode;
     }
 
     public Long getId() {
@@ -46,10 +43,6 @@ public class Area {
 
     public String getAreaName() {
         return areaName;
-    }
-
-    public String getStateCode() {
-        return stateCode;
     }
 
     public Instant getCreatedAt() {

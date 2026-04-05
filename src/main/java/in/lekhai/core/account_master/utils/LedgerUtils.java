@@ -50,7 +50,7 @@ public class LedgerUtils {
                                 request.getMailTo() != null ? request.getMailTo().getMailToLine2() : null,
                                 request.getMailTo() != null ? request.getMailTo().getMailToLine3() : null,
                                 request.getPinCode(),
-                                BigDecimal.valueOf(request.getDistance()),
+                                BigDecimal.valueOf(request.getDistance() != null ? request.getDistance() : 0),
                                 request.getAreaId(),
                                 request.getStateAndCode(),
                                 request.getCity()
@@ -109,7 +109,6 @@ public class LedgerUtils {
                                 ? new LedgerArea()
                                 .id(area.getId())
                                 .name(area.getAreaName())
-                                .stateCode(area.getStateCode())
                                 : null)
                         .broker(broker != null
                                 ? new LedgerBroker()

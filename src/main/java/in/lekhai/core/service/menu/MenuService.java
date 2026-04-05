@@ -1,9 +1,9 @@
 package in.lekhai.core.service.menu;
 
+import in.lekhai.contract.model.MenuResponse;
 import in.lekhai.core.domain.category.Categories;
 import in.lekhai.core.domain.category.RolePermissions;
 import in.lekhai.core.domain.feature.Features;
-import in.lekhai.core.domain.menu.MenuResponse;
 import in.lekhai.core.domain.users.UserShopAccess;
 import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.enums.Roles;

@@ -1,8 +1,8 @@
 package in.lekhai.core.service.menu;
 
+import in.lekhai.contract.model.MenuItem;
+import in.lekhai.contract.model.MenuResponse;
 import in.lekhai.core.domain.feature.Features;
-import in.lekhai.core.domain.menu.MenuItem;
-import in.lekhai.core.domain.menu.MenuResponse;
 import in.lekhai.core.repository.feature.FeaturesRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,9 @@ public class MenuBuilder {
                 .map(root -> buildMenuItem(root, childrenByParentId, allFeatures))
                 .toList();
 
-        return new MenuResponse(menuItems, List.of());
+        return new MenuResponse()
+                .mainMenu(menuItems)
+                .favourites(List.of());
     }
 
     private Map<Long, Features> fetchAllFeaturesWithParents(List<Features> initialFeatures) {
@@ -98,12 +100,12 @@ public class MenuBuilder {
     }
 
     private MenuItem createLeafMenuItem(Features feature) {
-        return new MenuItem(
-                feature.getFeatureKey(),
-                feature.getTitle(),
-                feature.getIcon(),
-                feature.getRoute(),
-                null);
+        return new MenuItem()
+                .id(feature.getFeatureKey())
+                .title(feature.getTitle())
+                .icon(feature.getIcon())
+                .route(feature.getRoute())
+                .children(null);
     }
 
     private MenuItem createBranchMenuItem(
@@ -115,11 +117,11 @@ public class MenuBuilder {
                 .map(child -> buildMenuItem(child, childrenByParentId, allFeaturesMap))
                 .toList();
 
-        return new MenuItem(
-                feature.getFeatureKey(),
-                feature.getTitle(),
-                feature.getIcon(),
-                null,
-                childMenuItems);
+        return new MenuItem()
+                .id(feature.getFeatureKey())
+                .title(feature.getTitle())
+                .icon(feature.getIcon())
+                .route(null)
+                .children(childMenuItems);
     }
 }
