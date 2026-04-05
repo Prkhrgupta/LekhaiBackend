@@ -17,15 +17,10 @@ CREATE TABLE state (
 CREATE TABLE area (
     id BIGSERIAL PRIMARY KEY,
     area_name VARCHAR(100) NOT NULL,
-    state_code CHAR(2),
     shop_code INTEGER NOT NULL DEFAULT current_setting('app.shop_code', false)::INTEGER,
     sitswift_code INTEGER,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_area_state
-        FOREIGN KEY (state_code)
-        REFERENCES state(state_code)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CALL create_shop_isolation_policy('area', 'shop_isolation_area');

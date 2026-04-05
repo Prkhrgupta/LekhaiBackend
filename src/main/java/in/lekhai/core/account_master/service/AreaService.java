@@ -22,8 +22,7 @@ public class AreaService {
     @ShopContextTransactional
     public AreaResponse createArea(AreaRequest request) {
         Area area = new Area(
-                request.getAreaName(),
-                request.getStateCode());
+                request.getAreaName());
         Area saved = areaRepository.save(area);
         return mapToResponse(saved);
     }
@@ -38,7 +37,6 @@ public class AreaService {
     private AreaResponse mapToResponse(Area area) {
         return new AreaResponse()
                 .id(area.getId())
-                .areaName(area.getAreaName())
-                .stateCode(area.getStateCode());
+                .areaName(area.getAreaName());
     }
 }

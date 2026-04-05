@@ -54,7 +54,7 @@ public class LedgerService {
         public LedgerResponse createLedger(LedgerRequest request) {
                 Ledger ledger = ledgerRepository.save(createLedgerObject(request));
                 log.info("Saved ledger for shop {} :: ledger id {}", request.getName(), ledger.getId());
-                if (request.getGstInDetailsPresent() && request.getGstInDetails() != null) {
+                if (Boolean.TRUE.equals(request.getGstInDetailsPresent()) && request.getGstInDetails() != null) {
                         gstDetailsRepository.save(createGstInDetailsObject(request.getGstInDetails(), ledger.getId()));
                         log.info("Saved gst in details for shop {} :: {}", request.getName(), ledger.getId());
                 }
@@ -217,22 +217,22 @@ public class LedgerService {
 
         @ShopContextTransactional
         public LedgerSummaryResponse listLedgerSummaries() {
-                List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
-                Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Area::getId, Area::getAreaName));
-                Map<Long, String> accountGroups = StreamSupport
-                                .stream(accountGroupRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(AccountGroup::getId, AccountGroup::getName));
-                Map<Long, String> ledgerToStateId = StreamSupport
-                                .stream(addressRepository.findAll().spliterator(), false)
-                                .filter(address -> address.getLedgerId() != null)
-                                .filter(address -> address.getStateId() != null)
-                                .collect(Collectors.toMap(Address::getLedgerId, Address::getStateId,
-                                                (a, b) -> a));
-                Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(State::getStateCode, State::getStateName));
-                Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
+            List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
+            Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toMap(Area::getId, Area::getAreaName));
+            Map<Long, String> accountGroups = StreamSupport
+                    .stream(accountGroupRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toMap(AccountGroup::getId, AccountGroup::getName));
+            Map<Long, String> ledgerToStateId = StreamSupport
+                    .stream(addressRepository.findAll().spliterator(), false)
+                    .filter(address -> address.getLedgerId() != null)
+                    .filter(address -> address.getStateId() != null)
+                    .collect(Collectors.toMap(Address::getLedgerId, Address::getStateId,
+                            (a, b) -> a));
+            Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toMap(State::getStateCode, State::getStateName));
+            Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
 
             List<LedgerSummaryColumn> columns = List.of(
                     new LedgerSummaryColumn().name("ID")
@@ -265,6 +265,6 @@ public class LedgerService {
                             .gstin(gstinMap.getOrDefault(ledger.getId(), ""))
                     ).toList();
 
-                return new LedgerSummaryResponse().columns(columns).data(data);
+            return new LedgerSummaryResponse().columns(columns).data(data);
         }
 }
