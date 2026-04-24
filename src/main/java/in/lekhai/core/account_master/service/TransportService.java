@@ -1,5 +1,6 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.TransportRequest;
 import in.lekhai.contract.model.TransportResponse;
 import in.lekhai.core.account_master.domain.Transport;
@@ -31,9 +32,9 @@ public class TransportService {
     }
 
     @ShopContextTransactional
-    public List<TransportResponse> listTransports() {
+    public List<DropdownItem> listTransports() {
         return StreamSupport.stream(transportRepository.findAll().spliterator(), false)
-                .map(this::mapToResponse)
+                .map(transport -> new DropdownItem().id(transport.getId()).label(transport.getName()))
                 .toList();
     }
 

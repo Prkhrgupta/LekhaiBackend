@@ -2,6 +2,7 @@ package in.lekhai.core.account_master.service;
 
 import in.lekhai.contract.model.AreaRequest;
 import in.lekhai.contract.model.AreaResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.domain.Area;
 import in.lekhai.core.account_master.repository.AreaRepository;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
@@ -28,9 +29,9 @@ public class AreaService {
     }
 
     @ShopContextTransactional
-    public List<AreaResponse> listAreas() {
+    public List<DropdownItem> listAreas() {
         return StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-                .map(this::mapToResponse)
+                .map(area -> new DropdownItem().id(area.getId()).label(area.getAreaName()))
                 .toList();
     }
 

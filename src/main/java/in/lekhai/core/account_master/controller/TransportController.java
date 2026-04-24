@@ -2,6 +2,7 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.TransportApi;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.TransportRequest;
 import in.lekhai.contract.model.TransportResponse;
 import in.lekhai.core.account_master.service.TransportService;
@@ -37,9 +38,9 @@ public class TransportController implements TransportApi {
     }
 
     @Override
-    public ResponseEntity<List<TransportResponse>> listTransports() {
+    public ResponseEntity<List<DropdownItem>> getTransportDropdownOptions() {
         log.info("Got a request to list all transport detail {}", ShopContext.getShopCode());
-        List<TransportResponse> response = transportService.listTransports();
+        List<DropdownItem> response = transportService.listTransports();
         log.info("Successfully listed all transport details {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }

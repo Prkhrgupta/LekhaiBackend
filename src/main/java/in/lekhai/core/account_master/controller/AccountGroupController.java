@@ -4,6 +4,7 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.AccountGroupApi;
 import in.lekhai.contract.model.AccountGroupRequest;
 import in.lekhai.contract.model.AccountGroupResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.service.AccountGroupService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -37,9 +38,9 @@ public class AccountGroupController implements AccountGroupApi {
     }
 
     @Override
-    public ResponseEntity<List<AccountGroupResponse>> listAllAccountGroups() {
+    public ResponseEntity<List<DropdownItem>> getAccountGroupDropdownOptions() {
         log.info("Got a request to list all account groups {}", ShopContext.getShopCode());
-        List<AccountGroupResponse> response = accountGroupService.listAccountGroups();
+        List<DropdownItem> response = accountGroupService.listAccountGroups();
         log.info("Successfully listed all account groups {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }

@@ -91,7 +91,7 @@ public class LedgerUtils {
                         .id(ledger.getId())
                         .name(ledger.getName())
                         .legalName(ledger.getLegalName())
-                        .accountGroupName(accountGroup != null ? accountGroup.getName() : null)
+                        .accountGroupId(accountGroup != null ? accountGroup.getId() : null)
                         .openingBalance(ledger.getOpeningBalance())
                         .openingBalanceType(ledger.getOpeningBalanceType())
                         .creditLimit(ledger.getCreditLimit())

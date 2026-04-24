@@ -1,5 +1,6 @@
 package in.lekhai.core.account_master.service;
 
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.StateResponse;
 import in.lekhai.core.account_master.domain.State;
 import in.lekhai.core.account_master.repository.StateRepository;
@@ -16,9 +17,9 @@ public class StateService {
     public StateService(StateRepository stateRepository) {
         this.stateRepository = stateRepository;
     }
-    public List<StateResponse> listStates() {
+    public List<DropdownItem> listStates() {
         return StreamSupport.stream(stateRepository.findAll().spliterator(), false)
-                .map(this::mapToResponse)
+                .map(state -> new DropdownItem().code(state.getStateCode()).label(state.getStateName()))
                 .toList();
     }
 

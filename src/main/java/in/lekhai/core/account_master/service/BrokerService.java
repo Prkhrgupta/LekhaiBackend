@@ -2,6 +2,7 @@ package in.lekhai.core.account_master.service;
 
 import in.lekhai.contract.model.BrokerRequest;
 import in.lekhai.contract.model.BrokerResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.domain.Broker;
 import in.lekhai.core.account_master.repository.BrokerRepository;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
@@ -27,9 +28,9 @@ public class BrokerService {
     }
 
     @ShopContextTransactional
-    public List<BrokerResponse> listBrokers() {
+    public List<DropdownItem> listBrokers() {
         return StreamSupport.stream(brokerRepository.findAll().spliterator(), false)
-                .map(this::mapToResponse)
+                .map(broker -> new DropdownItem().id(broker.getId()).label(broker.getName()))
                 .toList();
     }
 

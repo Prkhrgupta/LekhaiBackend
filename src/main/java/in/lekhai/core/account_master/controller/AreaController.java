@@ -4,6 +4,7 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.AreaApi;
 import in.lekhai.contract.model.AreaRequest;
 import in.lekhai.contract.model.AreaResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.service.AreaService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -35,10 +36,11 @@ public class AreaController implements AreaApi {
     }
 
     @Override
-    public ResponseEntity<List<AreaResponse>> listAreas() {
+    public ResponseEntity<List<DropdownItem>> getAreaDropdownOptions() {
         log.info("Got a request to list all areas {}", ShopContext.getShopCode());
-        List<AreaResponse> response = areaService.listAreas();
+        List<DropdownItem> response = areaService.listAreas();
         log.info("Successfully listed all areas {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }
+
 }

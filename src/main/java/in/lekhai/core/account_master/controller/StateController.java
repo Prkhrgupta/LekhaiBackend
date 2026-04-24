@@ -2,7 +2,7 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.StateApi;
-import in.lekhai.contract.model.StateResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.service.StateService;
 import in.lekhai.shop.context.model.ShopContext;
 import org.slf4j.Logger;
@@ -27,9 +27,9 @@ public class StateController implements StateApi {
     }
 
     @Override
-    public ResponseEntity<List<StateResponse>> listAllStates() {
+    public ResponseEntity<List<DropdownItem>> getStateDropdownOptions() {
         log.info("Got a request to list all states {}", ShopContext.getShopCode());
-        List<StateResponse> response = stateService.listStates();
+        List<DropdownItem> response = stateService.listStates();
         log.info("Successfully listed all states {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }

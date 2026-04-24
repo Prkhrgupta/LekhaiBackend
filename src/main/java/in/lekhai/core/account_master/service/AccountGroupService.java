@@ -2,8 +2,10 @@ package in.lekhai.core.account_master.service;
 
 //import in.lekhai.accountmaster.accountgroup.dto.AccountGroupRequest;
 //import in.lekhai.accountmaster.accountgroup.dto.AccountGroupResponse;
+
 import in.lekhai.contract.model.AccountGroupRequest;
 import in.lekhai.contract.model.AccountGroupResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.domain.AccountGroup;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
 import in.lekhai.error.controller.account.exception.ParentNotFoundException;
@@ -11,7 +13,6 @@ import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransact
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 @Service
 public class AccountGroupService {
@@ -46,9 +47,10 @@ public class AccountGroupService {
     }
 
     @ShopContextTransactional
-    public List<AccountGroupResponse> listAccountGroups() {
-        return StreamSupport.stream(accountGroupRepository.findAll().spliterator(), false)
-                .map(group -> new AccountGroupResponse().id(group.getId()).name(group.getName()))
+    public List<DropdownItem> listAccountGroups() {
+        return accountGroupRepository.findAll()
+                .stream()
+                .map(group -> new DropdownItem().id(group.getId()).label(group.getName()))
                 .toList();
     }
 }

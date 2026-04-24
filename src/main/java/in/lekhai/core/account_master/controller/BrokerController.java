@@ -4,6 +4,7 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.BrokerApi;
 import in.lekhai.contract.model.BrokerRequest;
 import in.lekhai.contract.model.BrokerResponse;
+import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.core.account_master.service.BrokerService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -37,9 +38,9 @@ public class BrokerController implements BrokerApi {
     }
 
     @Override
-    public ResponseEntity<List<BrokerResponse>> listBrokers() {
+    public ResponseEntity<List<DropdownItem>> getBrokerDropdownOptions() {
         log.info("Got a request to list all brokers {}", ShopContext.getShopCode());
-        List<BrokerResponse> response = brokerService.listBrokers();
+        List<DropdownItem> response = brokerService.listBrokers();
         log.info("Successfully listed all brokers {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }
