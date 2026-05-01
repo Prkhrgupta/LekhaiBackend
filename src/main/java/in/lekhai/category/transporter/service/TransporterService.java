@@ -44,7 +44,7 @@ public class TransporterService {
                                                         Instant toDate,
                                                         boolean includeDelivered,
                                                         EwbStatus ewbStatus) {
-        return ewbRecordRepo.findByEwbDateBetween(fromDate, toDate)
+        return ewbRecordRepo.findByEwbDateGreaterThanEqualAndEwbDateLessThan(fromDate, toDate)
                 .stream()
                 .filter(ewb -> {
                     if(includeDelivered) {

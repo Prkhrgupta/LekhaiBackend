@@ -64,7 +64,13 @@ public class TaxProEwbMapper {
 
         return new EwbDetails(
                 response.ewbNo(),
+                convertDateTimeToInstant(response.ewayBillDate()),
                 response.fromPincode(),
+                response.toPlace(),
+                response.toStateCode(),
+                response.toPincode(),
+                response.vehicleType().getVehicleType(),
+                response.noValidDays(),
                 response.addressLine1(),
                 response.addressLine2(),
                 vehicleDetails

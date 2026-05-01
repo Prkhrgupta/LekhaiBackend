@@ -1,13 +1,21 @@
 package in.lekhai.gsp.ewb.domain.model;
 
+import in.lekhai.contract.model.VehicleType;
 import in.lekhai.gsp.ewb.domain.enums.TransportMode;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
 public record EwbDetails(
         String ewbNo,
+        Instant ewbDate,
         Integer fromPinCode,
+        String toPlace,
+        Integer toState,
+        Integer toPinCode,
+        VehicleType vehicleType,
+        Integer noOfValidDDays,
         String addressLine1,
         String addressLine2,
         List<EwbVehicleDetails> ewbVehicleDetails

@@ -6,7 +6,6 @@ import in.lekhai.core.account_master.repository.StateRepository;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -54,23 +53,23 @@ public class TransporterMapper {
             response.setFromState(
                     vehicle.fromState() != null ? String.valueOf(vehicle.fromState()) : null
             );
-            response.setTransDocNo(JsonNullable.of(vehicle.transportDocumentNo()));
+            response.setTransDocNo(vehicle.transportDocumentNo());
             response.setTransDocDate(
                     vehicle.transportDocumentDate() != null
-                            ? JsonNullable.of(vehicle.transportDocumentDate().atStartOfDay().atOffset(ZoneOffset.UTC))
-                            : JsonNullable.undefined()
+                            ? vehicle.transportDocumentDate().atStartOfDay().atOffset(ZoneOffset.UTC)
+                            : null
             );
             response.setTransMode(vehicle.transportMode().getContractTransportMode());
         }
 
         // Not present in source → leaving as comments
-        // response.setEwbDate(...);
-        // response.setToPlace(...);
-        // response.setToState(...);
-        // response.setToPinCode(...);
-        // response.setVehicleType(...);
-        // response.setStatus(...);
-        // response.setNoValidDays(...);
+         response.setEwbDate(ewbDetails.ewbDate().atZone(IST).toOffsetDateTime());
+         response.setToPlace(ewbDetails.toPlace());
+         response.setToState(convertGstCodeToStateCode(ewbDetails.toState()));
+         response.setToPinCode(ewbDetails.toPinCode());
+         response.setVehicleType(ewbDetails.vehicleType());
+//         response.setStatus(ewbDetails.sta);
+         response.setNoValidDays(ewbDetails.noOfValidDDays());
 
         return response;
     }
@@ -103,18 +102,7 @@ public class TransporterMapper {
         //TODO: convert the gstCode to Integer in state table
         EwbRecord record = new EwbRecord();
 
-        String gstCode = e.getDeliveryStateCode() == null
-                ? null
-                : String.format("%02d", e.getDeliveryStateCode()); // ensures "09"
-
-        Optional<State> state = stateRepository.findByGstCode(gstCode);
-
-        if (state.isPresent()) {
-            record.setDeliveryStateCode(state.get().getStateCode());
-        } else {
-            log.error("Invalid state gstCode : {}", gstCode);
-            record.setDeliveryStateCode(null);
-        }
+        record.setDeliveryStateCode(convertGstCodeToStateCode(e.getDeliveryStateCode()));
 
         record.setEwbNo(e.getEwbNo());
         record.setEwbDate(e.getEwbDate());
@@ -129,5 +117,18 @@ public class TransporterMapper {
         record.setRejectStatus(e.isRejected());
 
         return record;
+    }
+
+    private String convertGstCodeToStateCode(Integer gstCode) {
+        //TODO : convert gstCode to integer in the DB
+        String gstCodeString = gstCode == null
+                ? null
+                : String.format("%02d", gstCode);
+        Optional<State> state = stateRepository.findByGstCode(gstCodeString);
+        if(state.isEmpty()) {
+            log.error("Invalid GST Code {}", gstCode);
+            return null;
+        }
+        return state.get().getStateCode();
     }
 }

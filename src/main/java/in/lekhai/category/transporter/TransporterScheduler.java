@@ -4,6 +4,7 @@ import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.category.transporter.util.TransporterMapper;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
+import in.lekhai.core.util.JwtUtil;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
 import in.lekhai.shop.context.model.ShopContext;
@@ -66,4 +67,18 @@ public class TransporterScheduler {
         }
     }
 
+    public void realoadEwbForDate(Instant dateTime) {
+        Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
+        Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);
+        if(shopDetails.isEmpty()) {
+            throw new RuntimeException("Something went wrong");
+        }
+        String gstNumber = shopDetails.get().getGstNumber();
+        List<EwbRecord> ewbToBeCreated = ewbProvider.getEwbListForTransporter(gstNumber, dateTime, shopCode)
+                .stream()
+                .map(transporterMapper::convertEwbForTransporterToEwbRecord)
+                .toList();
+
+        transporterService.saveAllEwbRecord(ewbToBeCreated);
+    }
 }
