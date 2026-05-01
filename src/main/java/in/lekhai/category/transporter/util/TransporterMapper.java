@@ -1,0 +1,133 @@
+package in.lekhai.category.transporter.util;
+
+import in.lekhai.contract.model.EwbSummary;
+import in.lekhai.core.account_master.domain.State;
+import in.lekhai.core.account_master.repository.StateRepository;
+import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
+import in.lekhai.gsp.ewb.domain.model.EwbDetails;
+import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
+import org.openapitools.jackson.nullable.JsonNullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Optional;
+
+@Component
+public class TransporterMapper {
+    private static final ZoneId IST = ZoneId.of(ZoneId.SHORT_IDS.get("IST"));
+    private final StateRepository stateRepository;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    public TransporterMapper(StateRepository stateRepository) {
+        this.stateRepository = stateRepository;
+    }
+
+    public static EwbSummary forTransporterToSummary(EwbForTransporter ewbForTransporter) {
+        EwbSummary ewbSummary = new EwbSummary();
+        ewbSummary.setEwbNo(ewbForTransporter.getEwbNo());
+        ewbSummary.setEwbDate(ewbForTransporter.getEwbDate().atZone(IST).toOffsetDateTime());
+        ewbSummary.setStatus(ewbForTransporter.getStatus().getEwbSummaryStatus());
+        ewbSummary.setDocNo(ewbForTransporter.getDocNo());
+        ewbSummary.setDelPlace(ewbForTransporter.getDeliverPlace());
+        ewbSummary.setDelState(ewbForTransporter.getDeliveryStateCode().toString()); // TODO: change to state name
+        ewbSummary.setValidUpTo(ewbForTransporter.getValidUpTo().atZone(IST).toOffsetDateTime());
+        ewbSummary.setExtendedTimes(ewbForTransporter.getTimesExtended());
+        return ewbSummary;
+    }
+
+    public in.lekhai.contract.model.EwbDetails ewbDetailsToContractEwbResponse(EwbDetails ewbDetails) {
+        if (ewbDetails == null) {
+            return null;
+        }
+        in.lekhai.contract.model.EwbDetails response = new in.lekhai.contract.model.EwbDetails();
+        // Direct mappings
+        response.setEwbNo(ewbDetails.ewbNo());
+        response.setFromPinCode(ewbDetails.fromPinCode());
+        // Mapping from vehicle details (taking first vehicle if present)
+        if (ewbDetails.ewbVehicleDetails() != null && !ewbDetails.ewbVehicleDetails().isEmpty()) {
+            EwbDetails.EwbVehicleDetails vehicle = ewbDetails.ewbVehicleDetails().get(0);
+            response.setFromPlace(vehicle.fromPlace());
+            response.setFromState(
+                    vehicle.fromState() != null ? String.valueOf(vehicle.fromState()) : null
+            );
+            response.setTransDocNo(JsonNullable.of(vehicle.transportDocumentNo()));
+            response.setTransDocDate(
+                    vehicle.transportDocumentDate() != null
+                            ? JsonNullable.of(vehicle.transportDocumentDate().atStartOfDay().atOffset(ZoneOffset.UTC))
+                            : JsonNullable.undefined()
+            );
+            response.setTransMode(vehicle.transportMode().getContractTransportMode());
+        }
+
+        // Not present in source → leaving as comments
+        // response.setEwbDate(...);
+        // response.setToPlace(...);
+        // response.setToState(...);
+        // response.setToPinCode(...);
+        // response.setVehicleType(...);
+        // response.setStatus(...);
+        // response.setNoValidDays(...);
+
+        return response;
+    }
+    public EwbSummary ewbRecordToSummary(EwbRecord e) {
+        if (e == null) {
+            return null;
+        }
+        EwbSummary summary = new EwbSummary();
+        summary.setEwbNo(e.getEwbNo());
+        if (e.getEwbDate() != null) {
+            summary.setEwbDate(e.getEwbDate().atZone(IST).toOffsetDateTime());
+        }
+        summary.setStatus(e.getStatus().getEwbSummaryStatus());
+        summary.setDocNo(e.getDocNo());
+        summary.setDelPlace(e.getDeliveryPlace());
+        summary.setDelState(e.getDeliveryStateCode());
+        if (e.getValidUpTo() != null) {
+            summary.setValidUpTo(e.getValidUpTo().atZone(IST).toOffsetDateTime());
+        }
+        summary.setExtendedTimes(e.getExtendedTimes());
+        summary.isDelivered(e.isDelivered());
+
+        return summary;
+    }
+
+    public EwbRecord convertEwbForTransporterToEwbRecord(EwbForTransporter e) {
+        if (e == null) {
+            return null;
+        }
+        //TODO: convert the gstCode to Integer in state table
+        EwbRecord record = new EwbRecord();
+
+        String gstCode = e.getDeliveryStateCode() == null
+                ? null
+                : String.format("%02d", e.getDeliveryStateCode()); // ensures "09"
+
+        Optional<State> state = stateRepository.findByGstCode(gstCode);
+
+        if (state.isPresent()) {
+            record.setDeliveryStateCode(state.get().getStateCode());
+        } else {
+            log.error("Invalid state gstCode : {}", gstCode);
+            record.setDeliveryStateCode(null);
+        }
+
+        record.setEwbNo(e.getEwbNo());
+        record.setEwbDate(e.getEwbDate());
+        record.setStatus(e.getStatus());
+        record.setGeneratorGstin(e.getGeneratedGstIn());
+        record.setDocNo(e.getDocNo());
+        record.setDocDate(e.getDocDate());
+        record.setDeliveryPinCode(e.getDeliveryPinCode());
+        record.setDeliveryPlace(e.getDeliverPlace());
+        record.setValidUpTo(e.getValidUpTo());
+        record.setExtendedTimes(e.getTimesExtended());
+        record.setRejectStatus(e.isRejected());
+
+        return record;
+    }
+}

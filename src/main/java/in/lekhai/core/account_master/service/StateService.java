@@ -1,7 +1,6 @@
 package in.lekhai.core.account_master.service;
 
 import in.lekhai.contract.model.DropdownItem;
-import in.lekhai.contract.model.StateResponse;
 import in.lekhai.core.account_master.domain.State;
 import in.lekhai.core.account_master.repository.StateRepository;
 import org.springframework.stereotype.Service;
@@ -23,9 +22,9 @@ public class StateService {
                 .toList();
     }
 
-    private StateResponse mapToResponse(State state) {
-        return new StateResponse()
+    private DropdownItem mapToResponse(State state) {
+        return new DropdownItem()
                 .code(state.getStateCode())
-                .name(state.getStateName());
+                .label(state.getStateName());
     }
 }

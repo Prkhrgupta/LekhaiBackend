@@ -6,11 +6,13 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
 public interface FeaturesRepo extends ListCrudRepository<Features, Long> {
     List<Features> findByBitPositionIn(Set<Integer> bitPositions);
+    Optional<Features> findByFeatureKey(String featureKey);
 
     @Query(value = """
         SELECT COALESCE(MAX(bit_position) + 1, 0)
