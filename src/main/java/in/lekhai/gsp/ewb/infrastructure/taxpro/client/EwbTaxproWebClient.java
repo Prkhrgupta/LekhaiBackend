@@ -1,7 +1,9 @@
 package in.lekhai.gsp.ewb.infrastructure.taxpro.client;
 
+import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProErrorResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
+import in.lekhai.gsp.ewb.infrastructure.taxpro.exceptions.TaxProUnauthorizedException;
 import in.lekhai.gsp.shared.TaxProProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ public class EwbTaxproWebClient {
 
     private final WebClient webClient;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private final static String UNAUTHORIZED_ERROR_CODE = "GSP102";
 
     public EwbTaxproWebClient(WebClient.Builder builder,
                               TaxProProperties taxProProperties) {
@@ -66,13 +69,16 @@ public class EwbTaxproWebClient {
                         .build()
                 )
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, response ->
-                        response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    log.error("EWB API Error: status={}, body={}",
-                                            response.statusCode(), errorBody);
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(TaxProErrorResponse.class)
+                                .flatMap(errorResponse -> {
+                                    if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().error_cd())) {
+                                        return Mono.error(new TaxProUnauthorizedException("Token expired"));
+                                    }
                                     return Mono.error(new RuntimeException(
-                                            "EWB API failed: " + errorBody));
+                                            errorResponse.error().message()
+                                    ));
                                 })
                 )
                 .bodyToFlux(TaxProEwbForTransporterResponse.class)
@@ -93,6 +99,18 @@ public class EwbTaxproWebClient {
                         .build()
                 )
                 .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(TaxProErrorResponse.class)
+                                .flatMap(errorResponse -> {
+                                    if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().error_cd())) {
+                                        return Mono.error(new TaxProUnauthorizedException("Token expired"));
+                                    }
+                                    return Mono.error(new RuntimeException(
+                                            errorResponse.error().message()
+                                    ));
+                                })
+                )
                 .bodyToMono(TaxProEwbDetailResponse.class);
     }
 }

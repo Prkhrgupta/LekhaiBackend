@@ -45,8 +45,10 @@ public class TransporterScheduler {
 
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Kolkata")
+    //TODO : add a failed queue if the automatic fetch fails
     public void fetchEwbsForTransporterAtMidnight() {
         for(Integer shopCode : ewbSchedulerShopCodes) {
+            log.info("Start to fetch Ewbs for shopCode {}", shopCode);
             ShopContext.setShopCode(shopCode);
 
             Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);

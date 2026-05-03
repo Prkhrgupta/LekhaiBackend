@@ -31,7 +31,7 @@ repositories {
 dependencies {
     // Lekhai Api Spec
 //    implementation "in.lekhai:lekhai-api-spec:1.0.4"
-    implementation 'in.lekhai:lekhaiapispec:1.0.7'
+    implementation 'in.lekhai:lekhaiapispec:1.0.4'
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -54,6 +54,10 @@ dependencies {
 
     // WebFlux
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // caching - caffeine
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

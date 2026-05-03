@@ -8,6 +8,8 @@ import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.mapper.TaxProEwbMapper;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.service.TaxProAuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -18,6 +20,7 @@ public class TaxProEwbProvider implements EwbProvider {
     private final TaxProAuthService taxProAuthService;
     private final EwbTaxproWebClient ewbTaxproWebClient;
     private final TaxProEwbMapper taxProEwbMapper;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public TaxProEwbProvider(TaxProAuthService taxProAuthService,
                              EwbTaxproWebClient ewbTaxproWebClient,
@@ -43,7 +46,7 @@ public class TaxProEwbProvider implements EwbProvider {
     @Override
     public EwbDetails getEwbDetails(String ewbNo, String gstIn, Integer shopCode) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
-
+        log.info("Starting to fetch details for ewbNo : [{}] for shopCode : [{}]", ewbNo, shopCode);
         TaxProEwbDetailResponse taxProEwbDetailResponse = ewbTaxproWebClient.getEwbDetailsByEwbNo(ewbNo, gstIn, ewbAuthToken)
                 .blockOptional()
                 .orElseThrow(() -> new RuntimeException(String.format("Failed to fetch ewb details for ewb %s", ewbNo)));
