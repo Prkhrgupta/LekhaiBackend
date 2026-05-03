@@ -2,6 +2,7 @@ package in.lekhai.gsp.ewb.infrastructure.taxpro.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import in.lekhai.gsp.ewb.domain.enums.EwbStatus;
 import in.lekhai.gsp.ewb.domain.enums.EwbVehicleType;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TaxProEwbDetailResponse(
 
-        String ewbNo,
+        Long ewbNo,
 
         Integer fromPincode,
 
@@ -24,6 +25,8 @@ public record TaxProEwbDetailResponse(
         Integer noValidDays,
 
         String toPlace,
+
+        EwbStatus status,
 
         EwbVehicleType vehicleType,
 

@@ -71,6 +71,7 @@ public class TaxProEwbMapper {
                 response.toPincode(),
                 response.vehicleType().getVehicleType(),
                 response.noValidDays(),
+                response.status(),
                 response.addressLine1(),
                 response.addressLine2(),
                 vehicleDetails

@@ -55,6 +55,7 @@ public class TransporterService {
                     }
                     return true;
                 })
+                .sorted((ewb1, ewb2) -> ewb2.getEwbDate().compareTo(ewb1.getEwbDate()))
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
     }

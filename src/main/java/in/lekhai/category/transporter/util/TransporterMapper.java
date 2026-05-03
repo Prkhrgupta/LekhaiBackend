@@ -44,7 +44,7 @@ public class TransporterMapper {
         }
         in.lekhai.contract.model.EwbDetails response = new in.lekhai.contract.model.EwbDetails();
         // Direct mappings
-        response.setEwbNo(ewbDetails.ewbNo());
+        response.setEwbNo(ewbDetails.ewbNo().toString());
         response.setFromPinCode(ewbDetails.fromPinCode());
         // Mapping from vehicle details (taking first vehicle if present)
         if (ewbDetails.ewbVehicleDetails() != null && !ewbDetails.ewbVehicleDetails().isEmpty()) {
@@ -68,7 +68,7 @@ public class TransporterMapper {
          response.setToState(convertGstCodeToStateCode(ewbDetails.toState()));
          response.setToPinCode(ewbDetails.toPinCode());
          response.setVehicleType(ewbDetails.vehicleType());
-//         response.setStatus(ewbDetails.sta);
+//         response.setStatus();
          response.setNoValidDays(ewbDetails.noOfValidDDays());
 
         return response;
