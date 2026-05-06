@@ -1,8 +1,6 @@
 package in.lekhai.gsp.ewb.infrastructure.taxpro.client;
 
-import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProErrorResponse;
-import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
-import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
+import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.*;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.exceptions.TaxProUnauthorizedException;
 import in.lekhai.gsp.shared.TaxProProperties;
 import org.slf4j.Logger;
@@ -76,19 +74,23 @@ public class EwbTaxproWebClient {
                                     if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().error_cd())) {
                                         return Mono.error(new TaxProUnauthorizedException("Token expired"));
                                     }
+                                    log.error("Failed to fetch all ewb for transporter for gst : [{}] and date : [{}]", gstIn, date);
                                     return Mono.error(new RuntimeException(
                                             errorResponse.error().message()
                                     ));
                                 })
                 )
                 .bodyToFlux(TaxProEwbForTransporterResponse.class)
-                .collectList();
+                .collectList()
+                .doOnNext((res) ->
+                        log.info("Successfully fetched {} ewbs for gst : [{}] on date : [{}]", res.size(), gstIn, date));
     }
 
     public Mono<TaxProEwbDetailResponse> getEwbDetailsByEwbNo(String ewbNo,
                                                               String gstin,
                                                               String authToken
     ) {
+        log.info("Calling TaxPro ewbDetail API for ewbNo : [{}]", ewbNo);
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/v1.03/dec/ewayapi")
@@ -106,11 +108,45 @@ public class EwbTaxproWebClient {
                                     if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().error_cd())) {
                                         return Mono.error(new TaxProUnauthorizedException("Token expired"));
                                     }
+                                    log.error("Failed to fetch ewb Details for ewbNo : [{}]", ewbNo);
                                     return Mono.error(new RuntimeException(
                                             errorResponse.error().message()
                                     ));
                                 })
                 )
-                .bodyToMono(TaxProEwbDetailResponse.class);
+                .bodyToMono(TaxProEwbDetailResponse.class)
+                .doOnNext((res) -> log.info("Successfully fetched ewb details for ewbNo : [{}]", res.ewbNo()));
+    }
+
+    public Mono<TaxProExtendValidityResponse> extendEwbValidity(TaxProExtendValidityRequest request,
+                                                                String gstin,
+                                                                String authToken) {
+        log.info("Calling TaxPro extend validity API for ewbNo : [{}] with request : {}", request.ewbNo(), request);
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1.03/dec/ewayapi")
+                        .queryParam("action", "EXTENDVALIDITY")
+                        .queryParam("gstin", gstin)
+                        .queryParam("authtoken", authToken)
+                        .build()
+                )
+                .bodyValue(request)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(TaxProErrorResponse.class)
+                                .flatMap(errorResponse -> {
+                                    if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().error_cd())) {
+                                        return Mono.error(new TaxProUnauthorizedException("Token expired"));
+                                    }
+                                    log.error("Failed to extend EwbNo {}, error : {}", request.ewbNo(), errorResponse);
+                                    return Mono.error(new RuntimeException(
+                                            errorResponse.error().message()
+                                    ));
+                                })
+                )
+                .bodyToMono(TaxProExtendValidityResponse.class)
+                .doOnNext(res ->
+                        log.info("Successfully extended validity for ewbNo : [{}] till : [{}]", res.ewayBillNo(), res.validUpto()));
     }
 }

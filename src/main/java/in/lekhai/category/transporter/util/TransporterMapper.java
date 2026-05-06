@@ -1,11 +1,13 @@
 package in.lekhai.category.transporter.util;
 
+import in.lekhai.contract.model.EwbExtendResponse;
 import in.lekhai.contract.model.EwbSummary;
 import in.lekhai.core.account_master.domain.State;
 import in.lekhai.core.account_master.repository.StateRepository;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
+import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -117,6 +119,14 @@ public class TransporterMapper {
         record.setRejectStatus(e.isRejected());
 
         return record;
+    }
+
+    public EwbExtendResponse toEwbExtendResponse(ExtendValidity extendValidity) {
+        EwbExtendResponse ewbExtendResponse = new EwbExtendResponse();
+        ewbExtendResponse.setEwbNo(extendValidity.ewbNo());
+        ewbExtendResponse.setUpdatedDate(extendValidity.updateAt().atZone(IST).toOffsetDateTime());
+        ewbExtendResponse.setValidUpto(extendValidity.newValidUpTo().atZone(IST).toOffsetDateTime());
+        return ewbExtendResponse;
     }
 
     private String convertGstCodeToStateCode(Integer gstCode) {

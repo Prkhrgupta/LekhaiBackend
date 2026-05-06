@@ -4,8 +4,10 @@ import in.lekhai.gsp.ewb.domain.enums.EwbStatus;
 import in.lekhai.gsp.ewb.domain.enums.TransportMode;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
+import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
+import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -75,6 +77,14 @@ public class TaxProEwbMapper {
                 response.addressLine1(),
                 response.addressLine2(),
                 vehicleDetails
+        );
+    }
+
+    public ExtendValidity toExtendValidity(TaxProExtendValidityResponse response) {
+        return new ExtendValidity(
+                response.ewayBillNo(),
+                convertDateTimeToInstant(response.updatedDate()),
+                convertDateTimeToInstant(response.validUpto())
         );
     }
 

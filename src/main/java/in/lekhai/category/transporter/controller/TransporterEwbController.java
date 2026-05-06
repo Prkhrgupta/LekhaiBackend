@@ -37,7 +37,8 @@ public class TransporterEwbController implements TransporterEwbApi{
     public ResponseEntity<EwbExtendResponse> extendEwbValidity(@NotNull String ewbNo,
                                                                @Valid EwbExtendRequest ewbExtendRequest) {
         log.info("Called received to extend EWB with no : {}", ewbNo);
-        return null;
+        EwbExtendResponse ewbResponse = transporterService.extendEwbValidity(ewbNo, ewbExtendRequest);
+        return ResponseEntity.ok(ewbResponse);
     }
 
     @Override

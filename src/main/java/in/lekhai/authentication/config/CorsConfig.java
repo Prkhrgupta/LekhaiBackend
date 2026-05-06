@@ -19,7 +19,8 @@ public class CorsConfig {
                 "http://localhost:8085", // Local frontend
                 "http://localhost:5050", // Local sandbox
                 "https://lekhaisbx.sitswiftcloud.in", // UAT sandbox
-                "https://lekhaiui.sitswiftcloud.in" // UAT frontend
+                "https://lekhaiui.sitswiftcloud.in", // UAT frontend
+                "https://ewb.sitswiftcloud.in" // prod
         ));
 
         config.setAllowedMethods(List.of(

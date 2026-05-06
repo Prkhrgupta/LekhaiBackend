@@ -1,13 +1,17 @@
 package in.lekhai.category.transporter.service;
 
 import in.lekhai.category.transporter.util.TransporterMapper;
+import in.lekhai.contract.model.EwbExtendRequest;
+import in.lekhai.contract.model.EwbExtendResponse;
 import in.lekhai.contract.model.EwbStatus;
 import in.lekhai.contract.model.EwbSummary;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.util.JwtUtil;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
+import in.lekhai.gsp.ewb.domain.enums.ExtendValidityReason;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
+import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
 import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
@@ -16,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,15 +52,16 @@ public class TransporterService {
         return ewbRecordRepo.findByEwbDateGreaterThanEqualAndEwbDateLessThan(fromDate, toDate)
                 .stream()
                 .filter(ewb -> {
-                    if(includeDelivered) {
-                        return ewb.isDelivered();
-                    }
-                    if(Objects.nonNull(ewbStatus)) {
+                    if (includeDelivered) return ewb.isDelivered();
+                    if (Objects.nonNull(ewbStatus)) {
                         return ewbStatus.equals(ewb.getStatus().getEwbSummaryStatus());
                     }
                     return true;
                 })
-                .sorted((ewb1, ewb2) -> ewb2.getEwbDate().compareTo(ewb1.getEwbDate()))
+                .sorted(
+                        Comparator.comparing(EwbRecord::getEwbDate).reversed()
+                                .thenComparing(EwbRecord::getEwbNo, Comparator.reverseOrder())
+                )
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
     }
@@ -92,5 +98,31 @@ public class TransporterService {
     @ShopContextTransactional
     public void saveAllEwbRecord(List<EwbRecord> ewbToBeCreated) {
         ewbRecordRepo.saveAll(ewbToBeCreated);
+    }
+
+    @ShopContextTransactional
+    public EwbExtendResponse extendEwbValidity(String ewbNo,
+                                               EwbExtendRequest extendValidityRequest
+    ) {
+        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
+                .orElseThrow(() -> new RuntimeException(String.format("Invalid request to extend ewbNo : %s, Not present in DB", ewbNo)));
+        Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
+        Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);
+        if(shopDetails.isEmpty()) {
+            throw new RuntimeException("Something went wrong");
+        }
+        String gstNumber = shopDetails.get().getGstNumber();
+        ExtendValidity extendValidity = ewbProvider.extendValidity(ewbNo,
+                extendValidityRequest.getRemainingDistance(),
+                ExtendValidityReason.valueOf(extendValidityRequest.getExtensionReason().toString()),
+                extendValidityRequest.getExtensionRemark(),
+                gstNumber,
+                shopCode);
+        // save updated validUpTo to DB
+        ewbRecord.setValidUpTo(extendValidity.newValidUpTo());
+        ewbRecordRepo.save(ewbRecord);
+        log.info("Successfully extended validity for EwbNo : {} and saved to DB", ewbNo);
+
+        return transporterMapper.toEwbExtendResponse(extendValidity);
     }
 }
