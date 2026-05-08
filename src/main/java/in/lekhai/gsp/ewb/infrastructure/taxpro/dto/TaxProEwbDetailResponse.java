@@ -36,6 +36,15 @@ public record TaxProEwbDetailResponse(
         @JsonProperty("fromAddr2")
         String addressLine2,
 
+        @JsonProperty("fromTrdName")
+        String fromTradeName,
+
+        @JsonProperty("toTrdName")
+        String toTradeName,
+
+        @JsonProperty("actualDist")
+        Integer actualDistance,
+
         @JsonProperty("VehiclListDetails")
         List<VehicleDetail> vehicleDetails
 ) {

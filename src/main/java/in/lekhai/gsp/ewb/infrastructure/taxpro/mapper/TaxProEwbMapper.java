@@ -46,7 +46,7 @@ public class TaxProEwbMapper {
         return result;
     }
 
-    public EwbDetails toEwbDeatis(TaxProEwbDetailResponse response){
+    public EwbDetails toEwbDetails(TaxProEwbDetailResponse response){
         List<EwbDetails.EwbVehicleDetails> vehicleDetails =
                 response.vehicleDetails() == null ? List.of() :
                         response.vehicleDetails().stream()
@@ -68,11 +68,14 @@ public class TaxProEwbMapper {
                 response.ewbNo(),
                 convertDateTimeToInstant(response.ewayBillDate()),
                 response.fromPincode(),
+                response.fromTradeName(),
                 response.toPlace(),
                 response.toStateCode(),
                 response.toPincode(),
+                response.toTradeName(),
                 response.vehicleType().getVehicleType(),
                 response.noValidDays(),
+                response.actualDistance(),
                 response.status(),
                 response.addressLine1(),
                 response.addressLine2(),

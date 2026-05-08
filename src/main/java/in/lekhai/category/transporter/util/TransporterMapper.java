@@ -61,7 +61,7 @@ public class TransporterMapper {
                             ? vehicle.transportDocumentDate().atStartOfDay().atOffset(ZoneOffset.UTC)
                             : null
             );
-            response.setTransMode(vehicle.transportMode().getContractTransportMode());
+            response.setVehicleNo(vehicle.vehicleNo());
         }
 
         // Not present in source → leaving as comments
@@ -69,9 +69,9 @@ public class TransporterMapper {
          response.setToPlace(ewbDetails.toPlace());
          response.setToState(convertGstCodeToStateCode(ewbDetails.toState()));
          response.setToPinCode(ewbDetails.toPinCode());
-         response.setVehicleType(ewbDetails.vehicleType());
-//         response.setStatus();
-         response.setNoValidDays(ewbDetails.noOfValidDDays());
+         response.setConsignee(ewbDetails.consignee());
+         response.setConsigner(ewbDetails.consigner());
+         response.setActualDistance(ewbDetails.actualDistance());
 
         return response;
     }

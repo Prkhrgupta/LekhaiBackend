@@ -1,6 +1,5 @@
-package in.lekhai.category.transporter;
+package in.lekhai.category.transporter.service;
 
-import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.category.transporter.util.TransporterMapper;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;

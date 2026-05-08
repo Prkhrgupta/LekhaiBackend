@@ -1,6 +1,7 @@
 package in.lekhai.category.transporter.controller;
 
-import in.lekhai.category.transporter.TransporterScheduler;
+import in.lekhai.authentication.utils.SecurityExpressions;
+import in.lekhai.category.transporter.service.TransporterScheduler;
 import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.contract.api.TransporterEwbApi;
 import in.lekhai.contract.model.*;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +22,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @RestController
+@PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class TransporterEwbController implements TransporterEwbApi{
     private final TransporterService transporterService;
     private final TransporterScheduler transporterScheduler;

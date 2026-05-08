@@ -58,7 +58,7 @@ public class TaxProEwbProvider implements EwbProvider {
                 .blockOptional()
                 .orElseThrow(() -> new RuntimeException(String.format("Failed to fetch ewb details for ewb %s", ewbNo)));
 
-        return taxProEwbMapper.toEwbDeatis(taxProEwbDetailResponse);
+        return taxProEwbMapper.toEwbDetails(taxProEwbDetailResponse);
     }
 
     @Override
