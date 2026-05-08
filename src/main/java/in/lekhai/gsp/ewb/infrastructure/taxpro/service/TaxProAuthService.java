@@ -1,20 +1,19 @@
 package in.lekhai.gsp.ewb.infrastructure.taxpro.service;
 
+import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
+import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.gsp.ewb.domain.entity.GspUserCredentials;
 import in.lekhai.gsp.ewb.domain.repository.GspUserCredentialsRepo;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.client.AuthTaxProClient;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProAuthResponse;
-import in.lekhai.gsp.ewb.infrastructure.taxpro.exceptions.TaxProUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 @Service
 public class TaxProAuthService {
@@ -35,12 +34,12 @@ public class TaxProAuthService {
     public String getEwbAuthToken(Integer shopCode) {
         Optional<GspUserCredentials> gspUserCredentialsOptional = gspUserCredentialsRepo.findByShopCode(shopCode);
         if(gspUserCredentialsOptional.isEmpty()) {
-            // TODO : create a new TaxProException
-            throw new RuntimeException(String.format("No GSP credentials found for shop : %s, Create credentials", shopCode));
+            log.error("No GSP credential present for shopCode=[{}]", shopCode);
+            throw new LekhaiClientException("No GSP credentials found. Create credentials", HttpStatus.NOT_FOUND);
         }
-        String gstNumber = shopsRepo.findByShopCode(shopCode).get().getGstNumber();
-        log.info("Starting to generate access token for gstIn : [{}]", gstNumber);
-
+        Shops shopOptional = shopsRepo.findByShopCode(shopCode)
+                .orElseThrow(() -> new IllegalStateException(String.format("Invalid shopCode=%s in Ewb auth process", shopCode)));
+        String gstNumber = shopOptional.getGstNumber();
         TaxProAuthResponse taxProAuthResponse = authTaxProClient.getAccessToken(
                         gspUserCredentialsOptional.get().getUserName(),
                         gspUserCredentialsOptional.get().getPassword(),
@@ -52,40 +51,6 @@ public class TaxProAuthService {
             throw new RuntimeException("TaxPro API failed");
         }
 
-        return taxProAuthResponse.authToken();
+        return taxProAuthResponse.data().authToken();
     }
-
-    @CacheEvict(value = "ewb", key = "#shopCode")
-    public void evictToken(Integer shopCode) {
-        log.info("Evicting token for shopCode={}", shopCode);
-    }
-
-    //TODO : Implement this while calling all the TaxPro apis
-    public <T> Mono<T> executeWithTokenRetry(
-            Integer shopCode,
-            Function<String, Mono<T>> apiCall
-    ) {
-
-        return Mono.defer(() -> {
-
-            String token = getEwbAuthToken(shopCode);
-
-            return apiCall.apply(token)
-                    .onErrorResume(TaxProUnauthorizedException.class, ex -> {
-
-                        log.warn("Token expired for shopCode={}, refreshing...", shopCode);
-
-                        // evict old token
-                        evictToken(shopCode);
-
-                        String newToken = getEwbAuthToken(shopCode);
-
-                        // retry once
-                        return apiCall.apply(newToken)
-                                .onErrorResume(TaxProUnauthorizedException.class,
-                                        e -> Mono.error(new RuntimeException("Token refresh failed")));
-                    });
-        });
-    }
-
 }

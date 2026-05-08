@@ -22,9 +22,10 @@ public class CacheConfig {
 
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
+        // TODO: replace with actual cache, right now 5Hrs since taxPro token is valid for 6Hrs
         return Caffeine.newBuilder()
                 .maximumSize(10)
-                .expireAfterWrite(Duration.ofMinutes(5))
+                .expireAfterWrite(Duration.ofHours(5))
                 .recordStats();
     }
 }

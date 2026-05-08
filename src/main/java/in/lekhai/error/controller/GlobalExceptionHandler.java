@@ -1,6 +1,7 @@
 package in.lekhai.error.controller;
 
 import in.lekhai.common.Result;
+import in.lekhai.contract.model.Error;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<?>> handleLekhaiException(LekhaiException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.badRequest().body(Result.error(exception.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(LekhaiClientException.class)
+    public ResponseEntity<Error> handleLekhaiClientException(LekhaiClientException exception) {
+        return ResponseEntity.status(exception.getStatusCode()).body(
+                new Error()
+                        .success(Boolean.FALSE)
+                        .message(exception.getLocalizedMessage())
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

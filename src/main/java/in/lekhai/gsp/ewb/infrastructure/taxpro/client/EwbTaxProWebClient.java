@@ -2,48 +2,28 @@ package in.lekhai.gsp.ewb.infrastructure.taxpro.client;
 
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.*;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.exceptions.TaxProUnauthorizedException;
-import in.lekhai.gsp.shared.TaxProProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
-public class EwbTaxproWebClient {
+public class EwbTaxProWebClient {
 
     private final WebClient webClient;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final static String UNAUTHORIZED_ERROR_CODE = "GSP102";
 
-    public EwbTaxproWebClient(WebClient.Builder builder,
-                              TaxProProperties taxProProperties) {
-
-        this.webClient = builder
-                .baseUrl(taxProProperties.baseUrl())
-                .filter((request, next) -> {
-                    URI newUri = UriComponentsBuilder.fromUri(request.url())
-                            .queryParam("aspid", taxProProperties.credentials().aspId())
-                            .queryParam("password", taxProProperties.credentials().aspPassword())
-                            .build(true)
-                            .toUri();
-
-                    ClientRequest newRequest = ClientRequest.from(request)
-                            .url(newUri)
-                            .build();
-
-                    return next.exchange(newRequest);
-                })
-                .build();
+    public EwbTaxProWebClient(@Qualifier("taxProWebClient") WebClient taxProWebClient) {
+        this.webClient = taxProWebClient;
     }
 
     public Mono<List<TaxProEwbForTransporterResponse>> getEwbsForTransporter(

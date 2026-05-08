@@ -5,7 +5,7 @@ import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
-import in.lekhai.gsp.ewb.infrastructure.taxpro.client.EwbTaxproWebClient;
+import in.lekhai.gsp.ewb.infrastructure.taxpro.client.EwbTaxProWebClient;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityRequest;
@@ -23,14 +23,14 @@ import java.util.List;
 @Component
 public class TaxProEwbProvider implements EwbProvider {
     private final TaxProAuthService taxProAuthService;
-    private final EwbTaxproWebClient ewbTaxproWebClient;
+    private final EwbTaxProWebClient ewbTaxproWebClient;
     private final TaxProEwbMapper taxProEwbMapper;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final static DateTimeFormatter ddMMyyyy = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public TaxProEwbProvider(TaxProAuthService taxProAuthService,
-                             EwbTaxproWebClient ewbTaxproWebClient,
+                             EwbTaxProWebClient ewbTaxproWebClient,
                              TaxProEwbMapper taxProEwbMapper) {
         this.taxProAuthService = taxProAuthService;
         this.ewbTaxproWebClient = ewbTaxproWebClient;
