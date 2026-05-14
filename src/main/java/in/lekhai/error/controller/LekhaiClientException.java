@@ -16,6 +16,11 @@ public class LekhaiClientException extends RuntimeException {
         this.statusCode = statusCode;
     }
 
+    public LekhaiClientException(String message, HttpStatusCode statusCode) {
+        super(message);
+        this.statusCode = HttpStatus.valueOf(statusCode.value());
+    }
+
     public LekhaiClientException(String message, Throwable throwable) {
         super(message, throwable);
     }

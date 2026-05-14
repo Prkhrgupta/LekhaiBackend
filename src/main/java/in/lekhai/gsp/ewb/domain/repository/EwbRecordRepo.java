@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EwbRecordRepo extends ListCrudRepository<EwbRecord, Long> {
-    List<EwbRecord> findByEwbDateGreaterThanEqualAndEwbDateLessThan(Instant start, Instant end);
-    List<EwbRecord> findByValidUpToLessThanEqualAndIsDeliveredFalse(Instant date);
+    List<EwbRecord> findByEwayBillDateGreaterThanEqualAndEwayBillDateLessThan(Instant start, Instant end);
+    List<EwbRecord> findByValidUpToLessThanEqualAndDeliveredFalse(Instant date);
     Optional<EwbRecord> findByEwbNo(String ewbNo);
+    List<EwbRecord> findByEwbNoIn(List<Long> ewbNos);
 }

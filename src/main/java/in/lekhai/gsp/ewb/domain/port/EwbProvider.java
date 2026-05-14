@@ -12,7 +12,7 @@ import java.util.List;
 public interface EwbProvider {
     List<EwbForTransporter> getEwbListForTransporter(String gstIn, Instant date, Integer shopCode);
     @Cacheable(value = "ewb", key = "#ewbNo")
-    EwbDetails getEwbDetails(String ewbNo, String gstIn, Integer shopCode);
+    EwbDetails getEwbDetails(Long ewbNo, String gstIn, Integer shopCode);
     ExtendValidity extendValidity(String ewbNo,
                                   Integer remainingDistance,
                                   ExtendValidityReason extensionReason,

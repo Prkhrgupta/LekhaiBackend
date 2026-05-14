@@ -1,18 +1,17 @@
 package in.lekhai.gsp.ewb.domain.enums;
 
+public enum DocumentType {
 
-public enum EwbVehicleType {
-
-    R("R", "Regular"),
-
-    O("O", "ODC (Over Dimensional Cargo)");
+    TAX_INVOICE("INV", "Tax Invoice"),
+    BILL_OF_SUPPLY("BIL", "Bill of Supply"),
+    BILL_OF_ENTRY("BOE", "Bill of Entry"),
+    DELIVERY_CHALLAN("CHL", "Delivery Challan"),
+    OTHERS("OTH", "Others");
 
     private final String code;
-
     private final String description;
 
-    EwbVehicleType(String code,
-                   String description) {
+    DocumentType(String code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -25,20 +24,20 @@ public enum EwbVehicleType {
         return description;
     }
 
-    public static EwbVehicleType fromCode(String code) {
+    public static DocumentType fromCode(String code) {
 
         if (code == null || code.isBlank()) {
             return null;
         }
 
-        for (EwbVehicleType value : values()) {
+        for (DocumentType value : values()) {
             if (value.code.equalsIgnoreCase(code.trim())) {
                 return value;
             }
         }
 
         throw new IllegalArgumentException(
-                "Invalid EwbVehicleType code: " + code
+                "Invalid DocumentType code: " + code
         );
     }
 }

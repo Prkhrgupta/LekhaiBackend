@@ -5,19 +5,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TransportMode {
 
-    ROAD("1", in.lekhai.contract.model.TransportMode.ROAD),
-    RAIL("2", in.lekhai.contract.model.TransportMode.RAIL),
-    AIR("3", in.lekhai.contract.model.TransportMode.AIR),
-    SHIP("4", in.lekhai.contract.model.TransportMode.SHIP),
-    IN_TRANSIT("5", in.lekhai.contract.model.TransportMode.IN_TRANSIT);
+    ROAD("1"),
+    RAIL("2"),
+    AIR("3"),
+    SHIP("4"),
+    IN_TRANSIT("5");
 
     private final String code;
-    private final in.lekhai.contract.model.TransportMode contractTransportMode;
 
-    TransportMode(String code,
-                  in.lekhai.contract.model.TransportMode contractTransportMode) {
+    TransportMode(String code) {
         this.code = code;
-        this.contractTransportMode = contractTransportMode;
     }
 
     @JsonValue
@@ -33,9 +30,5 @@ public enum TransportMode {
             }
         }
         throw new IllegalArgumentException("Unknown transportation mode: " + code);
-    }
-
-    public in.lekhai.contract.model.TransportMode getContractTransportMode() {
-        return contractTransportMode;
     }
 }

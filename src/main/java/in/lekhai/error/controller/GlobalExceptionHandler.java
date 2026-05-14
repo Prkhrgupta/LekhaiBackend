@@ -29,7 +29,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exception.getStatusCode()).body(
                 new Error()
                         .success(Boolean.FALSE)
-                        .message(exception.getLocalizedMessage())
+                        .error(exception.getStatusCode().toString())
+                        .message(exception.getMessage())
         );
     }
 

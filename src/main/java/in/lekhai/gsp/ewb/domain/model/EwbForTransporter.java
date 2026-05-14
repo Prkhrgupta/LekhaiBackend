@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 public class EwbForTransporter {
-    String ewbNo;
+    Long ewbNo;
     Instant ewbDate;
     EwbStatus status;
     String generatedGstIn;
@@ -19,11 +19,11 @@ public class EwbForTransporter {
     Integer timesExtended;
     Boolean rejected;
 
-    public String getEwbNo() {
+    public Long getEwbNo() {
         return ewbNo;
     }
 
-    public void setEwbNo(String ewbNo) {
+    public void setEwbNo(Long ewbNo) {
         this.ewbNo = ewbNo;
     }
 

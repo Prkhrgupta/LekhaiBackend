@@ -85,11 +85,11 @@ public class TransporterEwbController implements TransporterEwbApi{
 
 
     @RequestMapping(
-            method = {RequestMethod.POST},
-            value = {"/transporter/ewb/extend"}
+            method = {RequestMethod.GET},
+            value = {"/transporter/ewb/manual-trigger"}
     )
-    public ResponseEntity<Void> reloadEwb(OffsetDateTime dateTime) {
-        transporterScheduler.realoadEwbForDate(dateTime.toInstant());
+    public ResponseEntity<Void> reloadEwb() {
+        transporterScheduler.fetchEwbsForTransporterAtMidnight();
         return ResponseEntity.ok(null);
     }
 }

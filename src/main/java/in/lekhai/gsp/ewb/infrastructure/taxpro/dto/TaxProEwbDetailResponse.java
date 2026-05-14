@@ -2,48 +2,141 @@ package in.lekhai.gsp.ewb.infrastructure.taxpro.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import in.lekhai.gsp.ewb.domain.enums.EwbStatus;
-import in.lekhai.gsp.ewb.domain.enums.EwbVehicleType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TaxProEwbDetailResponse(
 
+        @JsonProperty("ewbNo")
         Long ewbNo,
 
-        Integer fromPincode,
-
+        @JsonProperty("ewayBillDate")
         String ewayBillDate,
 
-        Integer fromStateCode,
+        @JsonProperty("genMode")
+        String genMode,
 
-        Integer toPincode,
+        @JsonProperty("userGstin")
+        String userGstin,
 
-        Integer toStateCode,
+        @JsonProperty("supplyType")
+        String supplyType,
 
-        Integer noValidDays,
+        @JsonProperty("subSupplyType")
+        String subSupplyType,
 
-        String toPlace,
+        @JsonProperty("docType")
+        String documentType,
 
-        EwbStatus status,
+        @JsonProperty("docNo")
+        String documentNumber,
 
-        EwbVehicleType vehicleType,
+        @JsonProperty("docDate")
+        String documentDate,
 
-        @JsonProperty("fromAddr1")
-        String addressLine1,
-
-        @JsonProperty("fromAddr2")
-        String addressLine2,
+        @JsonProperty("fromGstin")
+        String fromGstin,
 
         @JsonProperty("fromTrdName")
         String fromTradeName,
 
+        @JsonProperty("fromAddr1")
+        String fromAddressLine1,
+
+        @JsonProperty("fromAddr2")
+        String fromAddressLine2,
+
+        @JsonProperty("fromPlace")
+        String fromPlace,
+
+        @JsonProperty("fromPincode")
+        Integer fromPincode,
+
+        @JsonProperty("fromStateCode")
+        Integer fromStateCode,
+
+        @JsonProperty("toGstin")
+        String toGstin,
+
         @JsonProperty("toTrdName")
         String toTradeName,
 
+        @JsonProperty("toAddr1")
+        String toAddressLine1,
+
+        @JsonProperty("toAddr2")
+        String toAddressLine2,
+
+        @JsonProperty("toPlace")
+        String toPlace,
+
+        @JsonProperty("toPincode")
+        Integer toPincode,
+
+        @JsonProperty("toStateCode")
+        Integer toStateCode,
+
+        @JsonProperty("totalValue")
+        BigDecimal totalValue,
+
+        @JsonProperty("totInvValue")
+        BigDecimal totalInvoiceValue,
+
+        @JsonProperty("cgstValue")
+        BigDecimal cgstValue,
+
+        @JsonProperty("sgstValue")
+        BigDecimal sgstValue,
+
+        @JsonProperty("igstValue")
+        BigDecimal igstValue,
+
+        @JsonProperty("cessValue")
+        BigDecimal cessValue,
+
+        @JsonProperty("otherValue")
+        BigDecimal otherValue,
+
+        @JsonProperty("cessNonAdvolValue")
+        BigDecimal cessNonAdvolValue,
+
+        @JsonProperty("transporterId")
+        String transporterGstin,
+
+        @JsonProperty("transporterName")
+        String transporterName,
+
+        @JsonProperty("status")
+        String status,
+
         @JsonProperty("actualDist")
         Integer actualDistance,
+
+        @JsonProperty("noValidDays")
+        Integer validDays,
+
+        @JsonProperty("validUpto")
+        String validUpto,
+
+        @JsonProperty("extendedTimes")
+        Integer extendedTimes,
+
+        @JsonProperty("rejectStatus")
+        String rejectStatus,
+
+        @JsonProperty("vehicleType")
+        String vehicleType,
+
+        @JsonProperty("actFromStateCode")
+        Integer actualFromStateCode,
+
+        @JsonProperty("actToStateCode")
+        Integer actualToStateCode,
+
+        @JsonProperty("transactionType")
+        String transactionType,
 
         @JsonProperty("VehiclListDetails")
         List<VehicleDetail> vehicleDetails
@@ -52,19 +145,38 @@ public record TaxProEwbDetailResponse(
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record VehicleDetail(
 
+            @JsonProperty("updMode")
+            String updateMode,
+
             @JsonProperty("vehicleNo")
-            String vehicleNo,
+            String vehicleNumber,
 
+            @JsonProperty("fromPlace")
             String fromPlace,
-            Integer fromState,
 
-            @JsonProperty("transDocNo")
-            String transDocNo,
+            @JsonProperty("fromState")
+            Integer fromStateCode,
 
-            @JsonProperty("transDocDate")
-            String transDocDate,
+            @JsonProperty("tripshtNo")
+            Long tripSheetNumber,
+
+            @JsonProperty("userGSTINTransin")
+            String transporterGstin,
+
+            @JsonProperty("enteredDate")
+            String enteredDate,
 
             @JsonProperty("transMode")
-            String transMode
-    ) {}
+            String transportMode,
+
+            @JsonProperty("transDocNo")
+            String transportDocumentNumber,
+
+            @JsonProperty("transDocDate")
+            String transportDocumentDate,
+
+            @JsonProperty("groupNo")
+            String groupNumber
+    ) {
+    }
 }

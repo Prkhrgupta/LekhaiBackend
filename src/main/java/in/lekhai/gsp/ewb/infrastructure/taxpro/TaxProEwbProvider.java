@@ -51,7 +51,7 @@ public class TaxProEwbProvider implements EwbProvider {
     }
 
     @Override
-    public EwbDetails getEwbDetails(String ewbNo, String gstIn, Integer shopCode) {
+    public EwbDetails getEwbDetails(Long ewbNo, String gstIn, Integer shopCode) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
         log.info("Starting to fetch details for ewbNo : [{}] for shopCode : [{}]", ewbNo, shopCode);
         TaxProEwbDetailResponse taxProEwbDetailResponse = ewbTaxproWebClient.getEwbDetailsByEwbNo(ewbNo, gstIn, ewbAuthToken)
@@ -69,7 +69,7 @@ public class TaxProEwbProvider implements EwbProvider {
                                          String gstIn,
                                          Integer shopCode) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
-        EwbDetails ewbDetail = getEwbDetails(ewbNo, gstIn, shopCode);
+        EwbDetails ewbDetail = getEwbDetails(Long.valueOf(ewbNo), gstIn, shopCode);
         EwbDetails.EwbVehicleDetails vehicleDetail = ewbDetail.ewbVehicleDetails().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException(String.format("No vehicle details available for ewbNo : [%s]", ewbNo)));
 
@@ -79,8 +79,8 @@ public class TaxProEwbProvider implements EwbProvider {
         TaxProExtendValidityRequest extendValidityRequest = new TaxProExtendValidityRequest(
                 Long.parseLong(ewbNo),
                 vehicleDetail.vehicleNo(),
-                vehicleDetail.fromPlace(),
-                vehicleDetail.fromState(),
+                ewbDetail.fromPlace(),
+                ewbDetail.fromState(),
                 remainingDistance,
                 vehicleDetail.transportDocumentNo(),
                 vehicleDetail.transportDocumentDate().format(ddMMyyyy),
