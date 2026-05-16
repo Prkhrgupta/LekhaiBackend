@@ -27,3 +27,21 @@ super-admin:
   username: ${SUPER_ADMIN_USERNAME:admin}
   password: ${SUPER_ADMIN_PASSWORD:admin@lekhai.in}
   name: ${SUPER_ADMIN_NAME:default_superadmin}
+
+features-flag:
+  ewb-scheduler: ${FF_EWB_SCHEDULER:71386}
+
+provider:
+  ewb: tax-pro
+
+tax-pro:
+  base-url: ${TAX_PRO_BASE_URL:https://f25a48f8-1536-496c-8cc6-5467a7b51005.mock.pstmn.io}
+
+  credentials:
+    asp-id: ${TAX_PRO_ASP_ID:1609983118}
+    asp-password: ${TAX_PRO_ASP_PASSWORD:Poonam@1234567}
+
+  ewb:
+    timeouts:
+      connect: 5s
+      read: 10s

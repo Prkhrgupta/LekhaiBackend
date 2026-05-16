@@ -70,4 +70,16 @@ public class PermissionBitCalculator {
             permissions.set(index, currentValue | (1L << bit));
         }
     }
+
+    public boolean isBitEnabled(List<Long> permissions, int bitPosition) {
+        int index = bitPosition / 64;
+        int bit = bitPosition % 64;
+
+        // If index doesn't exist → bit is definitely not set
+        if (index >= permissions.size()) {
+            return false;
+        }
+        long value = permissions.get(index);
+        return (value & (1L << bit)) != 0;
+    }
 }
