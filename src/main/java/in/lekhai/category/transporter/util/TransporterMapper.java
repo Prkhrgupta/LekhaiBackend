@@ -114,7 +114,7 @@ public class TransporterMapper {
         record.setEwbNo(ewbDetails.ewbNo());
         record.setGeneratorGstin(ewbDetails.generatorGstin());
         if (ewbDetails.ewbDate() != null) {
-            record.setEwayBillDate(ewbDetails.ewbDate().atZone(IST).toLocalDateTime());
+            record.setEwayBillDate(ewbDetails.ewbDate());
         }
         record.setFromPinCode(ewbDetails.fromPinCode());
         record.setFromTradeName(ewbDetails.consigner());

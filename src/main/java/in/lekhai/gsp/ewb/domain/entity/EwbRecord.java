@@ -25,7 +25,7 @@ public class EwbRecord {
     private Long ewbNo;
 
     @Column("eway_bill_date")
-    private LocalDateTime ewayBillDate;
+    private Instant ewayBillDate;
 
     @Column("valid_upto")
     private Instant validUpTo;
@@ -230,11 +230,11 @@ public class EwbRecord {
         this.ewbNo = ewbNo;
     }
 
-    public LocalDateTime getEwayBillDate() {
+    public Instant getEwayBillDate() {
         return ewayBillDate;
     }
 
-    public void setEwayBillDate(LocalDateTime ewayBillDate) {
+    public void setEwayBillDate(Instant ewayBillDate) {
         this.ewayBillDate = ewayBillDate;
     }
 
