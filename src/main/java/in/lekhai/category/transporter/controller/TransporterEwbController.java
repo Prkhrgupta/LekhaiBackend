@@ -45,7 +45,7 @@ public class TransporterEwbController implements TransporterEwbApi{
         if (format == null || format == Format.EXCEL) {
             return transporterService.exportExcelForEwbSummary(
                     fromDate.atStartOfDay(IST).toInstant(),
-                    toDate.atStartOfDay(IST).toInstant()
+                    toDate.plusDays(1).atStartOfDay(IST).toInstant()
             );
         }
 
