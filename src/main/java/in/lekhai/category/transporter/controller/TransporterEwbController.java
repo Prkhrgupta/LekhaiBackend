@@ -12,9 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -67,6 +65,11 @@ public class TransporterEwbController implements TransporterEwbApi{
                 includeDelivered != null && includeDelivered,
                 ewbStatus);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(@RequestParam("fromDate") LocalDate fromDate, @RequestParam("toDate") LocalDate toDate) {
+        return transporterService.exportExcelForEwbSummary(fromDate.atStartOfDay(IST).toInstant(), toDate.atStartOfDay(IST).toInstant());
     }
 
     @Override

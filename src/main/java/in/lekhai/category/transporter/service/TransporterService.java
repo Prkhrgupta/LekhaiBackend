@@ -1,6 +1,8 @@
 package in.lekhai.category.transporter.service;
 
+import in.lekhai.category.transporter.model.EwbSummaryExportDTO;
 import in.lekhai.category.transporter.util.TransporterMapper;
+import in.lekhai.common.excel.ExcelExporter;
 import in.lekhai.contract.model.EwbExtendRequest;
 import in.lekhai.contract.model.EwbExtendResponse;
 import in.lekhai.contract.model.EwbStatus;
@@ -20,7 +22,7 @@ import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -33,17 +35,20 @@ public class TransporterService {
     private final TransporterMapper transporterMapper;
     private final EwbProvider ewbProvider;
     private final ShopsRepo shopsRepo;
+    private final ExcelExporter excelExporter;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public TransporterService(EwbRecordRepo ewbRecordRepo,
                               TransporterMapper transporterMapper,
                               EwbProvider ewbProvider,
-                              ShopsRepo shopsRepo) {
+                              ShopsRepo shopsRepo,
+                              ExcelExporter excelExporter) {
         this.ewbRecordRepo = ewbRecordRepo;
         this.transporterMapper = transporterMapper;
         this.ewbProvider = ewbProvider;
         this.shopsRepo = shopsRepo;
+        this.excelExporter = excelExporter;
     }
 
     @ShopContextTransactional
@@ -119,6 +124,27 @@ public class TransporterService {
         log.info("Successfully extended validity for EwbNo : {} and saved to DB", ewbNo);
 
         return transporterMapper.toEwbExtendResponse(extendValidity);
+    }
+
+    @ShopContextTransactional
+    public ResponseEntity<byte[]> exportExcelForEwbSummary(Instant fromDate, Instant toDate) {
+        List<EwbSummary> summaries = getEwbsForTransporterByDate(fromDate, toDate, false, null);
+
+        List<EwbSummaryExportDTO> dtos = summaries.stream()
+                .map(EwbSummaryExportDTO::new)
+                .toList();
+
+        byte[] bytes = excelExporter.export(dtos, EwbSummaryExportDTO.class);
+
+        String filename = "EwbSummary_%s_to_%s.xlsx".formatted(fromDate, toDate)
+                .replace(":", "-");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        headers.setContentLength(bytes.length);
+
+        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
 
     @ShopContextTransactional

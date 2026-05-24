@@ -31,7 +31,7 @@ repositories {
 dependencies {
     // Lekhai Api Spec
 //    implementation "in.lekhai:lekhai-api-spec:1.0.4"
-    implementation 'in.lekhai:lekhaiapispec:1.0.8'
+    implementation 'in.lekhai:lekhaiapispec:1.0.4'
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -48,6 +48,9 @@ dependencies {
 
     // opencsv
     implementation 'com.opencsv:opencsv:5.9'
+
+    // apache POI
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
 	// JWT
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
