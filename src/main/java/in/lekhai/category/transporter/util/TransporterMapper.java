@@ -83,8 +83,8 @@ public class TransporterMapper {
         if (e.getDocumentDate() != null) {
             summary.setDocDate(e.getDocumentDate().atStartOfDay(IST).toOffsetDateTime());
         }
-        summary.setDestination(formatPlaceState(e.getToPlace(), e.getToStateCode()));
-        summary.setSource(formatPlaceState(e.getFromPlace(), e.getFromStateCode()));
+        summary.setDestination(e.getToPlace());
+        summary.setSource(e.getFromPlace());
         if (e.getValidUpTo() != null) {
             summary.setValidUpTo(e.getValidUpTo().atZone(IST).toOffsetDateTime());
         }
@@ -96,12 +96,6 @@ public class TransporterMapper {
         summary.setVehicleNo(vehicleDetails.getFirst().getVehicleNumber());
 
         return summary;
-    }
-
-    private static String formatPlaceState(String place, String stateCode) {
-        if (place == null && stateCode == null) return null;
-        if (stateCode == null) return place;
-        return (place != null ? place : "") + ", " + stateCode;
     }
 
     public EwbExtendResponse toEwbExtendResponse(ExtendValidity extendValidity) {

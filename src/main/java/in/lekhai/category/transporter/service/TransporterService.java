@@ -22,7 +22,12 @@ import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -127,8 +132,12 @@ public class TransporterService {
     }
 
     @ShopContextTransactional
-    public ResponseEntity<byte[]> exportExcelForEwbSummary(Instant fromDate, Instant toDate) {
-        List<EwbSummary> summaries = getEwbsForTransporterByDate(fromDate, toDate, false, null);
+    public ResponseEntity<Resource> exportExcelForEwbSummary(
+            Instant fromDate,
+            Instant toDate
+    ) {
+        List<EwbSummary> summaries =
+                getEwbsForTransporterByDate(fromDate, toDate, false, null);
 
         List<EwbSummaryExportDTO> dtos = summaries.stream()
                 .map(EwbSummaryExportDTO::new)
@@ -136,17 +145,25 @@ public class TransporterService {
 
         byte[] bytes = excelExporter.export(dtos, EwbSummaryExportDTO.class);
 
-        String filename = "EwbSummary_%s_to_%s.xlsx".formatted(fromDate, toDate)
+        String filename = "EwbSummary_%s_to_%s.xlsx"
+                .formatted(fromDate, toDate)
                 .replace(":", "-");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
-        headers.setContentLength(bytes.length);
+        ByteArrayResource resource = new ByteArrayResource(bytes);
 
-        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                )
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\""
+                )
+                .contentLength(bytes.length)
+                .body(resource);
     }
-
     @ShopContextTransactional
     public void saveAllEwbForTransporterForDate(String gstin,
                                                 Instant date,

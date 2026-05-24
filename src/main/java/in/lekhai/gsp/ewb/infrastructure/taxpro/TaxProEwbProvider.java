@@ -89,7 +89,7 @@ public class TaxProEwbProvider implements EwbProvider {
                 Long.parseLong(ewbNo),
                 ewbVehicleDetail.getVehicleNumber(),
                 ewbRecord.getFromPlace(),
-                Integer.valueOf(ewbRecord.getFromStateCode()),
+                Integer.valueOf(ewbRecord.getFromStateCode().trim()),
                 remainingDistance,
                 ewbVehicleDetail.getTransportDocumentNumber(),
                 ewbVehicleDetail.getTransportDocumentDate().format(ddMMyyyy),

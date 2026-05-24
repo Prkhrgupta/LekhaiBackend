@@ -5,14 +5,18 @@ import in.lekhai.category.transporter.service.TransporterScheduler;
 import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.contract.api.TransporterEwbApi;
 import in.lekhai.contract.model.*;
+import in.lekhai.error.controller.LekhaiClientException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -33,6 +37,22 @@ public class TransporterEwbController implements TransporterEwbApi{
         this.transporterScheduler = transporterScheduler;
     }
 
+
+    @Override
+    public ResponseEntity<Resource> downloadTransporterEwbs(@NotNull @Valid LocalDate fromDate,
+                                                            @NotNull @Valid LocalDate toDate,
+                                                            @Valid Format format) {
+        if (format == null || format == Format.EXCEL) {
+            return transporterService.exportExcelForEwbSummary(
+                    fromDate.atStartOfDay(IST).toInstant(),
+                    toDate.atStartOfDay(IST).toInstant()
+            );
+        }
+
+        throw new LekhaiClientException(
+                String.format("The format: %s is not available", format)
+        );
+    }
 
     @Override
     public ResponseEntity<EwbExtendResponse> extendEwbValidity(@NotNull String ewbNo,
@@ -65,11 +85,6 @@ public class TransporterEwbController implements TransporterEwbApi{
                 includeDelivered != null && includeDelivered,
                 ewbStatus);
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> export(@RequestParam("fromDate") LocalDate fromDate, @RequestParam("toDate") LocalDate toDate) {
-        return transporterService.exportExcelForEwbSummary(fromDate.atStartOfDay(IST).toInstant(), toDate.atStartOfDay(IST).toInstant());
     }
 
     @Override
