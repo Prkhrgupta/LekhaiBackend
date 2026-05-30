@@ -1,6 +1,10 @@
 package in.lekhai.category.transporter.service;
 
 import in.lekhai.category.transporter.util.TransporterMapper;
+import in.lekhai.contract.model.Day;
+import in.lekhai.contract.model.EwbExtendRequest;
+import in.lekhai.contract.model.EwbSummary;
+import in.lekhai.contract.model.ExtensionReason;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.shop.context.model.ShopContext;
@@ -11,7 +15,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -52,5 +59,26 @@ public class TransporterScheduler {
 
             ShopContext.clear();
         }
+    }
+
+    // every day 8:30 cron >> extend validity for expiring ewb
+    @Scheduled(cron = "0 30 20 * * *", zone = "Asia/Kolkata")
+    public void extendValidityCron() {
+        for(var shopCode : ewbSchedulerShopCodes) {
+            log.info("Extending validity for  shop {} at {} ", shopCode, LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
+            ShopContext.setShopCode(shopCode);
+
+            List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY);
+            for(var ewbSummary : ewbExpiring) {
+                transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));
+            }
+        }
+    }
+
+    private EwbExtendRequest buildEwbExtendRequest(EwbSummary ewbSummary) {
+        return new EwbExtendRequest()
+                .remainingDistance(ewbSummary.getActualDistance())
+                .extensionReason(ExtensionReason.OTHERS)
+                .extensionRemark("unloading issue");
     }
 }
