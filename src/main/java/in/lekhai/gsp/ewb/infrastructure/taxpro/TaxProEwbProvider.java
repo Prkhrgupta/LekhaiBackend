@@ -1,10 +1,14 @@
 package in.lekhai.gsp.ewb.infrastructure.taxpro;
 
+import in.lekhai.error.controller.LekhaiClientException;
+import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
+import in.lekhai.gsp.ewb.domain.entity.EwbVehicleDetail;
 import in.lekhai.gsp.ewb.domain.enums.ExtendValidityReason;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
+import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.client.EwbTaxProWebClient;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
@@ -25,16 +29,20 @@ public class TaxProEwbProvider implements EwbProvider {
     private final TaxProAuthService taxProAuthService;
     private final EwbTaxProWebClient ewbTaxproWebClient;
     private final TaxProEwbMapper taxProEwbMapper;
+
+    private final EwbRecordRepo ewbRecordRepo;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final static DateTimeFormatter ddMMyyyy = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public TaxProEwbProvider(TaxProAuthService taxProAuthService,
                              EwbTaxProWebClient ewbTaxproWebClient,
-                             TaxProEwbMapper taxProEwbMapper) {
+                             TaxProEwbMapper taxProEwbMapper,
+                             EwbRecordRepo ewbRecordRepo) {
         this.taxProAuthService = taxProAuthService;
         this.ewbTaxproWebClient = ewbTaxproWebClient;
         this.taxProEwbMapper = taxProEwbMapper;
+        this.ewbRecordRepo = ewbRecordRepo;
     }
 
     @Override
@@ -69,29 +77,30 @@ public class TaxProEwbProvider implements EwbProvider {
                                          String gstIn,
                                          Integer shopCode) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
-        EwbDetails ewbDetail = getEwbDetails(Long.valueOf(ewbNo), gstIn, shopCode);
-        EwbDetails.EwbVehicleDetails vehicleDetail = ewbDetail.ewbVehicleDetails().stream().findFirst()
-                .orElseThrow(() -> new RuntimeException(String.format("No vehicle details available for ewbNo : [%s]", ewbNo)));
+        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
+                .orElseThrow(() -> new LekhaiClientException(String.format("Requested EwbNo=[%s] not present in DB", ewbNo)));
+        EwbVehicleDetail ewbVehicleDetail = ewbRecord.getVehicleDetailSet().stream().findFirst()
+                .orElseThrow(() -> new LekhaiClientException(String.format("No Vehicle details found for EwbNo=[%s]", ewbNo)));
 
 
-        String transMode = vehicleDetail.transportMode().getCode();
+        String transMode = ewbVehicleDetail.getTransportMode().getCode();
         String consignmentStatus = consignmentStatusFromTranMode(transMode);
         TaxProExtendValidityRequest extendValidityRequest = new TaxProExtendValidityRequest(
                 Long.parseLong(ewbNo),
-                vehicleDetail.vehicleNo(),
-                ewbDetail.fromPlace(),
-                ewbDetail.fromState(),
+                ewbVehicleDetail.getVehicleNumber(),
+                ewbRecord.getFromPlace(),
+                Integer.valueOf(ewbRecord.getFromStateCode().trim()),
                 remainingDistance,
-                vehicleDetail.transportDocumentNo(),
-                vehicleDetail.transportDocumentDate().format(ddMMyyyy),
+                ewbVehicleDetail.getTransportDocumentNumber(),
+                ewbVehicleDetail.getTransportDocumentDate().format(ddMMyyyy),
                 transMode,
                 extensionReason.getReasonCode(),
                 extensionRemark,
-                ewbDetail.fromPinCode(),
+                ewbRecord.getFromPinCode(),
                 consignmentStatus,
                 transitTypeFromTranMode(transMode, "R"), // TODO: change this default from "R" to userInput
-                consignmentStatus.equals("T") ? ewbDetail.addressLine1() : null,
-                consignmentStatus.equals("T") ? ewbDetail.addressLine2() : null,
+                consignmentStatus.equals("T") ? ewbRecord.getFromAddressLine1() : null,
+                consignmentStatus.equals("T") ? ewbRecord.getFromAddressLine2() : null,
                 null
         );
 

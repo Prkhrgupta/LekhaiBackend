@@ -5,10 +5,12 @@ import in.lekhai.category.transporter.service.TransporterScheduler;
 import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.contract.api.TransporterEwbApi;
 import in.lekhai.contract.model.*;
+import in.lekhai.error.controller.LekhaiClientException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -37,6 +38,22 @@ public class TransporterEwbController implements TransporterEwbApi{
 
 
     @Override
+    public ResponseEntity<Resource> downloadTransporterEwbs(@NotNull @Valid LocalDate fromDate,
+                                                            @NotNull @Valid LocalDate toDate,
+                                                            @Valid Format format) {
+        if (format == null || format == Format.EXCEL) {
+            return transporterService.exportExcelForEwbSummary(
+                    fromDate.atStartOfDay(IST).toInstant(),
+                    toDate.plusDays(1).atStartOfDay(IST).toInstant()
+            );
+        }
+
+        throw new LekhaiClientException(
+                String.format("The format: %s is not available", format)
+        );
+    }
+
+    @Override
     public ResponseEntity<EwbExtendResponse> extendEwbValidity(@NotNull String ewbNo,
                                                                @Valid EwbExtendRequest ewbExtendRequest) {
         log.info("Called received to extend EWB with no : {}", ewbNo);
@@ -51,11 +68,13 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<List<EwbSummary>> getEwbExpiring(@NotNull @Valid OffsetDateTime offsetDateTime) {
-        List<EwbSummary> response = transporterService.getEwbExpiringTill(offsetDateTime.toInstant());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<EwbSummary>> getEwbExpiring(
+            @NotNull @Valid Day day
+    ) {
+        return ResponseEntity.ok(
+                transporterService.getEwbExpiringOn(day)
+        );
     }
-
     @Override
     public ResponseEntity<List<EwbSummary>> getTransporterEwbs(@NotNull @Valid LocalDate fromDate,
                                                                @NotNull @Valid LocalDate toDate,

@@ -1,10 +1,9 @@
 package in.lekhai.category.transporter.service;
 
+import in.lekhai.category.transporter.model.EwbSummaryExportDTO;
 import in.lekhai.category.transporter.util.TransporterMapper;
-import in.lekhai.contract.model.EwbExtendRequest;
-import in.lekhai.contract.model.EwbExtendResponse;
-import in.lekhai.contract.model.EwbStatus;
-import in.lekhai.contract.model.EwbSummary;
+import in.lekhai.common.excel.ExcelExporter;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.util.JwtUtil;
@@ -20,10 +19,17 @@ import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,17 +39,21 @@ public class TransporterService {
     private final TransporterMapper transporterMapper;
     private final EwbProvider ewbProvider;
     private final ShopsRepo shopsRepo;
+    private final ExcelExporter excelExporter;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
     public TransporterService(EwbRecordRepo ewbRecordRepo,
                               TransporterMapper transporterMapper,
                               EwbProvider ewbProvider,
-                              ShopsRepo shopsRepo) {
+                              ShopsRepo shopsRepo,
+                              ExcelExporter excelExporter) {
         this.ewbRecordRepo = ewbRecordRepo;
         this.transporterMapper = transporterMapper;
         this.ewbProvider = ewbProvider;
         this.shopsRepo = shopsRepo;
+        this.excelExporter = excelExporter;
     }
 
     @ShopContextTransactional
@@ -70,13 +80,23 @@ public class TransporterService {
     }
 
     @ShopContextTransactional
-    public List<EwbSummary> getEwbExpiringTill(Instant dateTime) {
-        return ewbRecordRepo.findByValidUpToLessThanEqualAndDeliveredFalse(dateTime)
+    public List<EwbSummary> getEwbExpiringOn(Day day) {
+
+        LocalDate targetDate = switch (day) {
+            case TODAY -> LocalDate.now(IST);
+            case TOMORROW -> LocalDate.now(IST).plusDays(1);
+            case DAY_AFTER_TOMORROW -> LocalDate.now(IST).plusDays(2);
+        };
+
+        Instant start = targetDate.atStartOfDay(IST).toInstant();
+        Instant end = targetDate.plusDays(1).atStartOfDay(IST).toInstant();
+
+        return ewbRecordRepo
+                .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end)
                 .stream()
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
     }
-
     @ShopContextTransactional
     public in.lekhai.contract.model.EwbDetails ewbDetailsByNo(String ewbNo) {
         EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
@@ -121,6 +141,39 @@ public class TransporterService {
         return transporterMapper.toEwbExtendResponse(extendValidity);
     }
 
+    @ShopContextTransactional
+    public ResponseEntity<Resource> exportExcelForEwbSummary(
+            Instant fromDate,
+            Instant toDate
+    ) {
+        List<EwbSummary> summaries =
+                getEwbsForTransporterByDate(fromDate, toDate, false, null);
+
+        List<EwbSummaryExportDTO> dtos = summaries.stream()
+                .map(EwbSummaryExportDTO::new)
+                .toList();
+
+        byte[] bytes = excelExporter.export(dtos, EwbSummaryExportDTO.class);
+
+        String filename = "EwbSummary_%s_to_%s.xlsx"
+                .formatted(fromDate, toDate)
+                .replace(":", "-");
+
+        ByteArrayResource resource = new ByteArrayResource(bytes);
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                )
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\""
+                )
+                .contentLength(bytes.length)
+                .body(resource);
+    }
     @ShopContextTransactional
     public void saveAllEwbForTransporterForDate(String gstin,
                                                 Instant date,
