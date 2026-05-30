@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -69,11 +68,13 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<List<EwbSummary>> getEwbExpiring(@NotNull @Valid OffsetDateTime offsetDateTime) {
-        List<EwbSummary> response = transporterService.getEwbExpiringTill(offsetDateTime.toInstant());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<EwbSummary>> getEwbExpiring(
+            @NotNull @Valid Day day
+    ) {
+        return ResponseEntity.ok(
+                transporterService.getEwbExpiringOn(day)
+        );
     }
-
     @Override
     public ResponseEntity<List<EwbSummary>> getTransporterEwbs(@NotNull @Valid LocalDate fromDate,
                                                                @NotNull @Valid LocalDate toDate,

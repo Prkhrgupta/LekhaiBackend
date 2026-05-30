@@ -3,10 +3,7 @@ package in.lekhai.category.transporter.service;
 import in.lekhai.category.transporter.model.EwbSummaryExportDTO;
 import in.lekhai.category.transporter.util.TransporterMapper;
 import in.lekhai.common.excel.ExcelExporter;
-import in.lekhai.contract.model.EwbExtendRequest;
-import in.lekhai.contract.model.EwbExtendResponse;
-import in.lekhai.contract.model.EwbStatus;
-import in.lekhai.contract.model.EwbSummary;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.util.JwtUtil;
@@ -31,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,7 @@ public class TransporterService {
     private final ExcelExporter excelExporter;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
     public TransporterService(EwbRecordRepo ewbRecordRepo,
                               TransporterMapper transporterMapper,
@@ -80,13 +80,23 @@ public class TransporterService {
     }
 
     @ShopContextTransactional
-    public List<EwbSummary> getEwbExpiringTill(Instant dateTime) {
-        return ewbRecordRepo.findByValidUpToLessThanEqualAndDeliveredFalse(dateTime)
+    public List<EwbSummary> getEwbExpiringOn(Day day) {
+
+        LocalDate targetDate = switch (day) {
+            case TODAY -> LocalDate.now(IST);
+            case TOMORROW -> LocalDate.now(IST).plusDays(1);
+            case DAY_AFTER_TOMORROW -> LocalDate.now(IST).plusDays(2);
+        };
+
+        Instant start = targetDate.atStartOfDay(IST).toInstant();
+        Instant end = targetDate.plusDays(1).atStartOfDay(IST).toInstant();
+
+        return ewbRecordRepo
+                .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end)
                 .stream()
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
     }
-
     @ShopContextTransactional
     public in.lekhai.contract.model.EwbDetails ewbDetailsByNo(String ewbNo) {
         EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
