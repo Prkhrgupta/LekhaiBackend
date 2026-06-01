@@ -6,7 +6,6 @@ import in.lekhai.common.excel.ExcelExporter;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
-import in.lekhai.core.util.JwtUtil;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.entity.EwbVehicleDetail;
@@ -16,6 +15,7 @@ import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
 import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
+import in.lekhai.shop.context.model.ShopContext;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +121,7 @@ public class TransporterService {
         log.info("Extend ewb request for ebwNo=[{}]", ewbNo);
         EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
                 .orElseThrow(() -> new RuntimeException(String.format("Invalid request to extend ewbNo : %s, Not present in DB", ewbNo)));
-        Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
+        Integer shopCode = ShopContext.getShopCode();
         Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);
         if(shopDetails.isEmpty()) {
             throw new RuntimeException("Something went wrong");

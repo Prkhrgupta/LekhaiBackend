@@ -61,8 +61,8 @@ public class TransporterScheduler {
         }
     }
 
-    // every day 8:30 cron >> extend validity for expiring ewb
-    @Scheduled(cron = "0 30 20 * * *", zone = "Asia/Kolkata")
+    // every day 9:40 PM cron >> extend validity for expiring ewb
+    @Scheduled(cron = "0 0 21 * * *", zone = "Asia/Kolkata")
     public void extendValidityCron() {
         for(var shopCode : ewbSchedulerShopCodes) {
             log.info("Extending validity for  shop {} at {} ", shopCode, LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
@@ -70,8 +70,14 @@ public class TransporterScheduler {
 
             List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY);
             for(var ewbSummary : ewbExpiring) {
-                transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));
+                try {
+                    transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));
+                } catch (Exception e) {
+                    log.error("Failed to Auto-extend ewbNo=[{}]", ewbSummary.getEwbNo());
+                }
             }
+
+            ShopContext.clear();
         }
     }
 
