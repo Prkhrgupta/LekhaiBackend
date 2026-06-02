@@ -82,10 +82,19 @@ public class TransporterService {
     @ShopContextTransactional
     public List<EwbSummary> getEwbExpiringOn(Day day) {
 
+        if (day == Day.ALREADY_EXPIRED) {
+            Instant start = LocalDate.now(IST).minusDays(7).atStartOfDay(IST).toInstant();
+            Instant endOfToday = LocalDate.now(IST).plusDays(1).atStartOfDay(IST).toInstant();
+            return ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
+                    .stream()
+                    .map(transporterMapper::ewbRecordToSummary)
+                    .toList();
+        }
+
         LocalDate targetDate = switch (day) {
             case TODAY -> LocalDate.now(IST);
             case TOMORROW -> LocalDate.now(IST).plusDays(1);
-            case DAY_AFTER_TOMORROW -> LocalDate.now(IST).plusDays(2);
+            default -> throw new IllegalArgumentException("Unexpected day: " + day);
         };
 
         Instant start = targetDate.atStartOfDay(IST).toInstant();
