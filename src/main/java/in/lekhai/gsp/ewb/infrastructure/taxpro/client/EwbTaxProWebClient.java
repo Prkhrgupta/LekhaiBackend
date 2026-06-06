@@ -53,16 +53,14 @@ public class EwbTaxProWebClient {
                         .build()
                 )
                 .retrieve()
-                .onStatus(
-                        HttpStatusCode::isError,
-                        response -> response.bodyToMono(TaxProErrorResponse.class)
+                .onStatus(HttpStatusCode::isError, response ->
+                        response.bodyToMono(TaxProErrorResponse.class)
                                 .flatMap(errorResponse -> {
                                     if (UNAUTHORIZED_ERROR_CODE.equals(errorResponse.error().errorCd())) {
                                         return Mono.error(new TaxProUnauthorizedException("Token expired"));
                                     }
                                     log.error("Failed to fetch all ewb for transporter for gst : [{}] and date : [{}]", gstIn, date);
-                                    return Mono.error(new RuntimeException(
-                                            errorResponse.error().message()
+                                    return Mono.error(new RuntimeException(errorResponse.error().message()
                                     ));
                                 })
                 )

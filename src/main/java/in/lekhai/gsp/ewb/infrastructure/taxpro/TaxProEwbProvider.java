@@ -16,6 +16,7 @@ import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityRequest;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.mapper.TaxProEwbMapper;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.service.TaxProAuthService;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static in.lekhai.gsp.ewb.infrastructure.taxpro.utils.TaxProPojoUtils.createExtendValidityRequest;
 
 @Component
 public class TaxProEwbProvider implements EwbProvider {
@@ -35,10 +38,12 @@ public class TaxProEwbProvider implements EwbProvider {
 
     private final static DateTimeFormatter ddMMyyyy = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public TaxProEwbProvider(TaxProAuthService taxProAuthService,
-                             EwbTaxProWebClient ewbTaxproWebClient,
-                             TaxProEwbMapper taxProEwbMapper,
-                             EwbRecordRepo ewbRecordRepo) {
+    public TaxProEwbProvider(
+            TaxProAuthService taxProAuthService,
+            EwbTaxProWebClient ewbTaxproWebClient,
+            TaxProEwbMapper taxProEwbMapper,
+            EwbRecordRepo ewbRecordRepo
+    ) {
         this.taxProAuthService = taxProAuthService;
         this.ewbTaxproWebClient = ewbTaxproWebClient;
         this.taxProEwbMapper = taxProEwbMapper;
@@ -70,58 +75,32 @@ public class TaxProEwbProvider implements EwbProvider {
     }
 
     @Override
-    public ExtendValidity extendValidity(String ewbNo,
-                                         Integer remainingDistance,
-                                         ExtendValidityReason extensionReason,
-                                         String extensionRemark,
-                                         String gstIn,
-                                         Integer shopCode) {
+    public ExtendValidity extendValidity(
+            String ewbNo,
+            Integer remainingDistance,
+            ExtendValidityReason extensionReason,
+            String extensionRemark,
+            String gstIn,
+            Integer shopCode
+    ) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
         EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
                 .orElseThrow(() -> new LekhaiClientException(String.format("Requested EwbNo=[%s] not present in DB", ewbNo)));
         EwbVehicleDetail ewbVehicleDetail = ewbRecord.getVehicleDetailSet().stream().findFirst()
                 .orElseThrow(() -> new LekhaiClientException(String.format("No Vehicle details found for EwbNo=[%s]", ewbNo)));
 
-
         String transMode = ewbVehicleDetail.getTransportMode().getCode();
         String consignmentStatus = consignmentStatusFromTranMode(transMode);
-        TaxProExtendValidityRequest extendValidityRequest = new TaxProExtendValidityRequest(
-                Long.parseLong(ewbNo),
-                ewbVehicleDetail.getVehicleNumber(),
-                ewbRecord.getFromPlace(),
-                Integer.valueOf(ewbRecord.getFromStateCode().trim()),
-                remainingDistance,
-                ewbVehicleDetail.getTransportDocumentNumber(),
-                ewbVehicleDetail.getTransportDocumentDate().format(ddMMyyyy),
-                transMode,
-                extensionReason.getReasonCode(),
-                extensionRemark,
-                ewbRecord.getFromPinCode(),
-                consignmentStatus,
-                transitTypeFromTranMode(transMode, "R"), // TODO: change this default from "R" to userInput
-                consignmentStatus.equals("T") ? ewbRecord.getFromAddressLine1() : null,
-                consignmentStatus.equals("T") ? ewbRecord.getFromAddressLine2() : null,
-                null
-        );
+        TaxProExtendValidityRequest extendValidityRequest = createExtendValidityRequest(ewbNo, remainingDistance,
+                extensionReason, extensionRemark, ewbVehicleDetail, ewbRecord, transMode, consignmentStatus);
 
-        TaxProExtendValidityResponse taxProExtendValidityResponse =
-                ewbTaxproWebClient.extendEwbValidity(extendValidityRequest, gstIn, ewbAuthToken)
+        TaxProExtendValidityResponse taxProExtendValidityResponse = ewbTaxproWebClient
+                .extendEwbValidity(extendValidityRequest, gstIn, ewbAuthToken)
                 .blockOptional()
-                .orElseThrow(() -> new RuntimeException(String.format("Something went wrong while extending validity for ewbNo : %s", ewbNo)));
+                .orElseThrow(() -> new RuntimeException(String.format("Something went wrong while extending " +
+                        "validity for ewbNo : %s", ewbNo)));
 
         return taxProEwbMapper.toExtendValidity(taxProExtendValidityResponse);
-    }
-
-    private String transitTypeFromTranMode(String transMode, String transitTypeInput) {
-        if ("5".equals(transMode)) {
-            if (transitTypeInput == null) return "";
-            if (transitTypeInput.equals("R") || transitTypeInput.equals("W") || transitTypeInput.equals("O")) {
-                return transitTypeInput;
-            }
-            return "";
-        }
-        // for transMode 1–4 → must be blank
-        return "";
     }
 
     private String consignmentStatusFromTranMode(String transMode) {

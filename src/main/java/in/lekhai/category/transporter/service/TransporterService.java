@@ -17,6 +17,7 @@ import in.lekhai.gsp.ewb.domain.port.EwbProvider;
 import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.shop.context.model.ShopContext;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
@@ -57,11 +58,15 @@ public class TransporterService {
     }
 
     @ShopContextTransactional
-    public List<EwbSummary> getEwbsForTransporterByDate(Instant fromDate,
-                                                        Instant toDate,
-                                                        boolean includeDelivered,
-                                                        EwbStatus ewbStatus) {
-        return ewbRecordRepo.findByEwayBillDateGreaterThanEqualAndEwayBillDateLessThan(fromDate, toDate)
+    public List<EwbSummary> getEwbsForTransporterByDate(
+            Instant fromDate,
+            Instant toDate,
+            boolean includeDelivered,
+            EwbStatus ewbStatus
+    ) {
+        log.info("Fetching EWB records for shop {} :: date : {} to {}", ShopContext.getShopCode(), fromDate, toDate);
+        List<EwbSummary> ewbRecords = ewbRecordRepo
+                .findByEwayBillDateGreaterThanEqualAndEwayBillDateLessThan(fromDate, toDate)
                 .stream()
                 .filter(ewb -> {
                     if (includeDelivered) return ewb.isDelivered();
@@ -77,18 +82,24 @@ public class TransporterService {
                 )
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
+        log.info("Successfully fetched EWB {} records for shop {} :: date {} : {}",
+                ewbRecords.size(), ShopContext.getShopCode(), fromDate, toDate);
+        return ewbRecords;
     }
 
     @ShopContextTransactional
     public List<EwbSummary> getEwbExpiringOn(Day day) {
-
         if (day == Day.ALREADY_EXPIRED) {
             Instant start = LocalDate.now(IST).minusDays(7).atStartOfDay(IST).toInstant();
             Instant endOfToday = LocalDate.now(IST).plusDays(1).atStartOfDay(IST).toInstant();
-            return ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
+            log.info("Fetching already expired EWBs for shop {}", ShopContext.getShopCode());
+            List<EwbSummary> expiredEwbs = ewbRecordRepo
+                    .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
                     .stream()
                     .map(transporterMapper::ewbRecordToSummary)
                     .toList();
+            log.info("Total expired EWBs for shop {} : {}", ShopContext.getShopCode(), expiredEwbs.size());
+            return expiredEwbs;
         }
 
         LocalDate targetDate = switch (day) {
@@ -100,27 +111,28 @@ public class TransporterService {
         Instant start = targetDate.atStartOfDay(IST).toInstant();
         Instant end = targetDate.plusDays(1).atStartOfDay(IST).toInstant();
 
-        return ewbRecordRepo
+        log.info("Fetching EWBs expiring {} for shop {}", day, ShopContext.getShopCode());
+        List<EwbSummary> ewbRecords = ewbRecordRepo
                 .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end)
                 .stream()
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
+        log.info("Total EWBs expiring {} for shop {} : {}", day, ShopContext.getShopCode(), ewbRecords.size());
+        return ewbRecords;
     }
     @ShopContextTransactional
     public in.lekhai.contract.model.EwbDetails ewbDetailsByNo(String ewbNo) {
-        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
-                .orElseThrow(() -> new LekhaiClientException("No Ewb record found for ewbNo=[{}]", HttpStatus.BAD_REQUEST));
+        EwbRecord ewbRecord = getEwbRecord(ewbNo);
         return transporterMapper.ewbRecordToContractEwbResponse(ewbRecord);
     }
 
     @ShopContextTransactional
     public void setDeliveredStatus(String ewbNo, boolean deliveryStatus) {
-        Optional<EwbRecord> ewbRecordOpt = ewbRecordRepo.findByEwbNo(ewbNo);
-        if(ewbRecordOpt.isEmpty()) {
-            throw new RuntimeException("Invalid Ewb passed");
-        }
-        ewbRecordOpt.get().setDelivered(deliveryStatus);
-        ewbRecordRepo.save(ewbRecordOpt.get());
+        EwbRecord ewbRecord = getEwbRecord(ewbNo);
+        ewbRecord.setDelivered(deliveryStatus);
+        log.info("Saving EWB with delivered status as {} for shop {} : {}", deliveryStatus, ShopContext.getShopCode(), ewbNo);
+        ewbRecordRepo.save(ewbRecord);
+        log.info("Saved EWB with delivered status as {} for shop {} : {}", deliveryStatus, ShopContext.getShopCode(), ewbNo);
     }
 
     @ShopContextTransactional
@@ -155,10 +167,9 @@ public class TransporterService {
             Instant fromDate,
             Instant toDate
     ) {
-        List<EwbSummary> summaries =
-                getEwbsForTransporterByDate(fromDate, toDate, false, null);
-
-        List<EwbSummaryExportDTO> dtos = summaries.stream()
+        List<EwbSummary> summaries = getEwbsForTransporterByDate(fromDate, toDate, false, null);
+        List<EwbSummaryExportDTO> dtos = summaries
+                .stream()
                 .map(EwbSummaryExportDTO::new)
                 .toList();
 
@@ -215,5 +226,16 @@ public class TransporterService {
         }
         List<EwbRecord> savedEwbRecords = ewbRecordRepo.saveAll(ewbRecordsToBeCreated);
         log.info("Saved [{}] ewb records for gstin=[{}] and shopCode=[{}]", savedEwbRecords.size(), gstin, shopCode);
+    }
+
+    private @NonNull EwbRecord getEwbRecord(String ewbNo) {
+        log.info("Fetching EWB record for shop {} : {}", ShopContext.getShopCode(), ewbNo);
+        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
+                .orElseThrow(() -> {
+                    log.error("No EWB record found for shop {} and ewbNo {}", ShopContext.getShopCode(), ewbNo);
+                    return new LekhaiClientException("No Ewb record found for ewbNo=[{}]", HttpStatus.BAD_REQUEST);
+                });
+        log.info("Successfully fetched EWB record for shop {} : {}", ShopContext.getShopCode(), ewbNo);
+        return ewbRecord;
     }
 }
