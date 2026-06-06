@@ -79,6 +79,8 @@ public class TransporterScheduler {
 
             ShopContext.clear();
         }
+
+        ShopContext.clear();
     }
 
     private EwbExtendRequest buildEwbExtendRequest(EwbSummary ewbSummary) {
