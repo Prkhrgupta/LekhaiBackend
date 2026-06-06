@@ -54,6 +54,7 @@ public class ShopService {
 
     @Transactional
     public ShopCreationResponse createTenantWithNewAdmin(CreateShopNewAdminRequest request) {
+        log.info("Request to create new shop : {}", request);
         Integer shopCode = AdminUtils.createShopCode();
         String adminUuid = adminService.registerAdmin(request.admin(), shopCode).uuid();
 

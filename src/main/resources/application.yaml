@@ -45,3 +45,7 @@ tax-pro:
     timeouts:
       connect: 5s
       read: 10s
+
+logging:
+  file:
+    path: logs
