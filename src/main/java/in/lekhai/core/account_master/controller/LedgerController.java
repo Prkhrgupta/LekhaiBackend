@@ -45,10 +45,23 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries() {
-        log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
-        LedgerSummaryResponse response = ledgerService.listLedgerSummaries();
-        log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
+    public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries(
+            Integer page,
+            Integer pageSize,
+            String search,
+            String searchField,
+            String sortBy,
+            String sortOrder
+    ) {
+        log.info("Got a request to fetch ledger summary {} :: page={}, pageSize={}, search={}, searchField={}, sortBy={}, sortOrder={}",
+                ShopContext.getShopCode(), page, pageSize, search, searchField, sortBy, sortOrder);
+        LedgerSummaryResponse response = ledgerService.listLedgerSummaries(
+                page, pageSize, search, searchField, sortBy, sortOrder
+        );
+        log.info("Successfully fetched ledger summary {} :: page={}, totalItems={}",
+                ShopContext.getShopCode(),
+                response.getPagination().getPage(),
+                response.getPagination().getTotalItems());
         return ResponseEntity.ok(response);
     }
 

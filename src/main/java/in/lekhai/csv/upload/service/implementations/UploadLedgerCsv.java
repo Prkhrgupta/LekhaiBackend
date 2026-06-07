@@ -67,7 +67,7 @@ public class UploadLedgerCsv extends CsvUploadService<LedgerCsvDto, Ledger> {
             String accountGroupName = dto.getAccountGroupName();
             Long accountGroupId = accountGroupRepository.findByNameIgnoreCase(accountGroupName)
                     .map(AccountGroup::getId)
-                    .orElseThrow(() -> new RuntimeException(String.format("no account group found with name %s", accountGroupName)));
+                    .orElse((1L));
 
             Long brokerId = brokerRepository.findBySitswiftCode(dto.getBrokerCsvId())
                     .map(Broker::getId)

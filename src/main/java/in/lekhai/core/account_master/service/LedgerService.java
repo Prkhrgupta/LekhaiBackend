@@ -30,6 +30,7 @@ public class LedgerService {
         private final TransportRepository transportRepository;
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
+        private final LedgerSummaryRepository ledgerSummaryRepository;
 
         public LedgerService(
                         LedgerRepository ledgerRepository,
@@ -39,7 +40,8 @@ public class LedgerService {
                         BrokerRepository brokerRepository,
                         TransportRepository transportRepository,
                         AccountGroupRepository accountGroupRepository,
-                        StateRepository stateRepository) {
+                        StateRepository stateRepository,
+                        LedgerSummaryRepository ledgerSummaryRepository) {
                 this.ledgerRepository = ledgerRepository;
                 this.gstDetailsRepository = gstDetailsRepository;
                 this.addressRepository = addressRepository;
@@ -48,6 +50,7 @@ public class LedgerService {
                 this.transportRepository = transportRepository;
                 this.accountGroupRepository = accountGroupRepository;
                 this.stateRepository = stateRepository;
+                this.ledgerSummaryRepository = ledgerSummaryRepository;
         }
 
         @ShopContextTransactional
@@ -215,25 +218,59 @@ public class LedgerService {
                                 .toList();
         }
 
+        /**
+         * Returns a paginated, searchable, and sortable ledger summary.
+         *
+         * @param page        1-indexed page number
+         * @param pageSize    number of items per page (max 100)
+         * @param search      optional search query for partial case-insensitive matching
+         * @param searchField optional field to restrict search to (name, state, area, accountGroup, gstin)
+         * @param sortBy      column to sort by (id, name, state, area, accountGroup, gstin)
+         * @param sortOrder   sort direction (asc or desc)
+         * @return LedgerSummaryResponse with paginated data and pagination metadata
+         */
         @ShopContextTransactional
-        public LedgerSummaryResponse listLedgerSummaries() {
-            List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
-            Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toMap(Area::getId, Area::getAreaName));
-            Map<Long, String> accountGroups = StreamSupport
-                    .stream(accountGroupRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toMap(AccountGroup::getId, AccountGroup::getName));
-            Map<Long, String> ledgerToStateId = StreamSupport
-                    .stream(addressRepository.findAll().spliterator(), false)
-                    .filter(address -> address.getLedgerId() != null)
-                    .filter(address -> address.getStateId() != null)
-                    .collect(Collectors.toMap(Address::getLedgerId, Address::getStateId,
-                            (a, b) -> a));
-            Map<String, String> states = StreamSupport.stream(stateRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toMap(State::getStateCode, State::getStateName));
-            Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
-                    .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
+        public LedgerSummaryResponse listLedgerSummaries(
+                Integer page,
+                Integer pageSize,
+                String search,
+                String searchField,
+                String sortBy,
+                String sortOrder
+        ) {
+            // Validate and normalize parameters
+            int effectivePage = (page != null && page >= 1) ? page : 1;
+            int effectivePageSize = (pageSize != null && pageSize >= 1) ? Math.min(pageSize, 100) : 50;
+            String effectiveSortBy = (sortBy != null && !sortBy.isBlank()) ? sortBy : "name";
+            String effectiveSortOrder = (sortOrder != null && !sortOrder.isBlank()) ? sortOrder : "asc";
 
+            // Count total matching items
+            long totalItems = ledgerSummaryRepository.countSummaries(search, searchField);
+
+            // Calculate pagination metadata
+            int totalPages = (int) Math.ceil((double) totalItems / effectivePageSize);
+            if (totalPages == 0) {
+                totalPages = 1;
+            }
+
+            boolean hasNext = effectivePage < totalPages;
+            boolean hasPrevious = effectivePage > 1;
+
+            // Fetch the page of data
+            int offset = (effectivePage - 1) * effectivePageSize;
+            List<LedgerSummaryItem> data;
+
+            if (effectivePage > totalPages && totalItems > 0) {
+                // Page exceeds total pages — return empty data
+                data = List.of();
+            } else {
+                data = ledgerSummaryRepository.findSummaries(
+                        search, searchField, effectiveSortBy, effectiveSortOrder,
+                        offset, effectivePageSize
+                );
+            }
+
+            // Build columns (always returned)
             List<LedgerSummaryColumn> columns = List.of(
                     new LedgerSummaryColumn().name("ID")
                             .type("number")
@@ -255,16 +292,18 @@ public class LedgerService {
                             .width(150)
             );
 
-            List<LedgerSummaryItem> data = ledgers.stream()
-                    .map(ledger -> new LedgerSummaryItem()
-                            .id(ledger.getId())
-                            .name(ledger.getName())
-                            .state(states.getOrDefault(ledgerToStateId.get(ledger.getId()), ""))
-                            .area(areas.getOrDefault(ledger.getDefaultAreaId(), ""))
-                            .accountGroup(accountGroups.getOrDefault(ledger.getAccountGroupId(), ""))
-                            .gstin(gstinMap.getOrDefault(ledger.getId(), ""))
-                    ).toList();
+            // Build pagination metadata
+            PaginationMeta pagination = new PaginationMeta()
+                    .page(effectivePage)
+                    .pageSize(effectivePageSize)
+                    .totalItems(totalItems)
+                    .totalPages(totalPages)
+                    .hasNext(hasNext)
+                    .hasPrevious(hasPrevious);
 
-            return new LedgerSummaryResponse().columns(columns).data(data);
+            return new LedgerSummaryResponse()
+                    .columns(columns)
+                    .data(data)
+                    .pagination(pagination);
         }
 }
