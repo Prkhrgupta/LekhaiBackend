@@ -4,12 +4,11 @@ import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.gsp.ewb.domain.entity.GspUserCredentials;
-import in.lekhai.gsp.ewb.domain.repository.GspUserCredentialsRepo;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.client.AuthTaxProClient;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProAuthResponse;
+import in.lekhai.gsp.ewb.repository.GspUserCredentialsRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,6 @@ public class TaxProAuthService {
         this.shopsRepo = shopsRepo;
     }
 
-    @Cacheable(value = "ewb", key = "#shopCode")
     public String getEwbAuthToken(Integer shopCode) {
         Optional<GspUserCredentials> gspUserCredentialsOptional = gspUserCredentialsRepo.findByShopCode(shopCode);
         if(gspUserCredentialsOptional.isEmpty()) {

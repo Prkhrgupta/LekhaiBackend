@@ -6,7 +6,7 @@ import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.util.JwtUtil;
 import in.lekhai.gsp.ewb.domain.entity.GspUserCredentials;
-import in.lekhai.gsp.ewb.domain.repository.GspUserCredentialsRepo;
+import in.lekhai.gsp.ewb.repository.GspUserCredentialsRepo;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.stereotype.Service;
 
