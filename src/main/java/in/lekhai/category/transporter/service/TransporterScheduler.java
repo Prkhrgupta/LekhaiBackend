@@ -68,7 +68,7 @@ public class TransporterScheduler {
             log.info("Extending validity for  shop {} at {} ", shopCode, LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
             ShopContext.setShopCode(shopCode);
 
-            List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY);
+            List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY, false);
             for(var ewbSummary : ewbExpiring) {
                 try {
                     transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));

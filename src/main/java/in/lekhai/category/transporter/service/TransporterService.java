@@ -4,9 +4,6 @@ import in.lekhai.category.transporter.model.EwbSummaryExportDTO;
 import in.lekhai.category.transporter.util.TransporterMapper;
 import in.lekhai.common.excel.ExcelExporter;
 import in.lekhai.contract.model.*;
-import in.lekhai.core.domain.shop.Shops;
-import in.lekhai.core.repository.shop.ShopsRepo;
-import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.entity.EwbVehicleDetail;
 import in.lekhai.gsp.ewb.domain.enums.ExtendValidityReason;
@@ -14,16 +11,15 @@ import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
-import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
+import in.lekhai.gsp.ewb.repository.EwbRecordRepo;
+import in.lekhai.gsp.ewb.repository.service.EwbRecordRepoService;
 import in.lekhai.shop.context.model.ShopContext;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,23 +33,25 @@ import java.util.stream.Collectors;
 @Service
 public class TransporterService {
     private final EwbRecordRepo ewbRecordRepo;
+    private final EwbRecordRepoService ewbRecordRepoService;
     private final TransporterMapper transporterMapper;
     private final EwbProvider ewbProvider;
-    private final ShopsRepo shopsRepo;
     private final ExcelExporter excelExporter;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
-    public TransporterService(EwbRecordRepo ewbRecordRepo,
-                              TransporterMapper transporterMapper,
-                              EwbProvider ewbProvider,
-                              ShopsRepo shopsRepo,
-                              ExcelExporter excelExporter) {
+    public TransporterService(
+            EwbRecordRepo ewbRecordRepo,
+            EwbRecordRepoService ewbRecordRepoService,
+            TransporterMapper transporterMapper,
+            EwbProvider ewbProvider,
+            ExcelExporter excelExporter
+    ) {
         this.ewbRecordRepo = ewbRecordRepo;
+        this.ewbRecordRepoService = ewbRecordRepoService;
         this.transporterMapper = transporterMapper;
         this.ewbProvider = ewbProvider;
-        this.shopsRepo = shopsRepo;
         this.excelExporter = excelExporter;
     }
 
@@ -88,20 +86,7 @@ public class TransporterService {
     }
 
     @ShopContextTransactional
-    public List<EwbSummary> getEwbExpiringOn(Day day) {
-        if (day == Day.ALREADY_EXPIRED) {
-            Instant start = LocalDate.now(IST).minusDays(7).atStartOfDay(IST).toInstant();
-            Instant endOfToday = LocalDate.now(IST).plusDays(1).atStartOfDay(IST).toInstant();
-            log.info("Fetching already expired EWBs for shop {}", ShopContext.getShopCode());
-            List<EwbSummary> expiredEwbs = ewbRecordRepo
-                    .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
-                    .stream()
-                    .map(transporterMapper::ewbRecordToSummary)
-                    .toList();
-            log.info("Total expired EWBs for shop {} : {}", ShopContext.getShopCode(), expiredEwbs.size());
-            return expiredEwbs;
-        }
-
+    public List<EwbSummary> getEwbExpiringOn(Day day, boolean includeDelivered) {
         LocalDate targetDate = switch (day) {
             case TODAY -> LocalDate.now(IST);
             case TOMORROW -> LocalDate.now(IST).plusDays(1);
@@ -112,51 +97,66 @@ public class TransporterService {
         Instant end = targetDate.plusDays(1).atStartOfDay(IST).toInstant();
 
         log.info("Fetching EWBs expiring {} for shop {}", day, ShopContext.getShopCode());
-        List<EwbSummary> ewbRecords = ewbRecordRepo
-                .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end)
+        List<EwbRecord> expiringEwbs;
+
+        if(includeDelivered) {
+            expiringEwbs = ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThan(start, end);
+        } else {
+            expiringEwbs = ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end);
+        }
+
+        List<EwbSummary> ewbRecords = expiringEwbs
                 .stream()
                 .map(transporterMapper::ewbRecordToSummary)
                 .toList();
+
         log.info("Total EWBs expiring {} for shop {} : {}", day, ShopContext.getShopCode(), ewbRecords.size());
         return ewbRecords;
     }
-    @ShopContextTransactional
+
+    public List<EwbSummary> getAlreadyExpiredEwbs() {
+        Instant start = LocalDate.now(IST).minusDays(7).atStartOfDay(IST).toInstant();
+        Instant endOfToday = LocalDate.now(IST).plusDays(1).atStartOfDay(IST).toInstant();
+        log.info("Fetching already expired EWBs for shop {}", ShopContext.getShopCode());
+        List<EwbSummary> expiredEwbs = ewbRecordRepo
+                .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
+                .stream()
+                .map(transporterMapper::ewbRecordToSummary)
+                .toList();
+        log.info("Total expired EWBs for shop {} : {}", ShopContext.getShopCode(), expiredEwbs.size());
+        return expiredEwbs;
+    }
+
     public in.lekhai.contract.model.EwbDetails ewbDetailsByNo(String ewbNo) {
-        EwbRecord ewbRecord = getEwbRecord(ewbNo);
+        EwbRecord ewbRecord = ewbRecordRepoService.getEwbRecord(ewbNo);
         return transporterMapper.ewbRecordToContractEwbResponse(ewbRecord);
     }
 
     @ShopContextTransactional
     public void setDeliveredStatus(String ewbNo, boolean deliveryStatus) {
-        EwbRecord ewbRecord = getEwbRecord(ewbNo);
+        EwbRecord ewbRecord = ewbRecordRepoService.getEwbRecord(ewbNo);
         ewbRecord.setDelivered(deliveryStatus);
         log.info("Saving EWB with delivered status as {} for shop {} : {}", deliveryStatus, ShopContext.getShopCode(), ewbNo);
         ewbRecordRepo.save(ewbRecord);
         log.info("Saved EWB with delivered status as {} for shop {} : {}", deliveryStatus, ShopContext.getShopCode(), ewbNo);
     }
 
-    @ShopContextTransactional
     public EwbExtendResponse extendEwbValidity(String ewbNo,
                                                EwbExtendRequest extendValidityRequest
     ) {
         log.info("Extend ewb request for ebwNo=[{}]", ewbNo);
-        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
-                .orElseThrow(() -> new RuntimeException(String.format("Invalid request to extend ewbNo : %s, Not present in DB", ewbNo)));
+        EwbRecord ewbRecord = ewbRecordRepoService.getEwbRecord(ewbNo);
+        String gstNumber = ewbRecordRepoService.getGstNumberForShop();
         Integer shopCode = ShopContext.getShopCode();
-        Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);
-        if(shopDetails.isEmpty()) {
-            throw new RuntimeException("Something went wrong");
-        }
-        String gstNumber = shopDetails.get().getGstNumber();
-        ExtendValidity extendValidity = ewbProvider.extendValidity(ewbNo,
+        ExtendValidity extendValidity = ewbProvider.extendValidity(
+                ewbNo,
                 extendValidityRequest.getRemainingDistance(),
                 ExtendValidityReason.valueOf(extendValidityRequest.getExtensionReason().toString()),
                 extendValidityRequest.getExtensionRemark(),
                 gstNumber,
-                shopCode);
-        // save updated validUpTo to DB
-        ewbRecord.setValidUpTo(extendValidity.newValidUpTo());
-        ewbRecordRepo.save(ewbRecord);
+                shopCode
+        );
+        ewbRecordRepoService.extendAndSaveEwbValidity(ewbRecord, extendValidity);
         log.info("Successfully extended validity for EwbNo : {} and saved to DB", ewbNo);
 
         return transporterMapper.toEwbExtendResponse(extendValidity);
@@ -210,8 +210,8 @@ public class TransporterService {
         log.info("Total no of Ewbs to be saved for shopCode=[{}] are [{}]", shopCode, ewbNoList.size());
         List<EwbRecord> ewbRecordsToBeCreated = new ArrayList<>();
 
-        for(Long ewbNo : ewbNoList) {
-            if(existingEwbNos.contains(ewbNo)) {
+        for (Long ewbNo : ewbNoList) {
+            if (existingEwbNos.contains(ewbNo)) {
                 log.info("EwbNo=[{}] already exists in the DB for date=[{}]", ewbNo, date);
                 continue;
             }
@@ -226,16 +226,5 @@ public class TransporterService {
         }
         List<EwbRecord> savedEwbRecords = ewbRecordRepo.saveAll(ewbRecordsToBeCreated);
         log.info("Saved [{}] ewb records for gstin=[{}] and shopCode=[{}]", savedEwbRecords.size(), gstin, shopCode);
-    }
-
-    private @NonNull EwbRecord getEwbRecord(String ewbNo) {
-        log.info("Fetching EWB record for shop {} : {}", ShopContext.getShopCode(), ewbNo);
-        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
-                .orElseThrow(() -> {
-                    log.error("No EWB record found for shop {} and ewbNo {}", ShopContext.getShopCode(), ewbNo);
-                    return new LekhaiClientException("No Ewb record found for ewbNo=[{}]", HttpStatus.BAD_REQUEST);
-                });
-        log.info("Successfully fetched EWB record for shop {} : {}", ShopContext.getShopCode(), ewbNo);
-        return ewbRecord;
     }
 }

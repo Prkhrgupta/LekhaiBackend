@@ -8,7 +8,7 @@ import in.lekhai.gsp.ewb.domain.entity.EwbRecord;
 import in.lekhai.gsp.ewb.domain.entity.EwbVehicleDetail;
 import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
-import in.lekhai.gsp.ewb.domain.repository.EwbVehicleDetailRepo;
+import in.lekhai.gsp.ewb.repository.EwbVehicleDetailRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

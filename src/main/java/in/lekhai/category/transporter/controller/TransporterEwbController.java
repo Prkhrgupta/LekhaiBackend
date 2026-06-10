@@ -4,13 +4,7 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.category.transporter.service.TransporterScheduler;
 import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.contract.api.TransporterEwbApi;
-import in.lekhai.contract.model.Day;
-import in.lekhai.contract.model.EwbDetails;
-import in.lekhai.contract.model.EwbExtendRequest;
-import in.lekhai.contract.model.EwbExtendResponse;
-import in.lekhai.contract.model.EwbStatus;
-import in.lekhai.contract.model.EwbSummary;
-import in.lekhai.contract.model.Format;
+import in.lekhai.contract.model.*;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -84,11 +78,17 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<List<EwbSummary>> getEwbExpiring(
-            @NotNull @Valid Day day
-    ) {
+    public ResponseEntity<List<EwbSummary>> getEwbExpiring(@NotNull @Valid Day day,
+                                                           @Valid Boolean includeDelivered) {
         log.info("Got a request to fetch expiring EWBs for shop {} :: {}", ShopContext.getShopCode(), day);
-        List<EwbSummary> response = transporterService.getEwbExpiringOn(day);
+        List<EwbSummary> response;
+
+        if(day.equals(Day.ALREADY_EXPIRED)) {
+            response = transporterService.getAlreadyExpiredEwbs();
+        } else {
+            response = transporterService.getEwbExpiringOn(day, includeDelivered);
+        }
+
         log.info("Successfully fetched all expiring EWBs for shop {} :: {}", ShopContext.getShopCode(), day);
         return ResponseEntity.ok(response);
     }

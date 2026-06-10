@@ -8,7 +8,6 @@ import in.lekhai.gsp.ewb.domain.model.EwbDetails;
 import in.lekhai.gsp.ewb.domain.model.EwbForTransporter;
 import in.lekhai.gsp.ewb.domain.model.ExtendValidity;
 import in.lekhai.gsp.ewb.domain.port.EwbProvider;
-import in.lekhai.gsp.ewb.domain.repository.EwbRecordRepo;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.client.EwbTaxProWebClient;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbDetailResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProEwbForTransporterResponse;
@@ -16,13 +15,12 @@ import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityRequest;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProExtendValidityResponse;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.mapper.TaxProEwbMapper;
 import in.lekhai.gsp.ewb.infrastructure.taxpro.service.TaxProAuthService;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import in.lekhai.gsp.ewb.repository.service.EwbRecordRepoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static in.lekhai.gsp.ewb.infrastructure.taxpro.utils.TaxProPojoUtils.createExtendValidityRequest;
@@ -33,21 +31,19 @@ public class TaxProEwbProvider implements EwbProvider {
     private final EwbTaxProWebClient ewbTaxproWebClient;
     private final TaxProEwbMapper taxProEwbMapper;
 
-    private final EwbRecordRepo ewbRecordRepo;
+    private final EwbRecordRepoService ewbRecordRepoService;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    private final static DateTimeFormatter ddMMyyyy = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public TaxProEwbProvider(
             TaxProAuthService taxProAuthService,
             EwbTaxProWebClient ewbTaxproWebClient,
             TaxProEwbMapper taxProEwbMapper,
-            EwbRecordRepo ewbRecordRepo
+            EwbRecordRepoService ewbRecordRepoService
     ) {
         this.taxProAuthService = taxProAuthService;
         this.ewbTaxproWebClient = ewbTaxproWebClient;
         this.taxProEwbMapper = taxProEwbMapper;
-        this.ewbRecordRepo = ewbRecordRepo;
+        this.ewbRecordRepoService = ewbRecordRepoService;
     }
 
     @Override
@@ -84,8 +80,7 @@ public class TaxProEwbProvider implements EwbProvider {
             Integer shopCode
     ) {
         String ewbAuthToken = taxProAuthService.getEwbAuthToken(shopCode);
-        EwbRecord ewbRecord = ewbRecordRepo.findByEwbNo(ewbNo)
-                .orElseThrow(() -> new LekhaiClientException(String.format("Requested EwbNo=[%s] not present in DB", ewbNo)));
+        EwbRecord ewbRecord = ewbRecordRepoService.getEwbRecord(ewbNo);
         EwbVehicleDetail ewbVehicleDetail = ewbRecord.getVehicleDetailSet().stream().findFirst()
                 .orElseThrow(() -> new LekhaiClientException(String.format("No Vehicle details found for EwbNo=[%s]", ewbNo)));
 
