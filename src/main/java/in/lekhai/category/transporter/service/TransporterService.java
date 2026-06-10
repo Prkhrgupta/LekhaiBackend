@@ -15,6 +15,7 @@ import in.lekhai.gsp.ewb.repository.EwbRecordRepo;
 import in.lekhai.gsp.ewb.repository.service.EwbRecordRepoService;
 import in.lekhai.shop.context.model.ShopContext;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
@@ -28,7 +29,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class TransporterService {
@@ -40,6 +40,7 @@ public class TransporterService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
+    private static final int BATCH_SIZE = 10;
 
     public TransporterService(
             EwbRecordRepo ewbRecordRepo,
@@ -96,35 +97,15 @@ public class TransporterService {
         Instant start = targetDate.atStartOfDay(IST).toInstant();
         Instant end = targetDate.plusDays(1).atStartOfDay(IST).toInstant();
 
-        log.info("Fetching EWBs expiring {} for shop {}", day, ShopContext.getShopCode());
-        List<EwbRecord> expiringEwbs;
-
-        if(includeDelivered) {
-            expiringEwbs = ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThan(start, end);
-        } else {
-            expiringEwbs = ewbRecordRepo.findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, end);
-        }
-
-        List<EwbSummary> ewbRecords = expiringEwbs
-                .stream()
-                .map(transporterMapper::ewbRecordToSummary)
-                .toList();
-
-        log.info("Total EWBs expiring {} for shop {} : {}", day, ShopContext.getShopCode(), ewbRecords.size());
-        return ewbRecords;
+        return includeDelivered ?
+                ewbRecordRepoService.getExpiringEwbsOnDayIncludingDelivered(start, end)
+                : ewbRecordRepoService.getExpiringEwbsOnDayExcludingDelivered(start, end);
     }
 
     public List<EwbSummary> getAlreadyExpiredEwbs() {
         Instant start = LocalDate.now(IST).minusDays(7).atStartOfDay(IST).toInstant();
         Instant endOfToday = LocalDate.now(IST).plusDays(1).atStartOfDay(IST).toInstant();
-        log.info("Fetching already expired EWBs for shop {}", ShopContext.getShopCode());
-        List<EwbSummary> expiredEwbs = ewbRecordRepo
-                .findByValidUpToGreaterThanEqualAndValidUpToLessThanAndDeliveredFalse(start, endOfToday)
-                .stream()
-                .map(transporterMapper::ewbRecordToSummary)
-                .toList();
-        log.info("Total expired EWBs for shop {} : {}", ShopContext.getShopCode(), expiredEwbs.size());
-        return expiredEwbs;
+        return ewbRecordRepoService.getExpiringEwbsOnDayExcludingDelivered(start, endOfToday);
     }
 
     public in.lekhai.contract.model.EwbDetails ewbDetailsByNo(String ewbNo) {
@@ -194,37 +175,35 @@ public class TransporterService {
                 .contentLength(bytes.length)
                 .body(resource);
     }
-    @ShopContextTransactional
-    public void saveAllEwbForTransporterForDate(String gstin,
-                                                Instant date,
-                                                Integer shopCode) {
-        List<Long> ewbNoList = ewbProvider.getEwbListForTransporter(gstin, date, shopCode)
+
+
+    public void saveAllEwbForTransporterForDate(String gstin, Instant date, Integer shopCode) {
+        List<Long> ewbNoList = getEwbNumbersForTransporter(gstin, date, shopCode);
+        List<Long> newEwbNumber = ewbRecordRepoService.findNewEwbsByEwbNumbers(ewbNoList);
+
+        int savedBatchCount = 0;
+        List<EwbRecord> ewbRecordsToBeCreated = new ArrayList<>();
+        for (Long ewbNo : newEwbNumber) {
+            EwbDetails ewbDetails = ewbProvider.getEwbDetails(ewbNo, gstin, shopCode);
+            EwbRecord ewbRecord = transporterMapper.convertEwbDetailToEwbRecord(ewbDetails);
+            EwbVehicleDetail ewbVehicleDetail = transporterMapper
+                    .convertEwbDetailToEwbVehicle(ewbDetails.ewbVehicleDetails().getFirst());
+            ewbRecord.getVehicleDetailSet().add(ewbVehicleDetail);
+            ewbRecordsToBeCreated.add(ewbRecord);
+
+            if(ewbRecordsToBeCreated.size() == BATCH_SIZE
+                    || ewbRecordsToBeCreated.size() - savedBatchCount < BATCH_SIZE) {
+                savedBatchCount += BATCH_SIZE;
+                ewbRecordRepoService.saveListOfEwbRecords(gstin, ewbRecordsToBeCreated);
+            }
+        }
+    }
+
+    private @NonNull List<Long> getEwbNumbersForTransporter(String gstin, Instant date, Integer shopCode) {
+        return ewbProvider
+                .getEwbListForTransporter(gstin, date, shopCode)
                 .stream()
                 .map(EwbForTransporter::getEwbNo)
                 .toList();
-        Set<Long> existingEwbNos = ewbRecordRepo.findByEwbNoIn(ewbNoList)
-                .stream()
-                .map(EwbRecord::getEwbNo)
-                .collect(Collectors.toSet());
-
-        log.info("Total no of Ewbs to be saved for shopCode=[{}] are [{}]", shopCode, ewbNoList.size());
-        List<EwbRecord> ewbRecordsToBeCreated = new ArrayList<>();
-
-        for (Long ewbNo : ewbNoList) {
-            if (existingEwbNos.contains(ewbNo)) {
-                log.info("EwbNo=[{}] already exists in the DB for date=[{}]", ewbNo, date);
-                continue;
-            }
-            EwbDetails ewbDetails = ewbProvider.getEwbDetails(ewbNo, gstin, shopCode);
-            EwbRecord ewbRecord = transporterMapper.convertEwbDetailToEwbRecord(ewbDetails);
-            EwbVehicleDetail ewbVehicleDetail =
-                    transporterMapper.convertEwbDetailToEwbVehicle(
-                            ewbDetails.ewbVehicleDetails().getFirst()
-                    );
-            ewbRecord.getVehicleDetailSet().add(ewbVehicleDetail);
-            ewbRecordsToBeCreated.add(ewbRecord);
-        }
-        List<EwbRecord> savedEwbRecords = ewbRecordRepo.saveAll(ewbRecordsToBeCreated);
-        log.info("Saved [{}] ewb records for gstin=[{}] and shopCode=[{}]", savedEwbRecords.size(), gstin, shopCode);
     }
 }
