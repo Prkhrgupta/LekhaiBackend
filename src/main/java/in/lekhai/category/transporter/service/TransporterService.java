@@ -18,17 +18,17 @@ import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransact
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class TransporterService {
@@ -149,31 +149,34 @@ public class TransporterService {
             Instant toDate
     ) {
         List<EwbSummary> summaries = getEwbsForTransporterByDate(fromDate, toDate, false, null);
-        List<EwbSummaryExportDTO> dtos = summaries
+        List<EwbSummaryExportDTO> ewbSummaryExportList = summaries
                 .stream()
                 .map(EwbSummaryExportDTO::new)
                 .toList();
-
-        byte[] bytes = excelExporter.export(dtos, EwbSummaryExportDTO.class);
 
         String filename = "EwbSummary_%s_to_%s.xlsx"
                 .formatted(fromDate, toDate)
                 .replace(":", "-");
 
-        ByteArrayResource resource = new ByteArrayResource(bytes);
+        byte[] bytes = excelExporter.export(ewbSummaryExportList, EwbSummaryExportDTO.class);
+        return excelExporter.convertByteArrayToApiResponse(filename, bytes);
+    }
 
-        return ResponseEntity.ok()
-                .contentType(
-                        MediaType.parseMediaType(
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-                )
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename + "\""
-                )
-                .contentLength(bytes.length)
-                .body(resource);
+    public ResponseEntity<Resource> exportExcelForExpiringEwbs(
+           Day day,
+           boolean includeDelivery
+    ) {
+        List<EwbSummary> expiringEwbs = getEwbExpiringOn(day, includeDelivery);
+        List<EwbSummaryExportDTO> expiringEwbExportDtoList = expiringEwbs
+                .stream()
+                .map(EwbSummaryExportDTO::new)
+                .toList();
+        byte[] export = excelExporter.export(expiringEwbExportDtoList, EwbSummaryExportDTO.class);
+
+        String filename = "EwbExpiring_%s.xlsx"
+                .formatted(day);
+
+        return excelExporter.convertByteArrayToApiResponse(filename, export);
     }
 
 
@@ -181,7 +184,6 @@ public class TransporterService {
         List<Long> ewbNoList = getEwbNumbersForTransporter(gstin, date, shopCode);
         List<Long> newEwbNumber = ewbRecordRepoService.findNewEwbsByEwbNumbers(ewbNoList);
 
-        int savedBatchCount = 0;
         List<EwbRecord> ewbRecordsToBeCreated = new ArrayList<>();
         for (Long ewbNo : newEwbNumber) {
             EwbDetails ewbDetails = ewbProvider.getEwbDetails(ewbNo, gstin, shopCode);
@@ -190,13 +192,8 @@ public class TransporterService {
                     .convertEwbDetailToEwbVehicle(ewbDetails.ewbVehicleDetails().getFirst());
             ewbRecord.getVehicleDetailSet().add(ewbVehicleDetail);
             ewbRecordsToBeCreated.add(ewbRecord);
-
-            if(ewbRecordsToBeCreated.size() == BATCH_SIZE
-                    || ewbRecordsToBeCreated.size() - savedBatchCount < BATCH_SIZE) {
-                savedBatchCount += BATCH_SIZE;
-                ewbRecordRepoService.saveListOfEwbRecords(gstin, ewbRecordsToBeCreated);
-            }
         }
+        ewbRecordRepoService.saveListOfEwbRecords(gstin, ewbRecordsToBeCreated);
     }
 
     private @NonNull List<Long> getEwbNumbersForTransporter(String gstin, Instant date, Integer shopCode) {

@@ -4,13 +4,7 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.category.transporter.service.TransporterScheduler;
 import in.lekhai.category.transporter.service.TransporterService;
 import in.lekhai.contract.api.TransporterEwbApi;
-import in.lekhai.contract.model.Day;
-import in.lekhai.contract.model.EwbDetails;
-import in.lekhai.contract.model.EwbExtendRequest;
-import in.lekhai.contract.model.EwbExtendResponse;
-import in.lekhai.contract.model.EwbStatus;
-import in.lekhai.contract.model.EwbSummary;
-import in.lekhai.contract.model.Format;
+import in.lekhai.contract.model.*;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
@@ -28,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
@@ -41,6 +36,21 @@ public class TransporterEwbController implements TransporterEwbApi{
                                     TransporterScheduler transporterScheduler) {
         this.transporterService = transporterService;
         this.transporterScheduler = transporterScheduler;
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadEwbExpiring(
+            @NotNull @Valid Day day,
+            @Valid Boolean includeDelivery,
+            @Valid Format format
+    ) {
+        log.error("Got request to download expiring Ewb for : {} for shop=[{}]", day, ShopContext.getShopCode());
+        if (Objects.requireNonNull(format) == Format.EXCEL) {
+            return transporterService.exportExcelForExpiringEwbs(day, includeDelivery);
+        } else {
+            log.error("Unsupported format=[{}] received from shop=[{}]", format, ShopContext.getShopCode());
+            throw new LekhaiClientException(String.format("The format: %s is not available", format));
+        }
     }
 
     @Override
@@ -71,7 +81,7 @@ public class TransporterEwbController implements TransporterEwbApi{
         log.info("Got a request to extend EWB validity for shop {} : {} :: {}",
                 ShopContext.getShopCode(), ewbNo, ewbExtendRequest.getExtensionReason());
         EwbExtendResponse ewbResponse = transporterService.extendEwbValidity(ewbNo, ewbExtendRequest);
-        log.info("Successfully extended EWB validaity for shop {} : {}", ShopContext.getShopCode(), ewbNo);
+        log.info("Successfully extended EWB validity for shop {} : {}", ShopContext.getShopCode(), ewbNo);
         return ResponseEntity.ok(ewbResponse);
     }
 
