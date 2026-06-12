@@ -9,6 +9,7 @@ import in.lekhai.gsp.ewb.infrastructure.taxpro.dto.TaxProAuthResponse;
 import in.lekhai.gsp.ewb.repository.GspUserCredentialsRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class TaxProAuthService {
         this.shopsRepo = shopsRepo;
     }
 
+    @Cacheable(value = "ewb", key = "#shopCode")
     public String getEwbAuthToken(Integer shopCode) {
         Optional<GspUserCredentials> gspUserCredentialsOptional = gspUserCredentialsRepo.findByShopCode(shopCode);
         if(gspUserCredentialsOptional.isEmpty()) {

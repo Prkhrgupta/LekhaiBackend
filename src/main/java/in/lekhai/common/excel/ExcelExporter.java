@@ -2,6 +2,11 @@ package in.lekhai.common.excel;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -126,5 +131,22 @@ public class ExcelExporter {
 
             throw new RuntimeException("Failed to export excel", e);
         }
+    }
+
+    public ResponseEntity<Resource> convertByteArrayToApiResponse(String fileName, byte[] bytes) {
+        ByteArrayResource resource = new ByteArrayResource(bytes);
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                )
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\""
+                )
+                .contentLength(bytes.length)
+                .body(resource);
     }
 }
