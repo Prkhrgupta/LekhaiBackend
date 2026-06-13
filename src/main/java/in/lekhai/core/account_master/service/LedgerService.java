@@ -7,6 +7,8 @@ import in.lekhai.core.account_master.utils.LedgerUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -216,8 +218,9 @@ public class LedgerService {
         }
 
         @ShopContextTransactional
-        public LedgerSummaryResponse listLedgerSummaries() {
-            List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
+        public LedgerSummaryPageResponse listLedgerSummaries(Pageable pageable) {
+            Page<Ledger> ledgersPage = ledgerRepository.findAll(pageable);
+            List<Ledger> ledgers = ledgersPage.getContent();
             Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
                     .collect(Collectors.toMap(Area::getId, Area::getAreaName));
             Map<Long, String> accountGroups = StreamSupport
@@ -234,27 +237,6 @@ public class LedgerService {
             Map<Long, String> gstinMap = StreamSupport.stream(gstDetailsRepository.findAll().spliterator(), false)
                     .collect(Collectors.toMap(GstInDetails::getLedgerId, GstInDetails::getGstinOrUin));
 
-            List<LedgerSummaryColumn> columns = List.of(
-                    new LedgerSummaryColumn().name("ID")
-                            .type("number")
-                            .width(80),
-                    new LedgerSummaryColumn().name("Name")
-                            .type("text")
-                            .width(150),
-                    new LedgerSummaryColumn().name("State")
-                            .type("text")
-                            .width(120),
-                    new LedgerSummaryColumn().name("Area")
-                            .type("text")
-                            .width(120),
-                    new LedgerSummaryColumn().name("AccountGroup")
-                            .type("text")
-                            .width(160),
-                    new LedgerSummaryColumn().name("GSTIN")
-                            .type("text")
-                            .width(150)
-            );
-
             List<LedgerSummaryItem> data = ledgers.stream()
                     .map(ledger -> new LedgerSummaryItem()
                             .id(ledger.getId())
@@ -265,6 +247,12 @@ public class LedgerService {
                             .gstin(gstinMap.getOrDefault(ledger.getId(), ""))
                     ).toList();
 
-            return new LedgerSummaryResponse().columns(columns).data(data);
+            return new LedgerSummaryPageResponse()
+                    .data(data)
+                    .pagination(new PaginationMeta()
+                            .page(ledgersPage.getNumber())
+                            .size(ledgersPage.getSize())
+                            .totalElements(ledgersPage.getTotalElements())
+                            .totalPages(ledgersPage.getTotalPages()));
         }
 }
