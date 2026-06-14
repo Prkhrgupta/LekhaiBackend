@@ -52,7 +52,7 @@ public class LedgerController implements LedgerApi {
                                                                         @Valid String query,
                                                                         Pageable pageable) {
         log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
-        LedgerSummaryPageResponse response = ledgerService.listLedgerSummaries(pageable);
+        LedgerSummaryPageResponse response = ledgerService.listLedgerSummaries(ledgerSearchableField, query, pageable);
         log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
