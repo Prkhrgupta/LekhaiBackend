@@ -1,16 +1,14 @@
 package in.lekhai.core.inventory_master.domain;
 
 import in.lekhai.common.domain.ShopAwareEntity;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Table("commodity_master")
-public class Commodity {
+public class Commodity extends ShopAwareEntity {
+
     @Id
     private Long itemId;
     private String itemName;
@@ -42,13 +40,7 @@ public class Commodity {
     private BigDecimal purchaseIgstPercent;
     private BigDecimal purchaseCessOutPercent;
 
-    private Boolean isDeleted = false;
-
-    @CreatedDate
-    private Instant createdAt;
-
-    @LastModifiedDate
-    private Instant updatedAt;
+    private Boolean isDeleted = Boolean.FALSE;
 
     public Commodity() {
     }
@@ -243,21 +235,5 @@ public class Commodity {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
