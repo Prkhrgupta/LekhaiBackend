@@ -1,14 +1,27 @@
 package in.lekhai.core.inventory_master.service;
 
-import in.lekhai.contract.model.*;
+import in.lekhai.contract.model.CommodityRequest;
+import in.lekhai.contract.model.CommodityResponse;
+import in.lekhai.contract.model.CommoditySummaryColumn;
+import in.lekhai.contract.model.CommoditySummaryItem;
+import in.lekhai.contract.model.CommoditySummaryResponse;
+import in.lekhai.contract.model.PurchaseInStateRequest;
+import in.lekhai.contract.model.PurchaseInStateResponse;
+import in.lekhai.contract.model.PurchaseLedgerRequest;
+import in.lekhai.contract.model.PurchaseLedgerResponse;
+import in.lekhai.contract.model.PurchaseOutStateRequest;
+import in.lekhai.contract.model.PurchaseOutStateResponse;
+import in.lekhai.contract.model.SaleInStateRequest;
+import in.lekhai.contract.model.SaleInStateResponse;
+import in.lekhai.contract.model.SaleLedgerRequest;
+import in.lekhai.contract.model.SaleLedgerResponse;
+import in.lekhai.contract.model.SaleOutStateRequest;
+import in.lekhai.contract.model.SaleOutStateResponse;
 import in.lekhai.core.inventory_master.domain.Commodity;
 import in.lekhai.core.inventory_master.repository.CommodityRepository;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -62,15 +75,19 @@ public class CommodityService {
     }
 
     @ShopContextTransactional
-    public CommoditySummaryResponse listCommoditySummaries(
-            CommoditySearchableField commoditySearchableField,
-            String searchQuery,
-            Pageable pageable) {
-        List<Commodity> commodities = commodityRepository.findAllActive(pageable);
-        long total = commodityRepository.countAllActive();
-        Page<Commodity> commoditiesPage = new PageImpl<>(commodities, pageable, total);
+    public CommoditySummaryResponse listCommoditySummaries() {
+        List<CommoditySummaryColumn> columns = List.of(
+                new CommoditySummaryColumn().name("ID").type("number").width(80),
+                new CommoditySummaryColumn().name("Name").type("text").width(200),
+                new CommoditySummaryColumn().name("HSN/SAC").type("text").width(120),
+                new CommoditySummaryColumn().name("UOM").type("text").width(100),
+                new CommoditySummaryColumn().name("GST Rate Sale").type("number").width(120),
+                new CommoditySummaryColumn().name("GST Rate Purchase").type("number").width(140)
+        );
 
-        List<CommoditySummaryItem> data = commoditiesPage.getContent().stream()
+        List<CommoditySummaryItem> data = StreamSupport
+                .stream(commodityRepository.findAll().spliterator(), false)
+                .filter(commodity -> !Boolean.TRUE.equals(commodity.getDeleted()))
                 .map(commodity -> new CommoditySummaryItem()
                         .id(commodity.getItemId())
                         .name(commodity.getItemName())
@@ -80,13 +97,7 @@ public class CommodityService {
                         .gstRatePurchase(toDouble(commodity.getGstRatePurchase())))
                 .toList();
 
-        return new CommoditySummaryResponse()
-                .data(data)
-                .pagination(new PaginationMeta()
-                        .page(commoditiesPage.getNumber())
-                        .size(commoditiesPage.getSize())
-                        .totalElements(commoditiesPage.getTotalElements())
-                        .totalPages(commoditiesPage.getTotalPages()));
+        return new CommoditySummaryResponse().columns(columns).data(data);
     }
 
     private Commodity mapToEntity(CommodityRequest request, Commodity commodity) {
