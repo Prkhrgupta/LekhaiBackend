@@ -19,7 +19,6 @@ import in.lekhai.contract.model.SaleOutStateRequest;
 import in.lekhai.contract.model.SaleOutStateResponse;
 import in.lekhai.core.inventory_master.domain.Commodity;
 import in.lekhai.core.inventory_master.repository.CommodityRepository;
-import in.lekhai.error.controller.commodity.exception.CommodityNotFoundException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,15 +57,6 @@ public class CommodityService {
         Commodity saved = commodityRepository.save(commodity);
         log.info("Updated commodity :: item id {}", saved.getItemId());
         return mapToResponse(saved);
-    }
-
-    @ShopContextTransactional
-    public void deleteCommodity(Long id) {
-        Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new CommodityNotFoundException(id));
-        commodity.setDeleted(Boolean.TRUE);
-        commodityRepository.save(commodity);
-        log.info("Soft-deleted commodity :: item id {}", commodity.getItemId());
     }
 
     @ShopContextTransactional
