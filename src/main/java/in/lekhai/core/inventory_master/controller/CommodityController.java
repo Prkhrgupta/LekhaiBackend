@@ -1,60 +1,68 @@
 package in.lekhai.core.inventory_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
-import in.lekhai.common.Result;
-import in.lekhai.core.inventory_master.dto.CommodityRequest;
-import in.lekhai.core.inventory_master.dto.CommodityResponse;
+import in.lekhai.contract.api.CommodityApi;
+import in.lekhai.contract.model.CommodityRequest;
+import in.lekhai.contract.model.CommodityResponse;
+import in.lekhai.contract.model.CommoditySummaryResponse;
 import in.lekhai.core.inventory_master.service.CommodityService;
-import jakarta.validation.Valid;
+import in.lekhai.shop.context.model.ShopContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/commodity")
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
-public class CommodityController {
+public class CommodityController implements CommodityApi {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final CommodityService commodityService;
 
     public CommodityController(CommodityService commodityService) {
         this.commodityService = commodityService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Result<CommodityResponse>> createCommodity(
-            @RequestBody @Valid CommodityRequest request) {
+    @Override
+    public ResponseEntity<CommodityResponse> createCommodity(CommodityRequest request) {
+        log.info("Got a request to create commodity {} :: {}", ShopContext.getShopCode(), request.toString());
         CommodityResponse response = commodityService.createCommodity(request);
-        return ResponseEntity.ok(Result.success(response));
+        log.info("Successfully created commodity {} :: item id {}", ShopContext.getShopCode(), response.getId());
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Result<CommodityResponse>> updateCommodity(
-            @PathVariable Long id,
-            @RequestBody @Valid CommodityRequest request) {
-        CommodityResponse response = commodityService.updateCommodity(id, request);
-        return ResponseEntity.ok(Result.success(response));
+    @Override
+    public ResponseEntity<CommodityResponse> getCommodity(Long id) {
+        log.info("Got a request to fetch commodity {} :: commodity id {}", ShopContext.getShopCode(), id);
+        CommodityResponse response = commodityService.getCommodityById(id);
+        log.info("Successfully fetched commodity {} :: item id {}", ShopContext.getShopCode(), response.getId());
+        return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<Result<CommodityResponse>> patchCommodity(
-            @PathVariable Long id,
-            @RequestBody CommodityRequest request) {
-        CommodityResponse response = commodityService.patchCommodity(id, request);
-        return ResponseEntity.ok(Result.success(response));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Result<CommodityResponse>> getCommodity(@PathVariable Long id) {
-        CommodityResponse response = commodityService.getCommodity(id);
-        return ResponseEntity.ok(Result.success(response));
-    }
-
-    @GetMapping("/list-all")
-    public ResponseEntity<Result<List<CommodityResponse>>> listCommodities() {
+    @Override
+    public ResponseEntity<List<CommodityResponse>> listCommodities() {
+        log.info("Got a request to list all commodities {}", ShopContext.getShopCode());
         List<CommodityResponse> response = commodityService.listCommodities();
-        return ResponseEntity.ok(Result.success(response));
+        log.info("Successfully listed all commodities {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<CommodityResponse> updateCommodity(Long id, CommodityRequest request) {
+        log.info("Got a request to update commodity {} :: {}", ShopContext.getShopCode(), request.toString());
+        CommodityResponse response = commodityService.updateCommodity(id, request);
+        log.info("Successfully updated commodity {} :: item id {}", ShopContext.getShopCode(), response.getId());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<CommoditySummaryResponse> getCommoditySummaries() {
+        log.info("Got a request to fetch commodity summary {}", ShopContext.getShopCode());
+        CommoditySummaryResponse response = commodityService.listCommoditySummaries();
+        log.info("Successfully fetched commodity summary {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
     }
 }
