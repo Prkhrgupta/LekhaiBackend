@@ -8,6 +8,7 @@ import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransact
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -218,8 +219,15 @@ public class LedgerService {
         }
 
         @ShopContextTransactional
-        public LedgerSummaryPageResponse listLedgerSummaries(Pageable pageable) {
-            Page<Ledger> ledgersPage = ledgerRepository.findAll(pageable);
+        public LedgerSummaryPageResponse listLedgerSummaries(LedgerSearchableField searchableField, String query, Pageable pageable) {
+            Page<Ledger> ledgersPage;
+            if (query != null && !query.trim().isEmpty() && searchableField == LedgerSearchableField.NAME) {
+                List<Ledger> ledgers = ledgerRepository.findByNameContainingIgnoreCase(query.trim(), pageable);
+                long total = ledgerRepository.countByNameContainingIgnoreCase(query.trim());
+                ledgersPage = new PageImpl<>(ledgers, pageable, total);
+            } else {
+                ledgersPage = ledgerRepository.findAll(pageable);
+            }
             List<Ledger> ledgers = ledgersPage.getContent();
             Map<Long, String> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
                     .collect(Collectors.toMap(Area::getId, Area::getAreaName));
