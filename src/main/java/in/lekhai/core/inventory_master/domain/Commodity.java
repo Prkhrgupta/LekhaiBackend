@@ -2,6 +2,7 @@ package in.lekhai.core.inventory_master.domain;
 
 import in.lekhai.common.domain.ShopAwareEntity;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -40,6 +41,7 @@ public class Commodity extends ShopAwareEntity {
     private BigDecimal purchaseIgstPercent;
     private BigDecimal purchaseCessOutPercent;
 
+    @Column("is_deleted")
     private Boolean isDeleted = Boolean.FALSE;
 
     public Commodity() {
