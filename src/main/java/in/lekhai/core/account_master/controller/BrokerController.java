@@ -2,14 +2,13 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.BrokerApi;
-import in.lekhai.contract.model.BrokerRequest;
-import in.lekhai.contract.model.BrokerResponse;
-import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.BrokerService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +41,16 @@ public class BrokerController implements BrokerApi {
         log.info("Got a request to list all brokers {}", ShopContext.getShopCode());
         List<DropdownItem> response = brokerService.listBrokers();
         log.info("Successfully listed all brokers {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<BrokerSummaryPageResponse> getBrokerSummaries(@Valid BrokerSearchableField brokerSearchableField,
+                                                                        @Valid String query,
+                                                                        Pageable pageable) {
+        log.info("Got a request to fetch broker summary {}", ShopContext.getShopCode());
+        BrokerSummaryPageResponse response = brokerService.listBrokerSummaries(brokerSearchableField, query, pageable);
+        log.info("Successfully fetched broker summary {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 }
