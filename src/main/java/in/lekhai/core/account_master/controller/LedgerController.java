@@ -4,11 +4,14 @@ import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.LedgerApi;
 import in.lekhai.contract.model.LedgerRequest;
 import in.lekhai.contract.model.LedgerResponse;
-import in.lekhai.contract.model.LedgerSummaryResponse;
+import in.lekhai.contract.model.LedgerSearchableField;
+import in.lekhai.contract.model.LedgerSummaryPageResponse;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,9 +48,11 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries() {
+    public ResponseEntity<LedgerSummaryPageResponse> getLedgerSummaries(@Valid LedgerSearchableField ledgerSearchableField,
+                                                                        @Valid String query,
+                                                                        Pageable pageable) {
         log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
-        LedgerSummaryResponse response = ledgerService.listLedgerSummaries();
+        LedgerSummaryPageResponse response = ledgerService.listLedgerSummaries(ledgerSearchableField, query, pageable);
         log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
