@@ -1,11 +1,12 @@
 package in.lekhai.core.account_master.service;
 
-import in.lekhai.contract.model.BrokerRequest;
-import in.lekhai.contract.model.BrokerResponse;
-import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.Broker;
 import in.lekhai.core.account_master.repository.BrokerRepository;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +33,33 @@ public class BrokerService {
         return StreamSupport.stream(brokerRepository.findAll().spliterator(), false)
                 .map(broker -> new DropdownItem().id(broker.getId()).label(broker.getName()))
                 .toList();
+    }
+
+    @ShopContextTransactional
+    public BrokerSummaryPageResponse listBrokerSummaries(BrokerSearchableField searchableField, String query, Pageable pageable) {
+        Page<Broker> brokersPage;
+        if (query != null && !query.trim().isEmpty() && searchableField == BrokerSearchableField.NAME) {
+            List<Broker> brokers = brokerRepository.findByNameContainingIgnoreCase(query.trim(), pageable);
+            long total = brokerRepository.countByNameContainingIgnoreCase(query.trim());
+            brokersPage = new PageImpl<>(brokers, pageable, total);
+        } else {
+            brokersPage = brokerRepository.findAll(pageable);
+        }
+
+        List<BrokerSummaryItem> data = brokersPage.getContent().stream()
+                .map(broker -> new BrokerSummaryItem()
+                        .id(broker.getId())
+                        .name(broker.getName())
+                        .phone(broker.getPhone()))
+                .toList();
+
+        return new BrokerSummaryPageResponse()
+                .data(data)
+                .pagination(new PaginationMeta()
+                        .page(brokersPage.getNumber())
+                        .size(brokersPage.getSize())
+                        .totalElements(brokersPage.getTotalElements())
+                        .totalPages(brokersPage.getTotalPages()));
     }
 
     private BrokerResponse mapToResponse(Broker broker) {
