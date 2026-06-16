@@ -38,6 +38,14 @@ public class CommodityController implements CommodityApi {
     }
 
     @Override
+    public ResponseEntity<Void> deleteCommodity(Long id) {
+        log.info("Got a request to delete commodity {} :: commodity id {}", ShopContext.getShopCode(), id);
+        commodityService.deleteCommodity(id);
+        log.info("Successfully deleted commodity {} :: commodity id {}", ShopContext.getShopCode(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     public ResponseEntity<CommodityResponse> getCommodity(Long id) {
         log.info("Got a request to fetch commodity {} :: commodity id {}", ShopContext.getShopCode(), id);
         CommodityResponse response = commodityService.getCommodityById(id);
