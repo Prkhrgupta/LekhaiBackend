@@ -47,8 +47,8 @@ public class AreaService {
             areasPage = areaRepository.findAll(pageable);
         }
 
-        List<AreaSummaryItem> data = areasPage.getContent().stream()
-                .map(area -> new AreaSummaryItem()
+        List<AreaResponse> data = areasPage.getContent().stream()
+                .map(area -> new AreaResponse()
                         .id(area.getId())
                         .areaName(area.getAreaName()))
                 .toList();

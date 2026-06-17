@@ -58,8 +58,8 @@ public class TransportService {
             transportsPage = transportRepository.findAll(pageable);
         }
 
-        List<TransportSummaryItem> data = transportsPage.getContent().stream()
-                .map(transport -> new TransportSummaryItem()
+        List<TransportResponse> data = transportsPage.getContent().stream()
+                .map(transport -> new TransportResponse()
                         .id(transport.getId())
                         .name(transport.getName())
                         .phone(transport.getPhone())
