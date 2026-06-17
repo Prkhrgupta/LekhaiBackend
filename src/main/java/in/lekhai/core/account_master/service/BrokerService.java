@@ -46,8 +46,8 @@ public class BrokerService {
             brokersPage = brokerRepository.findAll(pageable);
         }
 
-        List<BrokerSummaryItem> data = brokersPage.getContent().stream()
-                .map(broker -> new BrokerSummaryItem()
+        List<BrokerResponse> data = brokersPage.getContent().stream()
+                .map(broker -> new BrokerResponse()
                         .id(broker.getId())
                         .name(broker.getName())
                         .phone(broker.getPhone()))
