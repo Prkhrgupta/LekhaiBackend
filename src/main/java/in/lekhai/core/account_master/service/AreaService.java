@@ -62,6 +62,22 @@ public class AreaService {
                         .totalPages(areasPage.getTotalPages()));
     }
 
+    @ShopContextTransactional
+    public AreaResponse getAreaById(Long id) {
+        Area area = areaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Area not found with id: " + id));
+        return mapToResponse(area);
+    }
+
+    @ShopContextTransactional
+    public AreaResponse updateArea(Long id, AreaRequest request) {
+        Area area = areaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Area not found with id: " + id));
+        area.setAreaName(request.getAreaName());
+        Area saved = areaRepository.save(area);
+        return mapToResponse(saved);
+    }
+
     private AreaResponse mapToResponse(Area area) {
         return new AreaResponse()
                 .id(area.getId())

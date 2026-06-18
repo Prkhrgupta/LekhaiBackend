@@ -37,10 +37,26 @@ public class TransportController implements TransportApi {
     }
 
     @Override
+    public ResponseEntity<TransportResponse> getTransport(Long id) {
+        log.info("Got a request to fetch transport {} :: transport id {}", ShopContext.getShopCode(), id);
+        TransportResponse response = transportService.getTransportById(id);
+        log.info("Successfully fetched transport {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<List<DropdownItem>> getTransportDropdownOptions() {
         log.info("Got a request to list all transport detail {}", ShopContext.getShopCode());
         List<DropdownItem> response = transportService.listTransports();
         log.info("Successfully listed all transport details {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TransportResponse> updateTransport(Long id, TransportRequest request) {
+        log.info("Got a request to update transport {} :: {}", ShopContext.getShopCode(), request.toString());
+        TransportResponse response = transportService.updateTransport(id, request);
+        log.info("Successfully updated transport {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 

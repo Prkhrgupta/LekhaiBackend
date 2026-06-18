@@ -35,10 +35,26 @@ public class AreaController implements AreaApi {
     }
 
     @Override
+    public ResponseEntity<AreaResponse> getArea(Long id) {
+        log.info("Got a request to fetch area {} :: area id {}", ShopContext.getShopCode(), id);
+        AreaResponse response = areaService.getAreaById(id);
+        log.info("Successfully fetched area {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<List<DropdownItem>> getAreaDropdownOptions() {
         log.info("Got a request to list all areas {}", ShopContext.getShopCode());
         List<DropdownItem> response = areaService.listAreas();
         log.info("Successfully listed all areas {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AreaResponse> updateArea(Long id, AreaRequest request) {
+        log.info("Got a request to update area {} :: {}", ShopContext.getShopCode(), request.toString());
+        AreaResponse response = areaService.updateArea(id, request);
+        log.info("Successfully updated area {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 
