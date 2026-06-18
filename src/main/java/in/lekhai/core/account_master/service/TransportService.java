@@ -75,6 +75,24 @@ public class TransportService {
                         .totalPages(transportsPage.getTotalPages()));
     }
 
+    @ShopContextTransactional
+    public TransportResponse getTransportById(Long id) {
+        Transport transport = transportRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transport not found with id: " + id));
+        return mapToResponse(transport);
+    }
+
+    @ShopContextTransactional
+    public TransportResponse updateTransport(Long id, TransportRequest request) {
+        Transport transport = transportRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transport not found with id: " + id));
+        transport.setName(request.getName());
+        transport.setPhone(request.getPhone());
+        transport.setGstNo(request.getGstNo());
+        Transport saved = transportRepository.save(transport);
+        return mapToResponse(saved);
+    }
+
     private TransportResponse mapToResponse(Transport transport) {
         return new TransportResponse()
                 .id(transport.getId())

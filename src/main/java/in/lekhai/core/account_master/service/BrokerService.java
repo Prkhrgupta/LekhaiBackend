@@ -62,6 +62,23 @@ public class BrokerService {
                         .totalPages(brokersPage.getTotalPages()));
     }
 
+    @ShopContextTransactional
+    public BrokerResponse getBrokerById(Long id) {
+        Broker broker = brokerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Broker not found with id: " + id));
+        return mapToResponse(broker);
+    }
+
+    @ShopContextTransactional
+    public BrokerResponse updateBroker(Long id, BrokerRequest request) {
+        Broker broker = brokerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Broker not found with id: " + id));
+        broker.setName(request.getName());
+        broker.setPhone(request.getPhone());
+        Broker saved = brokerRepository.save(broker);
+        return mapToResponse(saved);
+    }
+
     private BrokerResponse mapToResponse(Broker broker) {
         return new BrokerResponse()
                 .id(broker.getId())

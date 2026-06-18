@@ -37,10 +37,26 @@ public class BrokerController implements BrokerApi {
     }
 
     @Override
+    public ResponseEntity<BrokerResponse> getBroker(Long id) {
+        log.info("Got a request to fetch broker {} :: broker id {}", ShopContext.getShopCode(), id);
+        BrokerResponse response = brokerService.getBrokerById(id);
+        log.info("Successfully fetched broker {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<List<DropdownItem>> getBrokerDropdownOptions() {
         log.info("Got a request to list all brokers {}", ShopContext.getShopCode());
         List<DropdownItem> response = brokerService.listBrokers();
         log.info("Successfully listed all brokers {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<BrokerResponse> updateBroker(Long id, BrokerRequest request) {
+        log.info("Got a request to update broker {} :: {}", ShopContext.getShopCode(), request.toString());
+        BrokerResponse response = brokerService.updateBroker(id, request);
+        log.info("Successfully updated broker {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 
