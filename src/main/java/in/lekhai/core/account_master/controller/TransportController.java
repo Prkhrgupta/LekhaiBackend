@@ -2,14 +2,13 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.TransportApi;
-import in.lekhai.contract.model.DropdownItem;
-import in.lekhai.contract.model.TransportRequest;
-import in.lekhai.contract.model.TransportResponse;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.TransportService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,10 +37,36 @@ public class TransportController implements TransportApi {
     }
 
     @Override
+    public ResponseEntity<TransportResponse> getTransport(Long id) {
+        log.info("Got a request to fetch transport {} :: transport id {}", ShopContext.getShopCode(), id);
+        TransportResponse response = transportService.getTransportById(id);
+        log.info("Successfully fetched transport {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<List<DropdownItem>> getTransportDropdownOptions() {
         log.info("Got a request to list all transport detail {}", ShopContext.getShopCode());
         List<DropdownItem> response = transportService.listTransports();
         log.info("Successfully listed all transport details {}", ShopContext.getShopCode());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TransportResponse> updateTransport(Long id, TransportRequest request) {
+        log.info("Got a request to update transport {} :: {}", ShopContext.getShopCode(), request.toString());
+        TransportResponse response = transportService.updateTransport(id, request);
+        log.info("Successfully updated transport {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<TransportSummaryPageResponse> getTransportSummaries(@Valid TransportSearchableField transportSearchableField,
+                                                                              @Valid String query,
+                                                                              Pageable pageable) {
+        log.info("Got a request to fetch transport summary {}", ShopContext.getShopCode());
+        TransportSummaryPageResponse response = transportService.listTransportSummaries(transportSearchableField, query, pageable);
+        log.info("Successfully fetched transport summary {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 }

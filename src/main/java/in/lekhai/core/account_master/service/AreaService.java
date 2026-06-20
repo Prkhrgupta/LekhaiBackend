@@ -1,11 +1,12 @@
 package in.lekhai.core.account_master.service;
 
-import in.lekhai.contract.model.AreaRequest;
-import in.lekhai.contract.model.AreaResponse;
-import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.Area;
 import in.lekhai.core.account_master.repository.AreaRepository;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +34,48 @@ public class AreaService {
         return StreamSupport.stream(areaRepository.findAll().spliterator(), false)
                 .map(area -> new DropdownItem().id(area.getId()).label(area.getAreaName()))
                 .toList();
+    }
+
+    @ShopContextTransactional
+    public AreaSummaryPageResponse listAreaSummaries(AreaSearchableField searchableField, String query, Pageable pageable) {
+        Page<Area> areasPage;
+        if (query != null && !query.trim().isEmpty() && searchableField == AreaSearchableField.NAME) {
+            List<Area> areas = areaRepository.findByAreaNameContainingIgnoreCase(query.trim(), pageable);
+            long total = areaRepository.countByAreaNameContainingIgnoreCase(query.trim());
+            areasPage = new PageImpl<>(areas, pageable, total);
+        } else {
+            areasPage = areaRepository.findAll(pageable);
+        }
+
+        List<AreaResponse> data = areasPage.getContent().stream()
+                .map(area -> new AreaResponse()
+                        .id(area.getId())
+                        .areaName(area.getAreaName()))
+                .toList();
+
+        return new AreaSummaryPageResponse()
+                .data(data)
+                .pagination(new PaginationMeta()
+                        .page(areasPage.getNumber())
+                        .size(areasPage.getSize())
+                        .totalElements(areasPage.getTotalElements())
+                        .totalPages(areasPage.getTotalPages()));
+    }
+
+    @ShopContextTransactional
+    public AreaResponse getAreaById(Long id) {
+        Area area = areaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Area not found with id: " + id));
+        return mapToResponse(area);
+    }
+
+    @ShopContextTransactional
+    public AreaResponse updateArea(Long id, AreaRequest request) {
+        Area area = areaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Area not found with id: " + id));
+        area.setAreaName(request.getAreaName());
+        Area saved = areaRepository.save(area);
+        return mapToResponse(saved);
     }
 
     private AreaResponse mapToResponse(Area area) {
