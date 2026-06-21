@@ -75,11 +75,12 @@ public class ItemCategoryService {
             Pageable pageable) {
         Page<ItemCategory> itemCategoriesPage;
         if (searchText != null && !searchText.trim().isEmpty() && searchableField == ItemCategorySearchableField.NAME) {
-            List<ItemCategory> itemCategories = itemCategoryRepository.findActiveByNameContainingIgnoreCase(searchText.trim(), pageable);
+            List<ItemCategory> itemCategories = itemCategoryRepository.findActiveByNameContainingIgnoreCase(
+                    searchText.trim(), pageable.getPageSize(), pageable.getOffset());
             long total = itemCategoryRepository.countActiveByNameContainingIgnoreCase(searchText.trim());
             itemCategoriesPage = new PageImpl<>(itemCategories, pageable, total);
         } else {
-            List<ItemCategory> itemCategories = itemCategoryRepository.findAllActive(pageable);
+            List<ItemCategory> itemCategories = itemCategoryRepository.findAllActive(pageable.getPageSize(), pageable.getOffset());
             long total = itemCategoryRepository.countAllActive();
             itemCategoriesPage = new PageImpl<>(itemCategories, pageable, total);
         }

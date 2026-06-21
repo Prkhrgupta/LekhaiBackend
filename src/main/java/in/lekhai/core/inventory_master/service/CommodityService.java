@@ -76,7 +76,7 @@ public class CommodityService {
             CommoditySearchableField commoditySearchableField,
             String searchQuery,
             Pageable pageable) {
-        List<Commodity> commodities = commodityRepository.findAllActive(pageable);
+        List<Commodity> commodities = commodityRepository.findAllActive(pageable.getPageSize(), pageable.getOffset());
         long total = commodityRepository.countAllActive();
         Page<Commodity> commoditiesPage = new PageImpl<>(commodities, pageable, total);
 

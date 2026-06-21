@@ -16,10 +16,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -91,17 +98,30 @@ public class StockItemService {
             Pageable pageable) {
         Page<StockItem> stockItemsPage;
         if (searchText != null && !searchText.trim().isEmpty() && searchableField == StockItemSearchableField.NAME) {
-            List<StockItem> stockItems = stockItemRepository.findActiveByNameContainingIgnoreCase(searchText.trim(), pageable);
+            List<StockItem> stockItems = stockItemRepository.findActiveByNameContainingIgnoreCase(
+                    searchText.trim(), pageable.getPageSize(), pageable.getOffset());
             long total = stockItemRepository.countActiveByNameContainingIgnoreCase(searchText.trim());
             stockItemsPage = new PageImpl<>(stockItems, pageable, total);
         } else {
-            List<StockItem> stockItems = stockItemRepository.findAllActive(pageable);
+            List<StockItem> stockItems = stockItemRepository.findAllActive(pageable.getPageSize(), pageable.getOffset());
             long total = stockItemRepository.countAllActive();
             stockItemsPage = new PageImpl<>(stockItems, pageable, total);
         }
 
-        List<StockItemResponse> data = stockItemsPage.getContent().stream()
-                .map(this::mapToResponse)
+        List<StockItem> pageContent = stockItemsPage.getContent();
+        Map<Long, Commodity> commodityById = fetchByIds(
+                commodityRepository, pageContent, StockItem::getCommodityId, Commodity::getItemId);
+        Map<Long, ItemCategory> categoryById = fetchByIds(
+                itemCategoryRepository, pageContent, StockItem::getItemCategoryId, ItemCategory::getId);
+        Map<Long, ItemFactory> factoryById = fetchByIds(
+                itemFactoryRepository, pageContent, StockItem::getItemFactoryId, ItemFactory::getId);
+
+        List<StockItemResponse> data = pageContent.stream()
+                .map(stockItem -> buildResponse(
+                        stockItem,
+                        getOrNull(commodityById, stockItem.getCommodityId()),
+                        getOrNull(categoryById, stockItem.getItemCategoryId()),
+                        getOrNull(factoryById, stockItem.getItemFactoryId())))
                 .toList();
 
         return new StockItemSummaryPageResponse()
@@ -140,6 +160,37 @@ public class StockItemService {
                 ? itemFactoryRepository.findById(stockItem.getItemFactoryId()).orElse(null)
                 : null;
 
+        return buildResponse(stockItem, commodity, itemCategory, itemFactory);
+    }
+
+    /**
+     * Batch-loads the entities referenced by {@code stockItems} via a single {@code findAllById} call,
+     * keyed by their id. Avoids the per-row lookups (N+1) that {@link #mapToResponse} performs.
+     */
+    private static <T> Map<Long, T> fetchByIds(CrudRepository<T, Long> repository,
+                                               List<StockItem> stockItems,
+                                               Function<StockItem, Long> idExtractor,
+                                               Function<T, Long> keyExtractor) {
+        Set<Long> ids = stockItems.stream()
+                .map(idExtractor)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, T> byId = new HashMap<>();
+        repository.findAllById(ids).forEach(entity -> byId.put(keyExtractor.apply(entity), entity));
+        return byId;
+    }
+
+    private static <T> T getOrNull(Map<Long, T> byId, Long id) {
+        return id == null ? null : byId.get(id);
+    }
+
+    private StockItemResponse buildResponse(StockItem stockItem,
+                                            Commodity commodity,
+                                            ItemCategory itemCategory,
+                                            ItemFactory itemFactory) {
         return new StockItemResponse()
                 .id(stockItem.getId())
                 .finishedRawMaterial(stockItem.getFinishedRawMaterial() == null

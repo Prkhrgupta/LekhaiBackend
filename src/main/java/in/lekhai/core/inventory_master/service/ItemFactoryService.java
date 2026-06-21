@@ -76,11 +76,12 @@ public class ItemFactoryService {
             Pageable pageable) {
         Page<ItemFactory> itemFactoriesPage;
         if (searchText != null && !searchText.trim().isEmpty() && searchableField == ItemFactorySearchableField.NAME) {
-            List<ItemFactory> itemFactories = itemFactoryRepository.findActiveByNameContainingIgnoreCase(searchText.trim(), pageable);
+            List<ItemFactory> itemFactories = itemFactoryRepository.findActiveByNameContainingIgnoreCase(
+                    searchText.trim(), pageable.getPageSize(), pageable.getOffset());
             long total = itemFactoryRepository.countActiveByNameContainingIgnoreCase(searchText.trim());
             itemFactoriesPage = new PageImpl<>(itemFactories, pageable, total);
         } else {
-            List<ItemFactory> itemFactories = itemFactoryRepository.findAllActive(pageable);
+            List<ItemFactory> itemFactories = itemFactoryRepository.findAllActive(pageable.getPageSize(), pageable.getOffset());
             long total = itemFactoryRepository.countAllActive();
             itemFactoriesPage = new PageImpl<>(itemFactories, pageable, total);
         }
