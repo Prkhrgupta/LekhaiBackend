@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -186,36 +187,23 @@ public class LedgerService {
         }
 
         @ShopContextTransactional
-        public List<LedgerResponse> listLedgers() {
-                List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
+        public List<DropdownItem> listLedgers(List<Long> underAccountGroup) {
+            List<Ledger> ledgerList = ledgerRepository.findAll();
 
-                Map<Long, Area> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Area::getId, area -> area));
-                Map<Long, Broker> brokers = StreamSupport.stream(brokerRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Broker::getId, broker -> broker));
-                Map<Long, Transport> transports = StreamSupport
-                                .stream(transportRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Transport::getId, transport -> transport));
-                Map<Long, AccountGroup> accountGroups = StreamSupport
-                                .stream(accountGroupRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
-                Map<Long, Address> addressMap = StreamSupport
-                                .stream(addressRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Address::getLedgerId, addr -> addr));
-                Map<Long, GstInDetails> gstInDetailsMap = StreamSupport
-                                .stream(gstDetailsRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(GstInDetails::getLedgerId, gst -> gst));
+            if(underAccountGroup != null && !underAccountGroup.isEmpty()) {
+                Set<Long> filterAccountGroups = accountGroupRepository.findHierarchyIds(underAccountGroup);
+                ledgerList = ledgerList.stream()
+                        .filter(ledger -> filterAccountGroups.contains(ledger.getAccountGroupId()))
+                        .toList();
+            }
 
-                return ledgers.stream()
-                                .map(ledger -> LedgerUtils.mapToResponse(
-                                                ledger,
-                                                areas.get(ledger.getDefaultAreaId()),
-                                                brokers.get(ledger.getDefaultBrokerId()),
-                                                transports.get(ledger.getDefaultTransportId()),
-                                                accountGroups.get(ledger.getAccountGroupId()),
-                                                gstInDetailsMap.get(ledger.getId()),
-                                                addressMap.get(ledger.getId())))
-                                .toList();
+            return ledgerList.stream()
+                    .map(ledger ->
+                            new DropdownItem()
+                                    .id(ledger.getId())
+                                    .label(ledger.getName())
+                    )
+                    .toList();
         }
 
         @ShopContextTransactional
