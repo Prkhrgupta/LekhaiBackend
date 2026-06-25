@@ -4,6 +4,11 @@ import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.*;
 import in.lekhai.core.account_master.repository.*;
 import in.lekhai.core.account_master.utils.LedgerUtils;
+import in.lekhai.error.controller.LekhaiClientException;
+import in.lekhai.gsp.gst.TaxProGstClient;
+import in.lekhai.gsp.gst.dto.GstDetailsDto;
+import in.lekhai.gsp.gst.dto.GstVerificationResponseDto;
+import in.lekhai.gsp.gst.util.GstinUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,24 +39,27 @@ public class LedgerService {
         private final TransportRepository transportRepository;
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
+        private final TaxProGstClient taxProGstClient;
 
         public LedgerService(
-                        LedgerRepository ledgerRepository,
-                        GstDetailsRepository gstDetailsRepository,
-                        AddressRepository addressRepository,
-                        AreaRepository areaRepository,
-                        BrokerRepository brokerRepository,
-                        TransportRepository transportRepository,
-                        AccountGroupRepository accountGroupRepository,
-                        StateRepository stateRepository) {
-                this.ledgerRepository = ledgerRepository;
-                this.gstDetailsRepository = gstDetailsRepository;
-                this.addressRepository = addressRepository;
-                this.areaRepository = areaRepository;
-                this.brokerRepository = brokerRepository;
-                this.transportRepository = transportRepository;
-                this.accountGroupRepository = accountGroupRepository;
-                this.stateRepository = stateRepository;
+                LedgerRepository ledgerRepository,
+                GstDetailsRepository gstDetailsRepository,
+                AddressRepository addressRepository,
+                AreaRepository areaRepository,
+                BrokerRepository brokerRepository,
+                TransportRepository transportRepository,
+                AccountGroupRepository accountGroupRepository,
+                StateRepository stateRepository, TaxProGstClient taxProGstClient
+        ) {
+            this.ledgerRepository = ledgerRepository;
+            this.gstDetailsRepository = gstDetailsRepository;
+            this.addressRepository = addressRepository;
+            this.areaRepository = areaRepository;
+            this.brokerRepository = brokerRepository;
+            this.transportRepository = transportRepository;
+            this.accountGroupRepository = accountGroupRepository;
+            this.stateRepository = stateRepository;
+            this.taxProGstClient = taxProGstClient;
         }
 
         @ShopContextTransactional
@@ -250,5 +258,23 @@ public class LedgerService {
                             .size(ledgersPage.getSize())
                             .totalElements(ledgersPage.getTotalElements())
                             .totalPages(ledgersPage.getTotalPages()));
+        }
+
+        public LedgerResponse getLedgerResponseByGstIn(String gstIn) {
+            if(!GstinUtils.isValid(gstIn)) {
+                throw new LekhaiClientException("Invalid Gstin number");
+            }
+
+            GstVerificationResponseDto gstDetailDto = taxProGstClient.getGstDetails(gstIn)
+                    .block();
+
+            String pan = GstinUtils.extractPan(gstIn);
+            String gstCode = GstinUtils.extractGstStateCode(gstIn);
+            String stateCode = stateRepository.findByGstCode(gstCode)
+                    .orElseThrow(() -> new RuntimeException(String.format("Can't find gstCode=[%s] in state repo", gstCode)))
+                    .getStateCode();
+
+            GstDetailsDto data = gstDetailDto.data();
+            return LedgerUtils.mapToResponse(data, pan, stateCode);
         }
 }
