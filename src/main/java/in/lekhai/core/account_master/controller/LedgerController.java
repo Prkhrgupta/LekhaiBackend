@@ -6,6 +6,7 @@ import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,12 @@ public class LedgerController implements LedgerApi {
         LedgerResponse response = ledgerService.getLedgerById(id);
         log.info("Successfully fetched ledger {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<LedgerResponse> getLedgerByGstin(@NotNull @Valid String gstIn) {
+        LedgerResponse ledgerResponseByGstIn = ledgerService.getLedgerResponseByGstIn(gstIn);
+        return ResponseEntity.ok(ledgerResponseByGstIn);
     }
 
     @Override
