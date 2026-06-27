@@ -188,8 +188,13 @@ public class TransporterService {
         for (Long ewbNo : newEwbNumber) {
             EwbDetails ewbDetails = ewbProvider.getEwbDetails(ewbNo, gstin, shopCode);
             EwbRecord ewbRecord = transporterMapper.convertEwbDetailToEwbRecord(ewbDetails);
+            EwbDetails.EwbVehicleDetails latestEwbVehicle = ewbDetails.ewbVehicleDetails()
+                    .stream()
+                    .max(Comparator.comparing(EwbDetails.EwbVehicleDetails::enteredDate))
+                    .orElse(ewbDetails.ewbVehicleDetails().getFirst());
+
             EwbVehicleDetail ewbVehicleDetail = transporterMapper
-                    .convertEwbDetailToEwbVehicle(ewbDetails.ewbVehicleDetails().getFirst());
+                    .convertEwbDetailToEwbVehicle(latestEwbVehicle);
             ewbRecord.getVehicleDetailSet().add(ewbVehicleDetail);
             ewbRecordsToBeCreated.add(ewbRecord);
         }
