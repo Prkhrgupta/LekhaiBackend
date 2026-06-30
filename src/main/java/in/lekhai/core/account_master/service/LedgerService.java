@@ -297,7 +297,7 @@ public class LedgerService {
             BigDecimal totalCurrentBalance = openingBalance.add(currentRunningBalance);
             return new LedgerBalanceResponse()
                     .ledgerId(ledger.getId())
-                    .currentBalance(totalCurrentBalance)
+                    .currentBalance(totalCurrentBalance.abs())
                     .currentBalanceType(totalCurrentBalance.compareTo(BigDecimal.ZERO) < 0
                             ? AccountEntryType.CR
                             : AccountEntryType.DR);
