@@ -10,11 +10,13 @@ import in.lekhai.gsp.gst.dto.GstDetailsDto;
 import in.lekhai.gsp.gst.dto.GstVerificationResponseDto;
 import in.lekhai.gsp.gst.util.GstinUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import in.lekhai.voucher.repository.VoucherRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,6 +41,7 @@ public class LedgerService {
         private final TransportRepository transportRepository;
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
+        private final VoucherRepository voucherRepository;
         private final TaxProGstClient taxProGstClient;
 
         public LedgerService(
@@ -49,7 +52,9 @@ public class LedgerService {
                 BrokerRepository brokerRepository,
                 TransportRepository transportRepository,
                 AccountGroupRepository accountGroupRepository,
-                StateRepository stateRepository, TaxProGstClient taxProGstClient
+                StateRepository stateRepository,
+                VoucherRepository voucherRepository,
+                TaxProGstClient taxProGstClient
         ) {
             this.ledgerRepository = ledgerRepository;
             this.gstDetailsRepository = gstDetailsRepository;
@@ -59,6 +64,7 @@ public class LedgerService {
             this.transportRepository = transportRepository;
             this.accountGroupRepository = accountGroupRepository;
             this.stateRepository = stateRepository;
+            this.voucherRepository = voucherRepository;
             this.taxProGstClient = taxProGstClient;
         }
 
@@ -276,5 +282,24 @@ public class LedgerService {
 
             GstDetailsDto data = gstDetailDto.data();
             return LedgerUtils.mapToResponse(data, pan, stateCode);
+        }
+
+        // TODO: Make this read only for performance
+        @ShopContextTransactional
+        public LedgerBalanceResponse calcLedgerBalance(Long ledgerId) {
+            Ledger ledger = ledgerRepository.findById(ledgerId)
+                    .orElseThrow(() -> new LekhaiClientException("Invalid, Ledger Not found", HttpStatus.NOT_FOUND));
+            BigDecimal openingBalance = ledger.getOpeningBalanceType().equals(AccountEntryType.DR)
+                    ? ledger.getOpeningBalance()
+                    : ledger.getOpeningBalance().negate();
+
+            BigDecimal currentRunningBalance = voucherRepository.ledgerCurrentBalance(ledgerId);
+            BigDecimal totalCurrentBalance = openingBalance.add(currentRunningBalance);
+            return new LedgerBalanceResponse()
+                    .ledgerId(ledger.getId())
+                    .currentBalance(totalCurrentBalance)
+                    .currentBalanceType(totalCurrentBalance.compareTo(BigDecimal.ZERO) < 0
+                            ? AccountEntryType.CR
+                            : AccountEntryType.DR);
         }
 }
