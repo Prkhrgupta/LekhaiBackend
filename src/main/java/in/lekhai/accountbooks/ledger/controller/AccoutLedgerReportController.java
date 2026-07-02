@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+
 @RestController
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class AccoutLedgerReportController implements AccountLedgerApi {
@@ -28,6 +30,8 @@ public class AccoutLedgerReportController implements AccountLedgerApi {
             @NotNull Long ledgerId,
             @Valid AccountLedgerSearchableField searchableField,
             @Valid String query,
+            @Valid LocalDate fromDate,
+            @Valid LocalDate toDate,
             Pageable pageable
     ) {
         AccountLedgerPageResponse accountLedgerEntries =
