@@ -298,8 +298,6 @@ public class LedgerService {
             return new LedgerBalanceResponse()
                     .ledgerId(ledger.getId())
                     .currentBalance(totalCurrentBalance.abs())
-                    .currentBalanceType(totalCurrentBalance.compareTo(BigDecimal.ZERO) < 0
-                            ? AccountEntryType.CR
-                            : AccountEntryType.DR);
+                    .currentBalanceType(ledger.getOpeningBalanceType());
         }
 }
