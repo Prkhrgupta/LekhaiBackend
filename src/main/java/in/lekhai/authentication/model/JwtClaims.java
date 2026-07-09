@@ -5,6 +5,7 @@ import in.lekhai.error.controller.role.exception.InvalidRoleException;
 import in.lekhai.error.controller.shop.exception.InvalidShopTypeException;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.time.Year;
 import java.util.Objects;
 
 import static in.lekhai.common.JwtConstants.*;
@@ -13,14 +14,16 @@ public record JwtClaims(
         String uuid,
         Roles role,
         Integer shopCode,
-        String username
+        String username,
+        Year financialYearStart
 ) {
     public static JwtClaims fromJwt(Jwt token) {
         return new JwtClaims(
                 token.getClaimAsString(UUID),
                 parseRole(token),
                 parseTenant(token),
-                token.getClaimAsString(SUBJECT)
+                token.getClaimAsString(SUBJECT),
+                Year.parse(token.getClaimAsString(FY_START))
         );
     }
     public static String getUsername(Jwt token) {
