@@ -2,7 +2,7 @@ package in.lekhai.authentication.service;
 
 import in.lekhai.authentication.entity.UserAccounts;
 import in.lekhai.authentication.model.JwtClaims;
-import in.lekhai.authentication.repository.UserAccountRepository;
+import in.lekhai.common.util.FinancialYearDateUtil;
 import in.lekhai.contract.model.LoginResponse;
 import in.lekhai.contract.model.ShopMenu;
 import in.lekhai.core.domain.shop.Shops;
@@ -132,6 +132,7 @@ public class JwtTokenService {
                 .claim(SUBJECT, username)
                 .claim(UUID, uuid)
                 .claim(SHOP_CODE, shopCode)
+                .claim(FY_START, FinancialYearDateUtil.getCurrentFinancialYear().toString())
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claim)).getTokenValue();
