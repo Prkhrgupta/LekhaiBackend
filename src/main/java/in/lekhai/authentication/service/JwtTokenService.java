@@ -114,8 +114,9 @@ public class JwtTokenService {
                 .issuer(ISSUER)
                 .issuedAt(now)
                 .expiresAt(now.plus(JWT_EXPIRY, ChronoUnit.HOURS))
-                .claim(SCOPE, role) // REVIEW I believe scope must be removed from here
+                .claim(SCOPE, role)
                 .claim(SUBJECT, authentication.getName())
+                .claim(FY_START, FinancialYearDateUtil.getCurrentFinancialYear().toString())
                 .claim(UUID, uuid)
                 .build();
 
