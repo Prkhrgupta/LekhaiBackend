@@ -8,8 +8,10 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface AccountGroupRepository extends ListCrudRepository<AccountGroup, Long> {
@@ -23,4 +25,22 @@ public interface AccountGroupRepository extends ListCrudRepository<AccountGroup,
 
     @Query("SELECT COUNT(*) FROM account_group WHERE name ILIKE '%' || :query || '%'")
     long countByNameContainingIgnoreCase(@Param("query") String query);
+
+    @Query(value = """
+            WITH RECURSIVE account_group_tree AS (
+                SELECT id
+                FROM account_group
+                WHERE id IN (:ids)
+            
+                UNION ALL
+            
+                SELECT ag.id
+                FROM account_group ag
+                JOIN account_group_tree t
+                    ON ag.parent_id = t.id
+            )
+            SELECT DISTINCT id
+            FROM account_group_tree
+            """)
+    Set<Long> findHierarchyIds(@Param("ids") Collection<Long> parentIds);
 }

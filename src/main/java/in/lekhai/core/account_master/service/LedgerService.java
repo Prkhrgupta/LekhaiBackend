@@ -4,6 +4,11 @@ import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.*;
 import in.lekhai.core.account_master.repository.*;
 import in.lekhai.core.account_master.utils.LedgerUtils;
+import in.lekhai.error.controller.LekhaiClientException;
+import in.lekhai.gsp.gst.TaxProGstClient;
+import in.lekhai.gsp.gst.dto.GstDetailsDto;
+import in.lekhai.gsp.gst.dto.GstVerificationResponseDto;
+import in.lekhai.gsp.gst.util.GstinUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -33,24 +39,27 @@ public class LedgerService {
         private final TransportRepository transportRepository;
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
+        private final TaxProGstClient taxProGstClient;
 
         public LedgerService(
-                        LedgerRepository ledgerRepository,
-                        GstDetailsRepository gstDetailsRepository,
-                        AddressRepository addressRepository,
-                        AreaRepository areaRepository,
-                        BrokerRepository brokerRepository,
-                        TransportRepository transportRepository,
-                        AccountGroupRepository accountGroupRepository,
-                        StateRepository stateRepository) {
-                this.ledgerRepository = ledgerRepository;
-                this.gstDetailsRepository = gstDetailsRepository;
-                this.addressRepository = addressRepository;
-                this.areaRepository = areaRepository;
-                this.brokerRepository = brokerRepository;
-                this.transportRepository = transportRepository;
-                this.accountGroupRepository = accountGroupRepository;
-                this.stateRepository = stateRepository;
+                LedgerRepository ledgerRepository,
+                GstDetailsRepository gstDetailsRepository,
+                AddressRepository addressRepository,
+                AreaRepository areaRepository,
+                BrokerRepository brokerRepository,
+                TransportRepository transportRepository,
+                AccountGroupRepository accountGroupRepository,
+                StateRepository stateRepository, TaxProGstClient taxProGstClient
+        ) {
+            this.ledgerRepository = ledgerRepository;
+            this.gstDetailsRepository = gstDetailsRepository;
+            this.addressRepository = addressRepository;
+            this.areaRepository = areaRepository;
+            this.brokerRepository = brokerRepository;
+            this.transportRepository = transportRepository;
+            this.accountGroupRepository = accountGroupRepository;
+            this.stateRepository = stateRepository;
+            this.taxProGstClient = taxProGstClient;
         }
 
         @ShopContextTransactional
@@ -186,36 +195,23 @@ public class LedgerService {
         }
 
         @ShopContextTransactional
-        public List<LedgerResponse> listLedgers() {
-                List<Ledger> ledgers = StreamSupport.stream(ledgerRepository.findAll().spliterator(), false).toList();
+        public List<DropdownItem> listLedgers(List<Long> underAccountGroup) {
+            List<Ledger> ledgerList = ledgerRepository.findAll();
 
-                Map<Long, Area> areas = StreamSupport.stream(areaRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Area::getId, area -> area));
-                Map<Long, Broker> brokers = StreamSupport.stream(brokerRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Broker::getId, broker -> broker));
-                Map<Long, Transport> transports = StreamSupport
-                                .stream(transportRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Transport::getId, transport -> transport));
-                Map<Long, AccountGroup> accountGroups = StreamSupport
-                                .stream(accountGroupRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(AccountGroup::getId, accountGroup -> accountGroup));
-                Map<Long, Address> addressMap = StreamSupport
-                                .stream(addressRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(Address::getLedgerId, addr -> addr));
-                Map<Long, GstInDetails> gstInDetailsMap = StreamSupport
-                                .stream(gstDetailsRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toMap(GstInDetails::getLedgerId, gst -> gst));
+            if(underAccountGroup != null && !underAccountGroup.isEmpty()) {
+                Set<Long> filterAccountGroups = accountGroupRepository.findHierarchyIds(underAccountGroup);
+                ledgerList = ledgerList.stream()
+                        .filter(ledger -> filterAccountGroups.contains(ledger.getAccountGroupId()))
+                        .toList();
+            }
 
-                return ledgers.stream()
-                                .map(ledger -> LedgerUtils.mapToResponse(
-                                                ledger,
-                                                areas.get(ledger.getDefaultAreaId()),
-                                                brokers.get(ledger.getDefaultBrokerId()),
-                                                transports.get(ledger.getDefaultTransportId()),
-                                                accountGroups.get(ledger.getAccountGroupId()),
-                                                gstInDetailsMap.get(ledger.getId()),
-                                                addressMap.get(ledger.getId())))
-                                .toList();
+            return ledgerList.stream()
+                    .map(ledger ->
+                            new DropdownItem()
+                                    .id(ledger.getId())
+                                    .label(ledger.getName())
+                    )
+                    .toList();
         }
 
         @ShopContextTransactional
@@ -262,5 +258,23 @@ public class LedgerService {
                             .size(ledgersPage.getSize())
                             .totalElements(ledgersPage.getTotalElements())
                             .totalPages(ledgersPage.getTotalPages()));
+        }
+
+        public LedgerResponse getLedgerResponseByGstIn(String gstIn) {
+            if(!GstinUtils.isValid(gstIn)) {
+                throw new LekhaiClientException("Invalid Gstin number");
+            }
+
+            GstVerificationResponseDto gstDetailDto = taxProGstClient.getGstDetails(gstIn)
+                    .block();
+
+            String pan = GstinUtils.extractPan(gstIn);
+            String gstCode = GstinUtils.extractGstStateCode(gstIn);
+            String stateCode = stateRepository.findByGstCode(gstCode)
+                    .orElseThrow(() -> new RuntimeException(String.format("Can't find gstCode=[%s] in state repo", gstCode)))
+                    .getStateCode();
+
+            GstDetailsDto data = gstDetailDto.data();
+            return LedgerUtils.mapToResponse(data, pan, stateCode);
         }
 }
