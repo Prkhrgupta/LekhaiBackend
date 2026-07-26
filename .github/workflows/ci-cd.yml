@@ -44,6 +44,13 @@ jobs:
           REPOSILITE_USER: ${{ secrets.REPOSILITE_USER }}
           REPOSILITE_PASSWORD: ${{ secrets.REPOSILITE_PASSWORD }}
         run: |
+          # Debug output
+          echo "--- Debugging Secrets ---"
+          echo "DOCKER_USERNAME: $REGISTRY_USERNAME"
+          echo "DOCKER_TOKEN length: ${#REGISTRY_PASSWORD} chars"
+          echo "REPOSILITE_USER: $REPOSILITE_USER"
+          echo "REPOSILITE_PASSWORD length: ${#REPOSILITE_PASSWORD} chars"
+          echo "-------------------------"
           TAG=${GITHUB_SHA::7}
           echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
           ./gradlew --no-daemon \
