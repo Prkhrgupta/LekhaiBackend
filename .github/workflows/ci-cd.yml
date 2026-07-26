@@ -45,7 +45,7 @@ jobs:
           ./gradlew --no-daemon \
           -Pjib.to.tags="${TAG},latest" \
           -Djib.to.auth.username="${{ secrets.DOCKER_USERNAME }}" \
-          -Djib.to.auth.password="${{ secrets.DOCKER_PASSWORD }}" \
+          -Djib.to.auth.password="${{ secrets.DOCKER_TOKEN }}" \
           jib
       - name: Set image tag output
         id: image_info
