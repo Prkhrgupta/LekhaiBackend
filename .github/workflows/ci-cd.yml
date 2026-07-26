@@ -13,6 +13,9 @@ jobs:
     name: Build & Push Image
     runs-on: ubuntu-latest
     environment: staging
+    # IMPORTANT: You must declare job-level outputs so the deploy job can read them
+    outputs:
+      tag: ${{ steps.image_info.outputs.tag }}
 
     steps:
       - name: Checkout
@@ -47,6 +50,7 @@ jobs:
           -Djib.to.auth.username="${{ secrets.DOCKER_USERNAME }}" \
           -Djib.to.auth.password="${{ secrets.DOCKER_TOKEN }}" \
           jib
+
       - name: Set image tag output
         id: image_info
         run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
@@ -58,22 +62,37 @@ jobs:
     environment: staging
 
     steps:
-      - name: Deploy over SSH (pull & up)
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ vars.SERVER_HOST }}
-          username: ${{ vars.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            # Update this path to where your docker-compose.yml lives on the server
-            DEPLOY_DIR="/home/sitswit/deploy" 
-            TAG=${{ needs.build_and_push.outputs.tag }}
-            
-            echo "Deploying to $DEPLOY_DIR using tag $TAG"
-            cd "$DEPLOY_DIR"
+      - name: Install Cloudflared
+        run: |
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
 
-            export IMAGE_TAG=$TAG
+      - name: Deploy over SSH via Cloudflare Tunnel
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ vars.SERVER_HOST }}
+          USER: ${{ vars.SERVER_USER }}
+          IMAGE_TAG: ${{ needs.build_and_push.outputs.tag }}
+        run: |
+          # 1. Setup SSH Key
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # 2. Execute Deployment Script via cloudflared proxy
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ProxyCommand="cloudflared access ssh --hostname %h" \
+              $USER@$HOST bash << EOF
+          
+            set -e
+            DEPLOY_DIR="/home/sitswit/deploy" 
+          
+            echo "Deploying to \$DEPLOY_DIR using tag ${IMAGE_TAG}"
+            cd "\$DEPLOY_DIR"
+
+            export IMAGE_TAG="${IMAGE_TAG}"
 
             # Pull the exact image and bring up containers
             docker compose pull
@@ -82,14 +101,18 @@ jobs:
             # Wait for health
             echo "Waiting for service to become healthy..."
             for i in {1..20}; do
-              STATUS=$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q app) || echo null)
-              echo "Health: $STATUS"
-              if [[ "$STATUS" == "\"healthy\"" ]]; then
+              # Dollar signs escaped to run remotely!
+              STATUS=\$(docker inspect --format='{{json .State.Health.Status}}' \$(docker compose ps -q app) || echo null)
+              echo "Health: \$STATUS"
+              if [[ "\$STATUS" == "\"healthy\"" ]]; then
                 echo "Service healthy"
                 exit 0
               fi
               sleep 3
             done
-            
+          
             echo "Health check failed or timed out. Check logs."
             docker compose logs --tail 200
+            exit 1
+          
+          EOF
