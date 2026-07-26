@@ -45,6 +45,12 @@ public class LedgerController implements LedgerApi {
         return ResponseEntity.ok(response);
     }
 
+    // remove this then voucher-impl is merged
+    @Override
+    public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(@NotNull Long aLong) {
+        return null;
+    }
+
     @Override
     public ResponseEntity<LedgerResponse> getLedgerByGstin(@NotNull @Valid String gstIn) {
         LedgerResponse ledgerResponseByGstIn = ledgerService.getLedgerResponseByGstIn(gstIn);
