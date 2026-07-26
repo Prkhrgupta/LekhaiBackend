@@ -37,26 +37,16 @@ jobs:
 
       - name: Build & Push (Jib)
         env:
-          # Docker Registry Auth
-          REGISTRY_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
-          # Reposilite Maven Auth
           REPOSILITE_USER: ${{ secrets.REPOSILITE_USER }}
           REPOSILITE_PASSWORD: ${{ secrets.REPOSILITE_PASSWORD }}
         run: |
-          # Debug output
-          echo "--- Debugging Secrets ---"
-          echo "DOCKER_USERNAME: $REGISTRY_USERNAME"
-          echo "DOCKER_TOKEN length: ${#REGISTRY_PASSWORD} chars"
-          echo "REPOSILITE_USER: $REPOSILITE_USER"
-          echo "REPOSILITE_PASSWORD length: ${#REPOSILITE_PASSWORD} chars"
-          echo "-------------------------"
           TAG=${GITHUB_SHA::7}
           echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
           ./gradlew --no-daemon \
-            -Pjib.to.tags="${TAG},latest" \
-            jib
-
+          -Pjib.to.tags="${TAG},latest" \
+          -Djib.to.auth.username="${{ secrets.DOCKER_USERNAME }}" \
+          -Djib.to.auth.password="${{ secrets.DOCKER_PASSWORD }}" \
+          jib
       - name: Set image tag output
         id: image_info
         run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
