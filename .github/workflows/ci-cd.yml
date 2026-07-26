@@ -55,14 +55,14 @@ jobs:
     name: Deploy to Server
     needs: build_and_push
     runs-on: ubuntu-latest
-    environment: staging # Added to ensure secrets are pulled correctly if environment-scoped
+    environment: staging
 
     steps:
       - name: Deploy over SSH (pull & up)
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
+          host: ${{ vars.SERVER_HOST }}
+          username: ${{ vars.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
