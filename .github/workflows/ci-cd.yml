@@ -2,7 +2,7 @@ name: CI/CD - Build & Deploy
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ staging ]
   workflow_dispatch:
 
 env:
@@ -12,6 +12,7 @@ jobs:
   build_and_push:
     name: Build & Push Image
     runs-on: ubuntu-latest
+    environment: staging
 
     steps:
       - name: Checkout
@@ -36,25 +37,28 @@ jobs:
 
       - name: Build & Push (Jib)
         env:
-          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          # Docker Registry Auth
+          REGISTRY_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
+          # Reposilite Maven Auth
+          REPOSILITE_USER: ${{ secrets.REPOSILITE_USER }}
+          REPOSILITE_PASSWORD: ${{ secrets.REPOSILITE_PASSWORD }}
         run: |
           TAG=${GITHUB_SHA::7}
           echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
           ./gradlew --no-daemon \
-            -Pjib.to.auth.username="${REGISTRY_USERNAME}" \
-            -Pjib.to.auth.password="${REGISTRY_PASSWORD}" \
             -Pjib.to.tags="${TAG},latest" \
             jib
 
       - name: Set image tag output
         id: image_info
-        run: echo "::set-output name=tag::${GITHUB_SHA::7}"
+        run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
   deploy:
     name: Deploy to Server
     needs: build_and_push
     runs-on: ubuntu-latest
+    environment: staging # Added to ensure secrets are pulled correctly if environment-scoped
 
     steps:
       - name: Deploy over SSH (pull & up)
@@ -63,28 +67,23 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '22' }}
+          port: 22
           script: |
             set -e
-            DEPLOY_DIR=${{ secrets.DEPLOY_DIR:-/home/${{ secrets.SERVER_USER }}/deploy }}
+            # Update this path to where your docker-compose.yml lives on the server
+            DEPLOY_DIR="/home/sitswit/deploy" 
             TAG=${{ needs.build_and_push.outputs.tag }}
-            echo "Deploy dir: $DEPLOY_DIR"
-            echo "Using image tag: $TAG"
-
+            
+            echo "Deploying to $DEPLOY_DIR using tag $TAG"
             cd "$DEPLOY_DIR"
 
-            # Optional: ensure correct docker compose version
-            docker --version || exit 1
-            docker compose version || exit 1
-
-            # Export variable so docker-compose uses it
             export IMAGE_TAG=$TAG
 
             # Pull the exact image and bring up containers
             docker compose pull
             docker compose up -d --no-build
 
-            # Wait for health (basic)
+            # Wait for health
             echo "Waiting for service to become healthy..."
             for i in {1..20}; do
               STATUS=$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q app) || echo null)
@@ -95,6 +94,6 @@ jobs:
               fi
               sleep 3
             done
-            echo "Health check failed (timed out), but container started. Check logs."
-            docker compose ps
+            
+            echo "Health check failed or timed out. Check logs."
             docker compose logs --tail 200

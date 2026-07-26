@@ -26,6 +26,16 @@ java {
 repositories {
     mavenLocal()
 	mavenCentral()
+	maven {
+		name = 'Reposilite'
+		url = 'https://mavenrepo.sitswiftcloud.in/releases'
+
+		// Include this if you disabled anonymous reads in Reposilite
+		credentials {
+			username = project.findProperty('reposiliteUser') ?: System.getenv('REPOSILITE_USER')
+			password = project.findProperty('reposilitePassword') ?: System.getenv('REPOSILITE_PASSWORD')
+		}
+	}
 }
 
 dependencies {
