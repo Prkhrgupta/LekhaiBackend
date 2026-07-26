@@ -46,7 +46,7 @@ jobs:
           TAG=${GITHUB_SHA::7}
           echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
           ./gradlew --no-daemon \
-          -Pjib.to.tags="${TAG},latest" \
+          -Pjib.to.tags="${TAG}" \
           -Djib.to.auth.username="${{ secrets.DOCKER_USERNAME }}" \
           -Djib.to.auth.password="${{ secrets.DOCKER_TOKEN }}" \
           jib
