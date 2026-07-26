@@ -97,22 +97,22 @@ jobs:
             # Pull the exact image and bring up containers
             docker compose pull
             docker compose up -d --no-build
-
-            # Wait for health
-            echo "Waiting for service to become healthy..."
-            for i in {1..20}; do
-              # Dollar signs escaped to run remotely!
-              STATUS=\$(docker inspect --format='{{json .State.Health.Status}}' \$(docker compose ps -q app) || echo null)
-              echo "Health: \$STATUS"
-              if [[ "\$STATUS" == "\"healthy\"" ]]; then
-                echo "Service healthy"
-                exit 0
-              fi
-              sleep 3
-            done
           
-            echo "Health check failed or timed out. Check logs."
-            docker compose logs --tail 200
-            exit 1
-          
+            # Wait for health using HTTP Curl instead of Docker Inspect
+             echo "Waiting for Spring Boot to become healthy..."
+             for i in {1..20}; do
+            # Pings the backend on localhost:8081 (current port for lekhai-backend)
+             HTTP_STATUS=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || echo "failed")
+             echo "HTTP Status: \$HTTP_STATUS"
+             
+             if [[ "\$HTTP_STATUS" == "200" ]]; then
+             echo "Service is up and running!"
+             exit 0
+             fi
+             sleep 5
+             done
+             
+             echo "Health check failed or timed out. Check logs."
+             docker compose logs --tail 200 lekhai-backend
+             exit 1
           EOF
