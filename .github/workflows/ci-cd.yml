@@ -87,7 +87,7 @@ jobs:
               $USER@$HOST bash << EOF
           
             set -e
-            DEPLOY_DIR="/home/sitswit/deploy" 
+            DEPLOY_DIR="/home/sitswift/lekhai" 
           
             echo "Deploying to \$DEPLOY_DIR using tag ${IMAGE_TAG}"
             cd "\$DEPLOY_DIR"
