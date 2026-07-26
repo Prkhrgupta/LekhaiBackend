@@ -64,7 +64,6 @@ jobs:
           host: ${{ vars.SERVER_HOST }}
           username: ${{ vars.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
           script: |
             set -e
             # Update this path to where your docker-compose.yml lives on the server
