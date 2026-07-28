@@ -53,7 +53,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/login/**").permitAll().anyRequest().authenticated())
+                        auth.requestMatchers("/login/**", "/actuator/health", "/actuator/health/**")
+                                .permitAll().anyRequest().authenticated()
+                )
                 .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)))
                 .addFilterAfter(shopContextFilter, BearerTokenAuthenticationFilter.class)
