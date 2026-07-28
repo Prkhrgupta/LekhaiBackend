@@ -44,13 +44,6 @@ public class LedgerController implements LedgerApi {
         log.info("Successfully fetched ledger {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
-
-    // remove this then voucher-impl is merged
-    @Override
-    public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(@NotNull Long aLong) {
-        return null;
-    }
-
     @Override
     public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(@NotNull Long ledgerId) {
         LedgerBalanceResponse res = ledgerService.calcLedgerBalance(ledgerId);
