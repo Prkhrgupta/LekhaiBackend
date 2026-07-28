@@ -95,8 +95,8 @@ jobs:
             export IMAGE_TAG="${IMAGE_TAG}"
 
             # Pull the exact image and bring up containers
-            docker compose pull
-            docker compose up -d --no-build
+            docker compose pull lekhai-backend
+            docker compose up -d --no-build lekhai-backend
           
             # Wait for health using HTTP Curl instead of Docker Inspect
              echo "Waiting for Spring Boot to become healthy..."
