@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
-public class VoucherCotroller implements VoucherApi {
+public class VoucherController implements VoucherApi {
     private final PaymentVoucherService paymentVoucherService;
 
-    public VoucherCotroller(PaymentVoucherService paymentVoucherService) {
+    public VoucherController(PaymentVoucherService paymentVoucherService) {
         this.paymentVoucherService = paymentVoucherService;
     }
 

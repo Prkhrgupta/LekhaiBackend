@@ -16,10 +16,10 @@ import java.time.LocalDate;
 
 @RestController
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
-public class AccoutLedgerReportController implements AccountLedgerApi {
+public class LedgerReportController implements AccountLedgerApi {
     private final LedgerReportService ledgerReportService;
 
-    public AccoutLedgerReportController(
+    public LedgerReportController(
             LedgerReportService ledgerReportService
     ) {
         this.ledgerReportService = ledgerReportService;
@@ -35,7 +35,7 @@ public class AccoutLedgerReportController implements AccountLedgerApi {
             Pageable pageable
     ) {
         AccountLedgerPageResponse accountLedgerEntries =
-                ledgerReportService.getAccountLedgerEntries(ledgerId, searchableField, query, pageable);
+                ledgerReportService.getAccountLedgerEntries(ledgerId, fromDate, toDate, pageable);
         return ResponseEntity.ok().body(accountLedgerEntries);
     }
 }

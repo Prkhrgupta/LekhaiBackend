@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,8 +36,8 @@ public class LedgerReportService {
     @ShopContextTransactional
     public AccountLedgerPageResponse getAccountLedgerEntries(
             Long ledgerId,
-            AccountLedgerSearchableField searchableField,
-            String query,
+            LocalDate fromDate,
+            LocalDate toDate,
             Pageable pageable
     ) {
         Ledger ledger = ledgerRepository.findById(ledgerId)

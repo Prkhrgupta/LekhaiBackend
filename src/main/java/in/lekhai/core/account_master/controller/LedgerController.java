@@ -46,7 +46,7 @@ public class LedgerController implements LedgerApi {
     }
     @Override
     public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(@NotNull Long ledgerId) {
-        LedgerBalanceResponse res = ledgerService.calcLedgerBalance(ledgerId);
+        LedgerBalanceResponse res = ledgerService.ledgerBalanceDetails(ledgerId, null, null);
         return ResponseEntity.ok(res);
     }
 

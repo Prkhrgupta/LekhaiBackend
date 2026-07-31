@@ -10,7 +10,7 @@ import in.lekhai.gsp.gst.dto.GstDetailsDto;
 import in.lekhai.gsp.gst.dto.GstVerificationResponseDto;
 import in.lekhai.gsp.gst.util.GstinUtils;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
-import in.lekhai.voucher.repository.VoucherRepository;
+import in.lekhai.voucher.repository.VoucherEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class LedgerService {
         private final TransportRepository transportRepository;
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
-        private final VoucherRepository voucherRepository;
+        private final VoucherEntryRepository voucherEntryRepository;
         private final TaxProGstClient taxProGstClient;
 
         public LedgerService(
@@ -53,7 +54,7 @@ public class LedgerService {
                 TransportRepository transportRepository,
                 AccountGroupRepository accountGroupRepository,
                 StateRepository stateRepository,
-                VoucherRepository voucherRepository,
+                VoucherEntryRepository voucherEntryRepository,
                 TaxProGstClient taxProGstClient
         ) {
             this.ledgerRepository = ledgerRepository;
@@ -64,7 +65,7 @@ public class LedgerService {
             this.transportRepository = transportRepository;
             this.accountGroupRepository = accountGroupRepository;
             this.stateRepository = stateRepository;
-            this.voucherRepository = voucherRepository;
+            this.voucherEntryRepository = voucherEntryRepository;
             this.taxProGstClient = taxProGstClient;
         }
 
@@ -286,18 +287,27 @@ public class LedgerService {
 
         // TODO: Make this read only for performance
         @ShopContextTransactional
-        public LedgerBalanceResponse calcLedgerBalance(Long ledgerId) {
+        public LedgerBalanceResponse ledgerBalanceDetails(
+                Long ledgerId,
+                LocalDate fromDate,
+                LocalDate toDate
+        ) {
             Ledger ledger = ledgerRepository.findById(ledgerId)
                     .orElseThrow(() -> new LekhaiClientException("Invalid, Ledger Not found", HttpStatus.NOT_FOUND));
+
             BigDecimal openingBalance = ledger.getOpeningBalanceType().equals(AccountEntryType.DR)
                     ? ledger.getOpeningBalance()
                     : ledger.getOpeningBalance().negate();
 
-            BigDecimal currentRunningBalance = voucherRepository.ledgerCurrentBalance(ledgerId);
-            BigDecimal totalCurrentBalance = openingBalance.add(currentRunningBalance);
+            LedgerSummaryProjection ledgerSummary = voucherEntryRepository.getLedgerSummary(ledgerId, fromDate, toDate);
+            BigDecimal netBalanceBeforeDate = voucherEntryRepository.getNetBalanceBeforeDate(ledgerId, fromDate);
+            BigDecimal totalCurrentBalance = openingBalance.add(netBalanceBeforeDate);
+
             return new LedgerBalanceResponse()
                     .ledgerId(ledger.getId())
                     .currentBalance(totalCurrentBalance.abs())
+                    .debitAmount(ledgerSummary.getTotalDebit())
+                    .creditAmount(ledgerSummary.getTotalCredit())
                     .currentBalanceType(ledger.getOpeningBalanceType());
         }
 }
