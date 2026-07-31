@@ -11,12 +11,4 @@ import java.util.Optional;
 
 @Repository
 public interface VoucherRepository extends ListCrudRepository<Voucher, Long> {
-    Optional<Voucher> findByVoucherTypeAndVoucherNumber(String voucherType, Long voucherNumber);
-
-    @Query("""
-        SELECT COALESCE(SUM(debit_amount - credit_amount), 0)
-        FROM voucher_entry
-        WHERE ledger_id = :ledgerId
-    """)
-    BigDecimal ledgerCurrentBalance(@Param("ledgerId") Long ledgerId);
 }

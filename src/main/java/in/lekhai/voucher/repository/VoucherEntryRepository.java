@@ -1,5 +1,6 @@
 package in.lekhai.voucher.repository;
 
+import in.lekhai.core.account_master.domain.LedgerSummaryProjection;
 import in.lekhai.voucher.entity.VoucherEntry;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -39,4 +40,34 @@ public interface VoucherEntryRepository extends ListCrudRepository<VoucherEntry,
 
     @Query("SELECT COUNT(*) FROM voucher_entry WHERE ledger_id = :ledgerId")
     long countByLedgerId(@Param("ledgerId") Long ledgerId);
+
+
+    @Query(value = """
+        SELECT
+            COALESCE(SUM(ve.debit_amount), 0) AS totalDebit,
+            COALESCE(SUM(ve.credit_amount), 0) AS totalCredit,
+            COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0) AS currentBalance
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE ve.ledger_id = :ledgerId
+          AND v.voucher_date >= :fromDate
+          AND v.voucher_date <= :toDate
+    """)
+    LedgerSummaryProjection getLedgerSummary(
+            @Param("ledgerId") Long ledgerId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    @Query(value = """
+        SELECT COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0)
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE ve.ledger_id = :ledgerId
+          AND v.voucher_date < :fromDate
+    """)
+    BigDecimal getNetBalanceBeforeDate(
+            @Param("ledgerId") Long ledgerId,
+            @Param("fromDate") LocalDate fromDate
+    );
 }
