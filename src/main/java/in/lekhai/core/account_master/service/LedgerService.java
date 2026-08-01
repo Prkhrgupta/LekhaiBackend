@@ -306,8 +306,8 @@ public class LedgerService {
             return new LedgerBalanceResponse()
                     .ledgerId(ledger.getId())
                     .currentBalance(totalCurrentBalance.abs())
-                    .debitAmount(ledgerSummary.getTotalDebit())
-                    .creditAmount(ledgerSummary.getTotalCredit())
+                    .debitAmount(ledgerSummary.totalDebit())
+                    .creditAmount(ledgerSummary.totalCredit())
                     .currentBalanceType(ledger.getOpeningBalanceType());
         }
 }
