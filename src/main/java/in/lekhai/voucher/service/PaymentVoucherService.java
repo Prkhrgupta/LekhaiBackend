@@ -1,6 +1,6 @@
 package in.lekhai.voucher.service;
 
-import in.lekhai.contract.model.PaymentVocherEntry;
+import in.lekhai.contract.model.PaymentVoucherEntry;
 import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
@@ -37,7 +37,7 @@ public class PaymentVoucherService extends VoucherProcessor<PaymentVoucherReques
         BigDecimal totalDebitAmount = BigDecimal.ZERO;
 
         // Debit entries
-        for(PaymentVocherEntry entry : paymentVoucher.getItems()) {
+        for(PaymentVoucherEntry entry : paymentVoucher.getItems()) {
             PostingEntry postingEntry = new PostingEntry(
                     entry.getAccountId(),
                     entry.getAmount(),
