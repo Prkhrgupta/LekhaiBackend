@@ -1,13 +1,9 @@
 package in.lekhai.voucher.service;
 
-import in.lekhai.contract.model.ReceiptVoucherRequest;
+import in.lekhai.contract.model.ContraVoucherRequest;
 import in.lekhai.contract.model.VoucherEntry;
-import in.lekhai.core.account_master.domain.AccountGroup;
-import in.lekhai.core.account_master.domain.Ledger;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
 import in.lekhai.core.account_master.repository.LedgerRepository;
-import in.lekhai.error.controller.LekhaiClientException;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.VoucherType;
@@ -18,17 +14,16 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
-public class ReceiptVoucherService extends VoucherProcessor<ReceiptVoucherRequest> {
+public class ContraVoucherService extends VoucherProcessor<ContraVoucherRequest> {
     private static final String BANK_ACCOUNTS_GROUP = "Bank Accounts";
     private static final String CASH_IN_HAND_GROUP = "Cash in Hand";
 
     private final LedgerRepository ledgerRepository;
     private final AccountGroupRepository accountGroupRepository;
 
-    public ReceiptVoucherService(
+    public ContraVoucherService(
             VoucherPostingService voucherPostingService,
             VoucherPostingMapper voucherPostingMapper,
             LedgerRepository ledgerRepository,
@@ -40,44 +35,43 @@ public class ReceiptVoucherService extends VoucherProcessor<ReceiptVoucherReques
     }
 
     /**
-     * 1. check the receiptAccountId (Dr. acc) is in Bank or Cash In Hand Acc grp
-     * 2. accountId in receiptVoucherEntry should not be in Bank or Cash (This is the use of Contra)
-     * 3. at least 1 receiptEntry
+     * 1. at least one debit entry and at least one credit entry
+     * 2. every debit and credit account is in Bank or Cash In Hand Acc grp
+     * 3. each entry amount is present and greater than zero
+     * 4. total debit equals total credit
      */
     @Override
-    void validate(ReceiptVoucherRequest voucher) {
+    void validate(ContraVoucherRequest voucher) {
     }
 
     @Override
-    PostingRequest covertToVoucherPostRequest(ReceiptVoucherRequest receiptVoucher) {
+    PostingRequest covertToVoucherPostRequest(ContraVoucherRequest contraVoucher) {
         List<PostingEntry> postingEntryList = new ArrayList<>();
-        BigDecimal totalCreditAmount = BigDecimal.ZERO;
 
-        // Credit entries
-        for(VoucherEntry entry : receiptVoucher.getItems()) {
-            PostingEntry postingEntry = new PostingEntry(
+        // Debit entries ( to / destination )
+        for (VoucherEntry entry : contraVoucher.getDebitEntries()) {
+            postingEntryList.add(new PostingEntry(
+                    entry.getAccountId(),
+                    entry.getAmount(),
+                    BigDecimal.ZERO,
+                    entry.getRemarks()
+            ));
+        }
+
+        // Credit entries ( from / source )
+        for (VoucherEntry entry : contraVoucher.getCreditEntries()) {
+            postingEntryList.add(new PostingEntry(
                     entry.getAccountId(),
                     BigDecimal.ZERO,
                     entry.getAmount(),
                     entry.getRemarks()
-            );
-            postingEntryList.add(postingEntry);
-            totalCreditAmount = totalCreditAmount.add(entry.getAmount());
+            ));
         }
 
-        // Debit entry ( only one acc )
-        postingEntryList.add(new PostingEntry(
-                receiptVoucher.getReceiptAccountId(),
-                totalCreditAmount,
-                BigDecimal.ZERO,
-                receiptVoucher.getNarration()
-        ));
-
-        // convert to actual posting request
         return new PostingRequest(
-                VoucherType.RECEIPT,
-                receiptVoucher.getVoucherDate(),
-                receiptVoucher.getNarration(),
+                VoucherType.CONTRA,
+                contraVoucher.getVoucherDate(),
+                contraVoucher.getNarration(),
                 postingEntryList
         );
     }

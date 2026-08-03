@@ -4,7 +4,7 @@ import in.lekhai.core.account_master.domain.LedgerSummaryProjection;
 import in.lekhai.voucher.entity.VoucherEntry;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface VoucherEntryRepository extends ListCrudRepository<VoucherEntry, Long> {
+public interface VoucherEntryRepository extends CrudRepository<VoucherEntry, Long> {
     List<VoucherEntry> findByVoucherId(Long voucherId);
 
     List<VoucherEntry> findByVoucherIdIn(List<Long> voucherIds);
@@ -44,9 +44,9 @@ public interface VoucherEntryRepository extends ListCrudRepository<VoucherEntry,
 
     @Query(value = """
         SELECT
-            COALESCE(SUM(ve.debit_amount), 0) AS totalDebit,
-            COALESCE(SUM(ve.credit_amount), 0) AS totalCredit,
-            COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0) AS currentBalance
+            COALESCE(SUM(ve.debit_amount), 0) AS total_debit,
+            COALESCE(SUM(ve.credit_amount), 0) AS total_credit,
+            COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0) AS net_balance
         FROM voucher_entry ve
         JOIN voucher v ON ve.voucher_id = v.id
         WHERE ve.ledger_id = :ledgerId
@@ -57,17 +57,5 @@ public interface VoucherEntryRepository extends ListCrudRepository<VoucherEntry,
             @Param("ledgerId") Long ledgerId,
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate
-    );
-
-    @Query(value = """
-        SELECT COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0)
-        FROM voucher_entry ve
-        JOIN voucher v ON ve.voucher_id = v.id
-        WHERE ve.ledger_id = :ledgerId
-          AND v.voucher_date < :fromDate
-    """)
-    BigDecimal getNetBalanceBeforeDate(
-            @Param("ledgerId") Long ledgerId,
-            @Param("fromDate") LocalDate fromDate
     );
 }

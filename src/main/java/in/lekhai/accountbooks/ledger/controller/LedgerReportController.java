@@ -28,8 +28,6 @@ public class LedgerReportController implements AccountLedgerApi {
     @Override
     public ResponseEntity<AccountLedgerPageResponse> getAccountLedgerEntries(
             @NotNull Long ledgerId,
-            @Valid AccountLedgerSearchableField searchableField,
-            @Valid String query,
             @Valid LocalDate fromDate,
             @Valid LocalDate toDate,
             Pageable pageable
