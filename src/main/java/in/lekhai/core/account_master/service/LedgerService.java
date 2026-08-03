@@ -300,8 +300,7 @@ public class LedgerService {
                     : ledger.getOpeningBalance().negate();
 
             LedgerSummaryProjection ledgerSummary = voucherEntryRepository.getLedgerSummary(ledgerId, fromDate, toDate);
-            BigDecimal netBalanceBeforeDate = voucherEntryRepository.getNetBalanceBeforeDate(ledgerId, fromDate);
-            BigDecimal totalCurrentBalance = openingBalance.add(netBalanceBeforeDate);
+            BigDecimal totalCurrentBalance = openingBalance.add(ledgerSummary.netBalance());
 
             return new LedgerBalanceResponse()
                     .ledgerId(ledger.getId())
