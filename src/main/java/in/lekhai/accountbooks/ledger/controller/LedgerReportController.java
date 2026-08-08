@@ -4,7 +4,6 @@ import in.lekhai.accountbooks.ledger.service.LedgerReportService;
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.AccountLedgerApi;
 import in.lekhai.contract.model.AccountLedgerPageResponse;
-import in.lekhai.contract.model.AccountLedgerSearchableField;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
