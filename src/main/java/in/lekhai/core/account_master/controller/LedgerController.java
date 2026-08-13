@@ -7,6 +7,7 @@ import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -43,6 +45,16 @@ public class LedgerController implements LedgerApi {
         LedgerResponse response = ledgerService.getLedgerById(id);
         log.info("Successfully fetched ledger {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(
+            @NotNull Long ledgerId,
+            @Nullable @Valid LocalDate fromDate,
+            @Nullable @Valid LocalDate toDate
+    ) {
+        LedgerBalanceResponse res = ledgerService.ledgerBalanceDetails(ledgerId, fromDate, toDate);
+        return ResponseEntity.ok(res);
     }
 
     @Override

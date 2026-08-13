@@ -2,16 +2,20 @@ name: CI/CD - Build & Deploy
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ staging ]
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: docker.io/prkhrgupta/lekkai_backend
+  IMAGE_NAME: docker.io/prkhrgupta/lekhai_backend
 
 jobs:
   build_and_push:
     name: Build & Push Image
     runs-on: ubuntu-latest
+    environment: staging
+    # IMPORTANT: You must declare job-level outputs so the deploy job can read them
+    outputs:
+      tag: ${{ steps.image_info.outputs.tag }}
 
     steps:
       - name: Checkout
@@ -36,65 +40,79 @@ jobs:
 
       - name: Build & Push (Jib)
         env:
-          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          REPOSILITE_USER: ${{ secrets.REPOSILITE_USER }}
+          REPOSILITE_PASSWORD: ${{ secrets.REPOSILITE_PASSWORD }}
         run: |
           TAG=${GITHUB_SHA::7}
-          echo "Building and pushing image ${IMAGE_NAME}:${TAG} and :latest"
+          echo "Building and pushing image ${IMAGE_NAME}:${TAG}"
           ./gradlew --no-daemon \
-            -Pjib.to.auth.username="${REGISTRY_USERNAME}" \
-            -Pjib.to.auth.password="${REGISTRY_PASSWORD}" \
-            -Pjib.to.tags="${TAG},latest" \
-            jib
+          -Djib.to.tags="${TAG}" \
+          -Djib.to.auth.username="${{ secrets.DOCKER_USERNAME }}" \
+          -Djib.to.auth.password="${{ secrets.DOCKER_TOKEN }}" \
+          jib
 
       - name: Set image tag output
         id: image_info
-        run: echo "::set-output name=tag::${GITHUB_SHA::7}"
+        run: echo "tag=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
   deploy:
     name: Deploy to Server
     needs: build_and_push
     runs-on: ubuntu-latest
+    environment: staging
 
     steps:
-      - name: Deploy over SSH (pull & up)
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '22' }}
-          script: |
+      - name: Install Cloudflared
+        run: |
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared-linux-amd64.deb
+
+      - name: Deploy over SSH via Cloudflare Tunnel
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ vars.SERVER_HOST }}
+          USER: ${{ vars.SERVER_USER }}
+          IMAGE_TAG: ${{ needs.build_and_push.outputs.tag }}
+        run: |
+          # 1. Setup SSH Key
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # 2. Execute Deployment Script via cloudflared proxy
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ProxyCommand="cloudflared access ssh --hostname %h" \
+              $USER@$HOST bash << EOF
+          
             set -e
-            DEPLOY_DIR=${{ secrets.DEPLOY_DIR:-/home/${{ secrets.SERVER_USER }}/deploy }}
-            TAG=${{ needs.build_and_push.outputs.tag }}
-            echo "Deploy dir: $DEPLOY_DIR"
-            echo "Using image tag: $TAG"
+            DEPLOY_DIR="/home/sitswift/lekhai" 
+          
+            echo "Deploying to \$DEPLOY_DIR using tag ${IMAGE_TAG}"
+            cd "\$DEPLOY_DIR"
 
-            cd "$DEPLOY_DIR"
-
-            # Optional: ensure correct docker compose version
-            docker --version || exit 1
-            docker compose version || exit 1
-
-            # Export variable so docker-compose uses it
-            export IMAGE_TAG=$TAG
+            export IMAGE_TAG="${IMAGE_TAG}"
 
             # Pull the exact image and bring up containers
-            docker compose pull
-            docker compose up -d --no-build
-
-            # Wait for health (basic)
-            echo "Waiting for service to become healthy..."
-            for i in {1..20}; do
-              STATUS=$(docker inspect --format='{{json .State.Health.Status}}' $(docker compose ps -q app) || echo null)
-              echo "Health: $STATUS"
-              if [[ "$STATUS" == "\"healthy\"" ]]; then
-                echo "Service healthy"
-                exit 0
-              fi
-              sleep 3
-            done
-            echo "Health check failed (timed out), but container started. Check logs."
-            docker compose ps
-            docker compose logs --tail 200
+            docker compose pull lekhai-backend
+            docker compose up -d --no-build lekhai-backend
+          
+            # Wait for health using HTTP Curl instead of Docker Inspect
+             echo "Waiting for Spring Boot to become healthy..."
+             for i in {1..20}; do
+            # Pings the backend on localhost:8081 (current port for lekhai-backend)
+             HTTP_STATUS=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || echo "failed")
+             echo "HTTP Status: \$HTTP_STATUS"
+             
+             if [[ "\$HTTP_STATUS" == "200" ]]; then
+             echo "Service is up and running!"
+             exit 0
+             fi
+             sleep 5
+             done
+             
+             echo "Health check failed or timed out. Check logs."
+             docker compose logs --tail 200 lekhai-backend
+             exit 1
+          EOF

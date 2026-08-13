@@ -26,12 +26,22 @@ java {
 repositories {
     mavenLocal()
 	mavenCentral()
+	maven {
+		name = 'Reposilite'
+		url = 'https://mavenrepo.sitswiftcloud.in/releases'
+
+		// Include this if you disabled anonymous reads in Reposilite
+		credentials {
+			username = project.findProperty('reposiliteUser') ?: System.getenv('REPOSILITE_USER')
+			password = project.findProperty('reposilitePassword') ?: System.getenv('REPOSILITE_PASSWORD')
+		}
+	}
 }
 
 dependencies {
     // Lekhai Api Spec
 //    implementation "in.lekhai:lekhai-api-spec:1.0.4"
-    implementation 'in.lekhai:lekhaiapispec:1.0.12'
+    implementation 'in.lekhai:lekhaiapispec:1.1.2'
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -93,7 +103,6 @@ jib {
 	}
 	to {
 		image = 'docker.io/prkhrgupta/lekhai-backend'
-		tags = ['latest']
 	}
 	container {
 		mainClass = 'in.lekhai.LekhaiApplication'
