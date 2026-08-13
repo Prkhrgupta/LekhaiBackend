@@ -40,7 +40,7 @@ public class CommodityService {
     @ShopContextTransactional
     public CommodityResponse updateCommodity(Long id, CommodityRequest request) {
         Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
+                .orElseThrow(() -> new CommodityNotFoundException(id));
         mapToEntity(request, commodity);
         Commodity saved = commodityRepository.save(commodity);
         log.info("Updated commodity :: item id {}", saved.getItemId());
@@ -59,7 +59,7 @@ public class CommodityService {
     @ShopContextTransactional
     public CommodityResponse getCommodityById(Long id) {
         Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
+                .orElseThrow(() -> new CommodityNotFoundException(id));
         return mapToResponse(commodity);
     }
 
@@ -106,87 +106,11 @@ public class CommodityService {
         commodity.setUom(request.getUnitOfMeasurement());
         commodity.setGstRateSale(toBigDecimal(request.getGstRateSale()));
         commodity.setGstRatePurchase(toBigDecimal(request.getGstRatePurchase()));
-        commodity.setIsSalePurchaseActive(request.getSalePurchaseSetting());
-
-        applySaleLedger(request.getSaleLedger(), commodity);
-        applyPurchaseLedger(request.getPurchaseLedger(), commodity);
 
         return commodity;
     }
 
-    private void applySaleLedger(SaleLedgerRequest saleLedger, Commodity commodity) {
-        if (saleLedger == null) {
-            return;
-        }
-        SaleInStateRequest inState = saleLedger.getInState();
-        if (inState != null) {
-            commodity.setSaleAcInStateId(inState.getSaleAccount());
-            commodity.setSaleCgstPercent(toBigDecimal(inState.getCgstPercentage()));
-            commodity.setSaleSgstPercent(toBigDecimal(inState.getSgstPercentage()));
-            commodity.setSaleCessPercent(toBigDecimal(inState.getCessPercentage()));
-        }
-        SaleOutStateRequest outState = saleLedger.getOutState();
-        if (outState != null) {
-            commodity.setSaleAcOutStateId(outState.getSaleAccount());
-            commodity.setSaleIgstPercent(toBigDecimal(outState.getIgstPercentage()));
-            commodity.setSaleCessOutPercent(toBigDecimal(outState.getCessPercentage()));
-        }
-        commodity.setRoundOffAcId(saleLedger.getRoundOff());
-    }
-
-    private void applyPurchaseLedger(PurchaseLedgerRequest purchaseLedger, Commodity commodity) {
-        if (purchaseLedger == null) {
-            return;
-        }
-        PurchaseInStateRequest inState = purchaseLedger.getInState();
-        if (inState != null) {
-            commodity.setPurchaseAcInStateId(inState.getPurchaseAccount());
-            commodity.setPurchaseCgstPercent(toBigDecimal(inState.getCgstPercentage()));
-            commodity.setPurchaseSgstPercent(toBigDecimal(inState.getSgstPercentage()));
-            commodity.setPurchaseCessPercent(toBigDecimal(inState.getCessPercentage()));
-        }
-        PurchaseOutStateRequest outState = purchaseLedger.getOutState();
-        if (outState != null) {
-            commodity.setPurchaseAcOutStateId(outState.getPurchaseAccount());
-            commodity.setPurchaseIgstPercent(toBigDecimal(outState.getIgstPercentage()));
-            commodity.setPurchaseCessOutPercent(toBigDecimal(outState.getCessPercentage()));
-        }
-    }
-
     private CommodityResponse mapToResponse(Commodity commodity) {
-        SaleLedgerResponse saleLedger = new SaleLedgerResponse()
-                .inState(new SaleInStateResponse()
-                        .saleAccount(commodity.getSaleAcInStateId())
-                        .cgstPercentage(toDouble(commodity.getSaleCgstPercent()))
-                        .cgstAccount(null)
-                        .sgstPercentage(toDouble(commodity.getSaleSgstPercent()))
-                        .sgstAccount(null)
-                        .cessPercentage(toDouble(commodity.getSaleCessPercent()))
-                        .cessAccount(null))
-                .outState(new SaleOutStateResponse()
-                        .saleAccount(commodity.getSaleAcOutStateId())
-                        .igstPercentage(toDouble(commodity.getSaleIgstPercent()))
-                        .igstAccount(null)
-                        .cessPercentage(toDouble(commodity.getSaleCessOutPercent()))
-                        .cessAccount(null))
-                .roundOff(commodity.getRoundOffAcId());
-
-        PurchaseLedgerResponse purchaseLedger = new PurchaseLedgerResponse()
-                .inState(new PurchaseInStateResponse()
-                        .purchaseAccount(commodity.getPurchaseAcInStateId())
-                        .cgstPercentage(toDouble(commodity.getPurchaseCgstPercent()))
-                        .cgstAccount(null)
-                        .sgstPercentage(toDouble(commodity.getPurchaseSgstPercent()))
-                        .sgstAccount(null)
-                        .cessPercentage(toDouble(commodity.getPurchaseCessPercent()))
-                        .cessAccount(null))
-                .outState(new PurchaseOutStateResponse()
-                        .purchaseAccount(commodity.getPurchaseAcOutStateId())
-                        .igstPercentage(toDouble(commodity.getPurchaseIgstPercent()))
-                        .igstAccount(null)
-                        .cessPercentage(toDouble(commodity.getPurchaseCessOutPercent()))
-                        .cessAccount(null));
-
         return new CommodityResponse()
                 .id(commodity.getItemId())
                 .name(commodity.getItemName())
@@ -195,9 +119,6 @@ public class CommodityService {
                 .gstRateSale(toDouble(commodity.getGstRateSale()))
                 .gstRatePurchase(toDouble(commodity.getGstRatePurchase()))
                 .unitOfMeasurement(commodity.getUom())
-                .salePurchaseSetting(commodity.getIsSalePurchaseActive())
-                .saleLedger(saleLedger)
-                .purchaseLedger(purchaseLedger)
                 .isActive(!Boolean.TRUE.equals(commodity.getDeleted()))
                 .createdAt(toOffsetDateTime(commodity.getCreatedAt()));
     }
