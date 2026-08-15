@@ -2,7 +2,6 @@ package in.lekhai.voucher.repository;
 
 import in.lekhai.core.account_master.domain.LedgerSummaryProjection;
 import in.lekhai.voucher.entity.VoucherEntry;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -19,27 +18,50 @@ public interface VoucherEntryRepository extends CrudRepository<VoucherEntry, Lon
     List<VoucherEntry> findByVoucherIdIn(List<Long> voucherIds);
 
     @Query("""
-        SELECT ve.* FROM voucher_entry ve
-        JOIN voucher v ON ve.voucher_id = v.id
-        WHERE ve.ledger_id = :ledgerId
-        ORDER BY v.voucher_date ASC, ve.line_number ASC
+        SELECT * FROM (
+            SELECT ve.id, ve.voucher_id, ve.ledger_id, ve.line_number,
+                   ve.debit_amount, ve.credit_amount,
+                   v.voucher_date,
+                   SUM(ve.debit_amount - ve.credit_amount) OVER (
+                       ORDER BY v.voucher_date, ve.voucher_id, ve.line_number, ve.id
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                   ) AS running_net
+            FROM voucher_entry ve
+            JOIN voucher v ON ve.voucher_id = v.id
+            WHERE ve.ledger_id = :ledgerId
+              AND v.voucher_date <= :toDate
+        ) t
+        WHERE t.voucher_date >= :fromDate
+        ORDER BY t.voucher_date, t.voucher_id, t.line_number, t.id
+        LIMIT :limit OFFSET :offset
     """)
-    List<VoucherEntry> findByLedgerIdOrderByVoucherDate(@Param("ledgerId") Long ledgerId, Pageable pageable);
+    List<LedgerEntryWithBalanceProjection> findPageWithRunningBalance(
+            @Param("ledgerId") Long ledgerId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
 
     @Query("""
         SELECT COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0)
         FROM voucher_entry ve
         JOIN voucher v ON ve.voucher_id = v.id
         WHERE ve.ledger_id = :ledgerId
-        AND (v.voucher_date < :voucherDate
-             OR (v.voucher_date = :voucherDate AND ve.line_number < :lineNumber))
+          AND v.voucher_date < :fromDate
     """)
-    BigDecimal sumBeforeEntry(@Param("ledgerId") Long ledgerId,
-                              @Param("voucherDate") LocalDate voucherDate,
-                              @Param("lineNumber") Integer lineNumber);
+    BigDecimal sumNetBefore(@Param("ledgerId") Long ledgerId,
+                            @Param("fromDate") LocalDate fromDate);
 
-    @Query("SELECT COUNT(*) FROM voucher_entry WHERE ledger_id = :ledgerId")
-    long countByLedgerId(@Param("ledgerId") Long ledgerId);
+    @Query("""
+        SELECT COUNT(*)
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE ve.ledger_id = :ledgerId
+          AND v.voucher_date BETWEEN :fromDate AND :toDate
+    """)
+    long countByLedgerIdAndDateBetween(@Param("ledgerId") Long ledgerId,
+                                       @Param("fromDate") LocalDate fromDate,
+                                       @Param("toDate") LocalDate toDate);
 
 
     @Query(value = """
