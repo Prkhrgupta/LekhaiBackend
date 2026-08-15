@@ -191,6 +191,14 @@ public class LedgerReportService {
                     .toList();
         }
 
+        boolean multiPartyContra = contra.stream()
+                .map(VoucherEntry::getLedgerId)
+                .distinct()
+                .count() > 1;
+        if (!multiPartyContra) {
+            return List.of();
+        }
+
         return contra.stream()
                 .map(ve -> new AccountLedgerContraItem()
                         .ledgerId(ve.getLedgerId())

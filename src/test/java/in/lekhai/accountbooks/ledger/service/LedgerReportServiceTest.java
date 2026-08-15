@@ -184,7 +184,7 @@ class LedgerReportServiceTest {
     }
 
     @Test
-    void drEntryShowsPaymentAccountAsContra() {
+    void singleContraEntryIsNotReported() {
         Ledger ledger = ledger(AccountEntryType.DR, 0);
         when(ledgerRepository.findById(5L)).thenReturn(Optional.of(ledger));
 
@@ -206,10 +206,8 @@ class LedgerReportServiceTest {
                 5L, LocalDate.of(2026, 4, 1), LocalDate.of(2027, 3, 31), PageRequest.of(0, 10));
 
         AccountLedgerEntryItem item = response.getData().get(0);
-        assertEquals("Bank", item.getLedgerName());
-        assertEquals(1, item.getContraEntries().size());
-        assertEquals("Bank", item.getContraEntries().get(0).getLedgerName());
-        assertEquals(0, item.getContraEntries().get(0).getCreditAmt().compareTo(BigDecimal.valueOf(8000)));
+        assertEquals("", item.getLedgerName());
+        assertTrue(item.getContraEntries().isEmpty());
     }
 
     @Test

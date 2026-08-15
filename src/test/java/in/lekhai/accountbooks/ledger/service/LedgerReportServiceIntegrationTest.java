@@ -73,7 +73,7 @@ class LedgerReportServiceIntegrationTest {
 
         AccountLedgerEntryItem first = response.getData().get(1);
         assertEquals("2026-05-05", first.getDate());
-        assertEquals("Cash", first.getLedgerName(), "contra ledger for V3 should be Cash");
+        assertEquals("", first.getLedgerName(), "single counterparty should not be reported as contra");
         assertEquals(0, first.getDebitAmt().compareTo(BigDecimal.valueOf(300)));
         assertEquals(0, first.getBalance().compareTo(BigDecimal.valueOf(1600)));
         assertEquals(AccountEntryType.DR, first.getCrdr());
@@ -137,19 +137,17 @@ class LedgerReportServiceIntegrationTest {
     }
 
     @Test
-    void drLedgerReportShowsPaymentAccountAsContra() {
+    void drLedgerReportHidesSingleContraEntry() {
         AccountLedgerPageResponse response = ledgerReportService.getAccountLedgerEntries(
                 5L, LocalDate.of(2026, 6, 5), LocalDate.of(2026, 6, 5), PageRequest.of(0, 10));
 
         assertEquals(1, response.getData().size());
 
         AccountLedgerEntryItem item = response.getData().get(0);
-        assertEquals("Bank", item.getLedgerName());
+        assertEquals("", item.getLedgerName());
         assertEquals(0, item.getDebitAmt().compareTo(BigDecimal.valueOf(5000)));
 
-        assertEquals(1, item.getContraEntries().size());
-        assertEquals("Bank", item.getContraEntries().get(0).getLedgerName());
-        assertEquals(0, item.getContraEntries().get(0).getCreditAmt().compareTo(BigDecimal.valueOf(8000)));
+        assertTrue(item.getContraEntries().isEmpty());
     }
 
     private void seed(Statement statement) throws Exception {
