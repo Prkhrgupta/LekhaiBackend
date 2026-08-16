@@ -56,8 +56,14 @@ public class MenuService {
         }
 
         public MenuResponse generateMenu() {
-                String uuid = JwtUtil.extractJwtClaim().uuid();
                 Roles role = JwtUtil.extractJwtClaim().role();
+                if (role == Roles.SUPER_ADMIN) {
+                        MenuResponse response = new MenuResponse();
+                        response.setMainMenu(new java.util.ArrayList<>());
+                        response.setFavourites(new java.util.ArrayList<>());
+                        return response;
+                }
+                String uuid = JwtUtil.extractJwtClaim().uuid();
 
                 Users userEntity = usersRepo.findByUuid(uuid)
                                 .orElseThrow(() -> new RuntimeException(
@@ -92,6 +98,14 @@ public class MenuService {
         }
 
         public TopBarResponse generateTopBar() {
+            Roles role = JwtUtil.extractJwtClaim().role();
+            if (role == Roles.SUPER_ADMIN) {
+                TopBarResponse response = new TopBarResponse();
+                response.setFirmName("SuperAdmin Console");
+                response.setGstin("N/A");
+                response.setName("Super Admin");
+                return response;
+            }
             Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
             String uuid = JwtUtil.extractJwtClaim().uuid();
             Optional<Shops> shop = shopsRepo.findByShopCode(shopCode);
