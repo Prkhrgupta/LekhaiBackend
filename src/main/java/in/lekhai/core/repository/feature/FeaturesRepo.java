@@ -46,4 +46,22 @@ public interface FeaturesRepo extends ListCrudRepository<Features, Long> {
             ORDER BY level DESC;
             """)
     List<String> findAllParentsLink(Long id);
+
+    @Query(value = """
+            WITH RECURSIVE super_admin_tree AS (
+                SELECT id, feature_key, parent_id, title, icon, route, bit_position, display_order, is_active, is_deleted, created_at, updated_at
+                FROM features
+                WHERE feature_key = 'super_admin' AND parent_id IS NULL
+                
+                UNION ALL
+                
+                SELECT f.id, f.feature_key, f.parent_id, f.title, f.icon, f.route, f.bit_position, f.display_order, f.is_active, f.is_deleted, f.created_at, f.updated_at
+                FROM features f
+                INNER JOIN super_admin_tree sat ON f.parent_id = sat.id
+            )
+            SELECT id, feature_key, parent_id, title, icon, route, bit_position, display_order, is_active, is_deleted, created_at, updated_at
+            FROM super_admin_tree
+            WHERE bit_position IS NOT NULL AND is_active = true AND is_deleted = false;
+            """)
+    List<Features> findSuperAdminLeafFeatures();
 }
