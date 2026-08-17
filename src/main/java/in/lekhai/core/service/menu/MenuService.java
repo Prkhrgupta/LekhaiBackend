@@ -11,6 +11,7 @@ import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.enums.Roles;
 import in.lekhai.core.repository.category.CategoriesRepo;
 import in.lekhai.core.repository.category.RolePermissionsRepo;
+import in.lekhai.core.repository.feature.FeaturesRepo;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.repository.users.UserShopAccessRepo;
 import in.lekhai.core.repository.users.UsersRepo;
@@ -34,6 +35,7 @@ public class MenuService {
         private final MenuBuilder menuBuilder;
         private final PermissionBitCalculator permissionBitCalculator;
         private final FeatureMapService featureMapService;
+        private final FeaturesRepo featuresRepo;
         private final UserShopAccessRepo userShopAccessRepo;
         private final ShopsRepo shopsRepo;
 
@@ -43,6 +45,7 @@ public class MenuService {
                            MenuBuilder menuBuilder,
                            PermissionBitCalculator permissionBitCalculator,
                            FeatureMapService featureMapService,
+                           FeaturesRepo featuresRepo,
                            UserShopAccessRepo userShopAccessRepo,
                            ShopsRepo shopsRepo) {
                 this.usersRepo = usersRepo;
@@ -51,6 +54,7 @@ public class MenuService {
                 this.menuBuilder = menuBuilder;
                 this.permissionBitCalculator = permissionBitCalculator;
                 this.featureMapService = featureMapService;
+                this.featuresRepo = featuresRepo;
                 this.userShopAccessRepo = userShopAccessRepo;
                 this.shopsRepo = shopsRepo;
         }
@@ -58,10 +62,8 @@ public class MenuService {
         public MenuResponse generateMenu() {
                 Roles role = JwtUtil.extractJwtClaim().role();
                 if (role == Roles.SUPER_ADMIN) {
-                        MenuResponse response = new MenuResponse();
-                        response.setMainMenu(new java.util.ArrayList<>());
-                        response.setFavourites(new java.util.ArrayList<>());
-                        return response;
+                        List<Features> superAdminFeatures = featuresRepo.findSuperAdminLeafFeatures();
+                        return menuBuilder.buildMenu(superAdminFeatures);
                 }
                 String uuid = JwtUtil.extractJwtClaim().uuid();
 
