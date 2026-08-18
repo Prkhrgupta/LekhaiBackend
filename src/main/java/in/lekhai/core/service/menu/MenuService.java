@@ -11,7 +11,6 @@ import in.lekhai.core.domain.users.Users;
 import in.lekhai.core.enums.Roles;
 import in.lekhai.core.repository.category.CategoriesRepo;
 import in.lekhai.core.repository.category.RolePermissionsRepo;
-import in.lekhai.core.repository.feature.FeaturesRepo;
 import in.lekhai.core.repository.shop.ShopsRepo;
 import in.lekhai.core.repository.users.UserShopAccessRepo;
 import in.lekhai.core.repository.users.UsersRepo;
@@ -35,7 +34,6 @@ public class MenuService {
         private final MenuBuilder menuBuilder;
         private final PermissionBitCalculator permissionBitCalculator;
         private final FeatureMapService featureMapService;
-        private final FeaturesRepo featuresRepo;
         private final UserShopAccessRepo userShopAccessRepo;
         private final ShopsRepo shopsRepo;
 
@@ -45,7 +43,6 @@ public class MenuService {
                            MenuBuilder menuBuilder,
                            PermissionBitCalculator permissionBitCalculator,
                            FeatureMapService featureMapService,
-                           FeaturesRepo featuresRepo,
                            UserShopAccessRepo userShopAccessRepo,
                            ShopsRepo shopsRepo) {
                 this.usersRepo = usersRepo;
@@ -54,29 +51,23 @@ public class MenuService {
                 this.menuBuilder = menuBuilder;
                 this.permissionBitCalculator = permissionBitCalculator;
                 this.featureMapService = featureMapService;
-                this.featuresRepo = featuresRepo;
                 this.userShopAccessRepo = userShopAccessRepo;
                 this.shopsRepo = shopsRepo;
         }
 
         public MenuResponse generateMenu() {
                 Roles role = JwtUtil.extractJwtClaim().role();
-                if (role == Roles.SUPER_ADMIN) {
-                        List<Features> superAdminFeatures = featuresRepo.findSuperAdminLeafFeatures();
-                        return menuBuilder.buildMenu(superAdminFeatures);
-                }
                 String uuid = JwtUtil.extractJwtClaim().uuid();
 
                 Users userEntity = usersRepo.findByUuid(uuid)
                                 .orElseThrow(() -> new RuntimeException(
-                                                String.format("UnException exception, uuid : %s not found. But extracted from JWT",
+                                                String.format("Unexpected exception, uuid : %s not found. But extracted from JWT",
                                                                 uuid)));
 
-                UserShopAccess userShopAccess = userShopAccessRepo.findByUserId(userEntity.getId()).stream()
-                                .findFirst()
-                                .orElseThrow(() -> new RuntimeException("No shop access found for user"));
-
                 Integer categoryId = userEntity.getCategoryId();
+                if (categoryId == null) {
+                        throw new RuntimeException(String.format("No category assigned to user: %s", uuid));
+                }
 
                 Categories categories = categoriesRepo
                                 .findById(categoryId)
@@ -86,10 +77,13 @@ public class MenuService {
                                 .findByCategoryIdAndRoleId(categoryId, role)
                                 .orElseThrow(() -> new RoleForCategoryDoesNotExistException(role, categoryId));
 
+                List<UserShopAccess> shopAccessList = userShopAccessRepo.findByUserId(userEntity.getId());
+                List<Long> userShopPermissions = shopAccessList.isEmpty() ? List.of() : shopAccessList.get(0).getPermissions();
+
                 List<Long> finalPermissionBits = permissionBitCalculator.calculateFinalPermissions(
                                 categories.getPermissions(),
                                 rolePermissions.getPermissions(),
-                                userShopAccess.getPermissions(),
+                                userShopPermissions,
                                 role);
 
                 Set<Integer> enabledBitPositions = permissionBitCalculator
