@@ -15,7 +15,7 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   flyway:
-    enabled: false
+    enabled: false 
 
 # JWT Configuration
 rsa:
@@ -49,3 +49,8 @@ tax-pro:
 logging:
   file:
     path: logs
+
+lekhai:
+  test:
+    endpoints:
+      enabled: ${ENABLE_TEST_ENDPOINTS:false}

@@ -97,13 +97,14 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(6, claims.size(), "Super Admin login token should have exactly 6 claims");
+        assertEquals(7, claims.size(), "Super Admin login token should have exactly 7 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
         assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
     }
 
     @Test
@@ -140,13 +141,14 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(6, claims.size(), "User login token should have exactly 6 claims");
+        assertEquals(7, claims.size(), "User login token should have exactly 7 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
         assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
         assertFalse(claims.containsKey(SHOP_CODE), "Login token must not contain shop_code");
     }
 
@@ -214,7 +216,7 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(7, claims.size(), "Shop token should have exactly 7 claims");
+        assertEquals(8, claims.size(), "Shop token should have exactly 8 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
@@ -222,6 +224,7 @@ class JwtTokenServiceTest {
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
         assertTrue(claims.containsKey(SHOP_CODE), "Missing shop_code claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
         assertEquals(12345, claims.get(SHOP_CODE));
     }
 
