@@ -1,111 +1,90 @@
 # Lekhai Backend Agent Guide
 
-This file provides key information, architecture guidelines, and common commands for developer agents working on the **LekhaiBackend** codebase.
+This file is the entry point for AI agents working on **LekhaiBackend**. It is thin on purpose — module-specific knowledge lives in each module's own docs, loaded only when needed.
 
 ## 🚀 Overview
 
-`LekhaiBackend` is the Java backend server for the Lekhai B2B application, which allows shops and sellers in India to manage their accounts, ledgers, inventory, vouchers, and invoicing.
+`LekhaiBackend` is the Java backend for the Lekhai B2B application, which lets shops and sellers in India manage accounts, ledgers, inventory, vouchers, and invoicing.
 
 * **Language/Runtime:** Java 21 (Eclipse Temurin)
 * **Framework:** Spring Boot 3.4.1
 * **Build Tool:** Gradle
 
----
+## 📚 Documentation Map (READ THIS FIRST)
 
-## 🛠 Tech Stack & Dependencies
+Read docs on a **need-to-know basis**. Do NOT load everything upfront.
 
-* **Web & Routing:** `spring-boot-starter-web`, `spring-boot-starter-webflux`
-* **Database & Persistence:** PostgreSQL, `spring-boot-starter-jdbc`, `spring-boot-starter-data-jdbc`
-* **Database Migrations:** Flyway (`org.flywaydb.flyway` version `10.21.0`)
-* **Security & Auth:** OAuth2 Resource Server, JWT token-based auth (`spring-boot-starter-security`)
-* **Batch Processing:** Spring Batch Core (`5.1.3`)
-* **Integration Spec:** `in.lekhai:lekhaiapispec` (published from [lekhai-apispec](file:///Users/dream/Lekhai/lekhai-apispec))
-* **Containerization:** Google Jib (`com.google.cloud.tools.jib` version `3.4.7`)
-* **Caching:** Caffeine Cache (`com.github.ben-manes.caffeine:caffeine`)
-* **Monitoring & Tracing:** Micrometer Tracing (Brave bridge), Logstash Logback encoder (for JSON structured logging to Grafana Loki)
-* **File Handlers:** OpenCSV (`5.9`), Apache POI (`5.2.5`) for Excel exports/imports
+| What | Where | When to read |
+|---|---|---|
+| Code style & formatting rules | `STYLE.md` | **Always** — before writing ANY code |
+| Build & commands | this file, §Commands | Always |
+| Architecture principles | this file, §Principles | Always |
+| Module interface card | `<module>/MODULE.md` | When touching that module |
+| Module deep dive | `<module>/DETAILS.md` | Only when modifying internals or confused |
 
----
+### Module doc rule
 
-## 📂 Project Structure
+Each package under `src/main/java/in/lekhai/` is a module with a `MODULE.md` (interface summary) and a `DETAILS.md` (implementation).
 
-Key paths in `LekhaiBackend`:
+1. Read the module's `MODULE.md` **first**.
+2. Read its `DETAILS.md` **only** when you cannot understand something from `MODULE.md`, or you must modify the module's internal implementation.
+3. When extending a module, prefer the "How to Extend" section of its `MODULE.md`.
+4. Prefer `@file:MODULE.md`-style references: name the module file explicitly in your reasoning.
 
-* **Main Entry Point:** [LekhaiApplication.java](file:///Users/dream/Lekhai/LekhaiBackend/src/main/java/in/lekhai/LekhaiApplication.java)
-* **Configuration & Resources:** [src/main/resources/](file:///Users/dream/Lekhai/LekhaiBackend/src/main/resources/)
-  * [application.yaml](file:///Users/dream/Lekhai/LekhaiBackend/src/main/resources/application.yaml): Default/local config.
-  * [db/migration/](file:///Users/dream/Lekhai/LekhaiBackend/src/main/resources/db/migration/): Flyway SQL migration scripts. Named using pattern `V<version>__<description>.sql`.
-  * [keys/](file:///Users/dream/Lekhai/LekhaiBackend/src/main/resources/keys/): Public and private key files for OAuth2 JWT token signature validation.
-  * [flyway.conf](file:///Users/dream/Lekhai/LekhaiBackend/src/main/resources/flyway.conf): Flyway connection and migration settings.
-* **Source Code packages (`src/main/java/in/lekhai/`):**
-  * `authentication/`: Security contexts, CORS configurations, JWT validation/decoding, token resource configuration.
-  * `category/`: Product categories and classifications.
-  * `common/`: Core generic utilities, logging filters, common helpers.
-  * `core/`: Base classes and system setups.
-  * `csv/`: OpenCSV parsing rules and mappings.
-  * `error/`: Exception handling, custom error responses, and controller advices.
-  * `executors/`: Thread pools and async runner configurations.
-  * `gsp/`: GST Suvidha Provider API integrations.
-  * `shop/`: Core domain logic for Shop management, customers, accounts, vouchers, ledger books, and items/inventory.
+## 🗂 Module Index
 
----
+All modules live under `src/main/java/in/lekhai/`.
 
-## 🔄 Integrations & Dependency Flow
+| Module | Purpose | Files |
+|---|---|---|
+| `common/` | Base entity, `Result<T>` envelope, Excel helpers, constants, cache config | 11 |
+| `error/` | Exception hierarchy + `GlobalExceptionHandler` | 22 |
+| `authentication/` | JWT, security config, login, user accounts | 15 |
+| `shop/` | Multi-tenancy: `ShopContext` ThreadLocal, RLS transaction manager | 5 |
+| `executors/` | Async `ContextDecorator` (ThreadLocal propagation) | 1 |
+| `category/` | Transporters + E-way bill scheduling | 5 |
+| `accountbooks/` | Purchase/sales ledger report slice | 2 |
+| `voucher/` | Voucher processing (payment/receipt/contra/journal) + posting | 19 |
+| `gsp/` | GST Suvidha Provider (TaxPro EWB + GSTIN) — hexagonal | 41 |
+| `csv/` | Batch CSV uploads (transport/area/broker/ledger) | 13 |
+| `core/domain/` | Core domain entities (admin, category, feature, role, shop, user) | 10 |
+| `core/repository/` | Repository interfaces for core domain | 11 |
+| `core/dto/` | Internal DTOs (only where no generated contract exists) | 17 |
+| `core/controller/` | Top-level controllers (admin, category, feature, menu, shop, superadmin) | 6 |
+| `core/service/` | Core services (admin, category, feature, menu, shop, superadmin) | 9 |
+| `core/account_master/` | Account masters (ledger, broker, area, transport, state, account groups) | 43 |
+| `core/inventory_master/` | Inventory masters (commodity, item category, factory, stock item) | 16 |
 
-The backend consumes API models and controller interfaces generated from the [lekhai-apispec](file:///Users/dream/Lekhai/lekhai-apispec) specification module.
+## 🔑 Architecture Principles
 
-1. When API specs are modified in `lekhai-apispec`, they are generated into Java interface files and published to the local maven cache (`~/.m2/repository`).
-2. `LekhaiBackend` references these packages in [build.gradle](file:///Users/dream/Lekhai/LekhaiBackend/build.gradle):
-   ```groovy
-   implementation 'in.lekhai:lekhaiapispec:1.0.4' // or latest version from lekhai-apispec/VERSION
-   ```
-3. Controller classes in the backend implement interfaces generated under package `in.lekhai.contract.api` and accept models from `in.lekhai.contract.model`.
+1. **Contracts are never hand-written.** REST endpoints and request/response DTOs come from the generated `in.lekhai:lekhaiapispec` jar (`in.lekhai.contract.*`). Update `lekhai-apispec`, publish to Maven local, then implement the updated interface.
+2. **Layered architecture.** Controller → Service → Repository (Spring Data JDBC). No JPA.
+3. **Shop multi-tenancy.** All shop-scoped entities extend `ShopAwareEntity`; `shop_code` is enforced via `ShopContext` ThreadLocal + Row-Level Security.
+4. **Migrations are append-only.** Never modify an applied Flyway migration; add a new `V<version>__<name>.sql`.
+5. **SQL is raw.** Queries use `@Query` with PostgreSQL SQL; no query builder.
+6. **Errors through the hierarchy.** Throw `LekhaiException` / `LekhaiClientException` and domain subclasses; never raw `RuntimeException`.
 
----
+## ⚙️ External Integration Flow
 
-## 💻 Developer & Agent Commands
+1. API specs are changed in `lekhai-apispec`, generated into Java interfaces, published to Maven local.
+2. Backend references them in `build.gradle` (`in.lekhai:lekhaiapispec:1.1.3`).
+3. Controllers implement `in.lekhai.contract.api` interfaces and use `in.lekhai.contract.model` DTOs.
 
-Run these commands from [LekhaiBackend/](file:///Users/dream/Lekhai/LekhaiBackend):
+## 💻 Commands
 
-### Build and Run
-* **Clean the project:**
-  ```bash
-  ./gradlew clean
-  ```
-* **Build the application (skipping tests):**
-  ```bash
-  ./gradlew build -x test
-  ```
-* **Run tests:**
-  ```bash
-  ./gradlew test
-  ```
-* **Run application locally:**
-  ```bash
-  ./gradlew bootRun
-  ```
+Run from the repo root:
 
-### Database & Migrations
-* **Run Flyway migrations on the database:**
-  ```bash
-  ./gradlew flywayMigrate -Duser.timezone=UTC
-  ```
+* **Clean:** `./gradlew clean`
+* **Build (skip tests):** `./gradlew build -x test`
+* **Tests:** `./gradlew test`
+* **Run locally:** `./gradlew bootRun`
+* **Flyway migrate:** `./gradlew flywayMigrate -Duser.timezone=UTC`
+* **Docker image (local):** `./gradlew jibDockerBuild`
+* **Docker push:** `./gradlew jib`
 
-### Containerization (Docker)
-* **Build Docker image and load it into local Docker daemon:**
-  ```bash
-  ./gradlew jibDockerBuild
-  ```
-* **Build and push Docker image directly to registry:**
-  ```bash
-  ./gradlew jib
-  ```
+## 🚧 Cross-Cutting Rules
 
----
-
-## 💡 Best Practices for Agents
-
-1. **API Changes:** Do NOT write custom REST endpoint signatures or DTO classes directly in the backend. Update the spec in `lekhai-apispec`, compile/publish it to Maven local, and then implement the updated interface in the backend controller.
-2. **Database Schema:** Always write migrations in `src/main/resources/db/migration/` using standard PostgreSQL SQL statements. Never modify existing migration scripts once they have been executed/applied.
-3. **UTC Timezones:** Always run operations and database actions using the UTC timezone where possible (e.g. `flywayMigrate` requires `-Duser.timezone=UTC`).
-4. **Clean Code:** Adhere to Spring Boot layered architecture (Controllers -> Services -> Repositories/JDBC helpers). Use validation annotations on request bodies.
+1. **UTC.** Always use UTC for DB operations and commands (e.g., `flywayMigrate -Duser.timezone=UTC`).
+2. **Validation.** Use validation annotations on request bodies.
+3. **Testing.** Tests live in `src/test/java/in/lekhai/`. Run via `./gradlew test`. TestContainers required for DB-dependent tests.
+4. **Doc maintenance.** After changing a module's public API (adding/removing public classes or changing service contracts), update that module's `MODULE.md` and `DETAILS.md` as part of the same change.
