@@ -2,11 +2,13 @@ package in.lekhai.voucher.service;
 
 import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.contract.model.VoucherEntry;
+import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.service.posting.VoucherPostingService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,11 +17,15 @@ import java.util.List;
 
 @Service
 public class PaymentVoucherService extends VoucherProcessor<PaymentVoucherRequest> {
+    private final VoucherLedgerValidator ledgerValidator;
+
     public PaymentVoucherService(
             VoucherPostingService voucherPostingService,
-            VoucherPostingMapper voucherPostingMapper
+            VoucherPostingMapper voucherPostingMapper,
+            VoucherLedgerValidator ledgerValidator
     ) {
         super(voucherPostingService, voucherPostingMapper);
+        this.ledgerValidator = ledgerValidator;
     }
 
     /**
@@ -29,6 +35,32 @@ public class PaymentVoucherService extends VoucherProcessor<PaymentVoucherReques
      */
     @Override
     void validate(PaymentVoucherRequest voucher) {
+        if (voucher == null) {
+            throw new LekhaiClientException("Payment voucher request must not be null", HttpStatus.BAD_REQUEST);
+        }
+        if (voucher.getVoucherDate() == null) {
+            throw new LekhaiClientException("Voucher date must not be null", HttpStatus.BAD_REQUEST);
+        }
+        ledgerValidator.requireCashOrBankLedger(voucher.getPaymentAccountId(), "payment ledger");
+        if (voucher.getItems() == null || voucher.getItems().isEmpty()) {
+            throw new LekhaiClientException(
+                    "Payment voucher must contain at least one entry",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+        for (VoucherEntry entry : voucher.getItems()) {
+            requirePaymentEntry(entry);
+        }
+    }
+
+    private void requirePaymentEntry(VoucherEntry entry) {
+        if (entry == null || entry.getAmount() == null || entry.getAmount().signum() <= 0) {
+            throw new LekhaiClientException(
+                    "Each payment entry must have an amount greater than zero",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+        ledgerValidator.requireNonCashOrBankLedger(entry.getAccountId(), "payment entry ledger");
     }
 
     @Override
