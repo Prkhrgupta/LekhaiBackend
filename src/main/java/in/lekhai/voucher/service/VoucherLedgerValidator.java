@@ -5,6 +5,7 @@ import in.lekhai.core.account_master.domain.Ledger;
 import in.lekhai.core.account_master.repository.AccountGroupRepository;
 import in.lekhai.core.account_master.repository.LedgerRepository;
 import in.lekhai.error.controller.LekhaiClientException;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class VoucherLedgerValidator {
         return ledger.get();
     }
 
+    @ShopContextTransactional
     public void requireCashOrBankLedger(Long ledgerId, String role) {
         Ledger ledger = requireLedger(ledgerId);
         if (!isInCashOrBankGroups(ledger)) {
@@ -55,6 +57,7 @@ public class VoucherLedgerValidator {
         }
     }
 
+    @ShopContextTransactional
     public void requireNonCashOrBankLedger(Long ledgerId, String role) {
         Ledger ledger = requireLedger(ledgerId);
         if (isInCashOrBankGroups(ledger)) {
