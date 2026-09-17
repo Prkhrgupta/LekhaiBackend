@@ -27,9 +27,10 @@ Read docs on a **need-to-know basis**. Do NOT load everything upfront.
 Each package under `src/main/java/in/lekhai/` is a module with a `MODULE.md` (interface summary) and a `DETAILS.md` (implementation).
 
 1. Read the module's `MODULE.md` **first**.
-2. Read its `DETAILS.md` **only** when you cannot understand something from `MODULE.md`, or you must modify the module's internal implementation.
+2. Read its `DETAILS.md` **only** when you cannot understand something from `MODULE.md`, or you must modify the module's internal implementation. Some modules carry only a stub `DETAILS.md` — that is intentional; `MODULE.md` is the full picture there, do not re-expand the stub with duplicated content.
 3. When extending a module, prefer the "How to Extend" section of its `MODULE.md`.
 4. Prefer `@file:MODULE.md`-style references: name the module file explicitly in your reasoning.
+5. Never define domain terms in module docs — reference the `CONTEXT.md` term instead (see Cross-Cutting Rules §5).
 
 ## 🗂 Module Index
 
@@ -46,7 +47,6 @@ All modules live under `src/main/java/in/lekhai/`.
 | `accountbooks/` | Purchase/sales ledger report slice | 2 |
 | `voucher/` | Voucher processing (payment/receipt/contra/journal) + posting | 19 |
 | `gsp/` | GST Suvidha Provider (TaxPro EWB + GSTIN) — hexagonal | 41 |
-| `csv/` | Batch CSV uploads (transport/area/broker/ledger) | 13 |
 | `core/domain/` | Core domain entities (admin, category, feature, role, shop, user) | 10 |
 | `core/repository/` | Repository interfaces for core domain | 11 |
 | `core/dto/` | Internal DTOs (only where no generated contract exists) | 17 |
@@ -88,3 +88,4 @@ Run from the repo root:
 2. **Validation.** Use validation annotations on request bodies.
 3. **Testing.** Tests live in `src/test/java/in/lekhai/`. Run via `./gradlew test`. TestContainers required for DB-dependent tests.
 4. **Doc maintenance.** After changing a module's public API (adding/removing public classes or changing service contracts), update that module's `MODULE.md` and `DETAILS.md` as part of the same change.
+5. **Glossary lives in one place.** `CONTEXT.md` is the sole glossary. Never define or redefine domain terms in `MODULE.md` / `DETAILS.md` — reference the `CONTEXT.md` term instead (e.g. write "posts a **Voucher**", don't explain what a voucher is). If a term is missing, ambiguous, or wrong, update `CONTEXT.md` itself (per the `domain-modeling` skill), never work around it with a local definition.

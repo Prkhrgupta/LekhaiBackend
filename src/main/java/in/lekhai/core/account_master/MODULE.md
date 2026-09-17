@@ -12,7 +12,7 @@ This module is the foundation every other accounting feature builds on. A shop c
 - **States (system-level)** — GST codes for every Indian state, shared by all shops; used to determine CGST/SGST/IGST and resolve addresses.
 - **Purchase & sale ledger settings** — for each purchase/sale ledger, which ledgers its tax components (CGST/SGST/IGST/cess), freight/packing, round-off, TDS (on purchases) and TCS (on sales) post to. This is what lets a purchase or sales voucher automatically split the bill into the correct duty & tax accounts.
 
-Everything downstream depends on this module: `voucher/` posts to ledgers, `accountbooks/` reports from them, `csv/` bulk-loads these masters, and `gsp/` + `category/` validate GSTINs and move goods on the parties' behalf.
+Everything downstream depends on this module: `voucher/` posts to ledgers, `accountbooks/` reports from them, and `gsp/` + `category/` validate GSTINs and move goods on the parties' behalf.
 
 ## Public API
 
@@ -30,7 +30,7 @@ Organised as the standard 4-layer pattern (controller → service → repository
 
 ## Dependencies
 
-- `common/` (`ShopAwareEntity`, `Result`), `shop/` (every shop-scoped master is RLS-isolated — never query without `ShopContext` active), `error/` (client/"not found" exceptions), `csv/` (bulk uploads persist into these masters).
+- `common/` (`ShopAwareEntity`, `Result`), `shop/` (every shop-scoped master is RLS-isolated — never query without `ShopContext` active), `error/` (client/"not found" exceptions).
 
 ## How to Extend
 

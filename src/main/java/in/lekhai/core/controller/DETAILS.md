@@ -1,18 +1,7 @@
 # core/controller — details
 
-## Files & Roles
+No deep-dive notes beyond `MODULE.md` — that file is the full picture here.
 
-| File | Role |
-|---|---|
-| `admin/AdminController.java` | Admin CRUD + activation; implements `AdminApi`-style contract. |
-| `category/CategoryController.java` | Category CRUD + category-feature enablement. |
-| `feature/FeatureController.java` | Feature/screen registry + hierarchy endpoints. |
-| `menu/MenuController.java` | Builds/burns menu tree for the authenticated user. |
-| `shop/ShopController.java` | Shop provisioning (new/existing admin). |
-| `superadmin/SuperAdminController.java` | Super-admin provisioning endpoints. |
-
-## Behavioral Notes
-
-- Controllers are thin: `@Valid` on body, `@PreAuthorize` on methods, one service call, wrap in `Result<T>` return shape (via `Result.success(...)` or controller-returning handler).
-- `SecurityExpressions` (in `authentication/utils/`) supplies role/ownership SPEL. Never inline raw role strings in annotations.
-- Cross-cutting concern: these endpoints touch both `authentication` (provisioning) and `core/service`. When in doubt about authorization, compare with `admin`/`superadmin` endpoints before copying patterns.
+Add notes here only for non-obvious internals (authorization wiring,
+endpoint-contract rules). Never define domain terms here; the glossary lives
+in `CONTEXT.md` (see `AGENT.md` Cross-Cutting Rules).

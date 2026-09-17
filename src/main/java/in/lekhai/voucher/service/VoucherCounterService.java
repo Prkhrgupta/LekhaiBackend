@@ -21,9 +21,19 @@ public class VoucherCounterService {
         this.voucherCounterRepository = voucherCounterRepository;
     }
 
-    // This method call will lock this row
+    // Reserves the next voucher number and advances the counter atomically.
+    // Runs inside the posting transaction, which already holds the counter row lock.
     @ShopContextTransactional
-    public VoucherCounter fetchNextVoucherCounter(VoucherType voucherType) {
+    public Long reserveNextNumber(VoucherType voucherType) {
+        VoucherCounter counter = fetchNextVoucherCounter(voucherType);
+        Long reserved = counter.getNextNumber();
+        counter.setNextNumber(reserved + 1);
+        voucherCounterRepository.save(counter);
+        return reserved;
+    }
+
+    // This method call will lock this row
+    private VoucherCounter fetchNextVoucherCounter(VoucherType voucherType) {
         return voucherCounterRepository.findForUpdate(voucherType)
                 .orElseGet(() -> initiateVoucherCounter(voucherType));
     }
@@ -33,10 +43,5 @@ public class VoucherCounterService {
         voucherCounterRepository.save(initialCounter);
         log.info("Initiated [{}] voucher counter for shopCode=[{}]", voucherType, ShopContext.getShopCode());
         return initialCounter;
-    }
-
-    public void increaseVoucherCounter(VoucherCounter counter) {
-        counter.setNextNumber(counter.getNextNumber() + 1);
-        voucherCounterRepository.save(counter);
     }
 }
