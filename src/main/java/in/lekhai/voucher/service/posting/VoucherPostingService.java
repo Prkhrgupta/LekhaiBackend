@@ -7,7 +7,6 @@ import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransact
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.Voucher;
-import in.lekhai.voucher.entity.VoucherCounter;
 import in.lekhai.voucher.entity.VoucherEntry;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.repository.VoucherEntryRepository;
@@ -51,9 +50,8 @@ public class VoucherPostingService {
     @ShopContextTransactional
     public Voucher post(PostingRequest request) {
         validate(request);
-        VoucherCounter voucherCounter = voucherCounterService.fetchNextVoucherCounter(request.voucherType());
-        Long voucherNo = voucherCounter.getNextNumber();
-        Voucher voucher = voucherPostingMapper.mapToVoucher(request, voucherNo);
+        Long voucherNumber = voucherCounterService.reserveNextNumber(request.voucherType());
+        Voucher voucher = voucherPostingMapper.mapToVoucher(request, voucherNumber);
         Voucher savedVoucher = voucherRepository.save(voucher);
 
         int lineNumber = 1;
@@ -66,10 +64,6 @@ public class VoucherPostingService {
             ));
         }
         voucherEntryRepository.saveAll(entries);
-
-        // increase the voucherCounter
-        voucherCounterService.increaseVoucherCounter(voucherCounter);
-
         return savedVoucher;
     }
 

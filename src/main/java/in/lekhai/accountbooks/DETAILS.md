@@ -1,14 +1,7 @@
 # accountbooks — details
 
-## Files & Roles
+No deep-dive notes beyond `MODULE.md` — that file is the full picture here.
 
-| File | Role |
-|---|---|
-| `ledger/controller/LedgerReportController.java` | Report endpoints (e.g., purchase/sales ledger export). |
-| `ledger/service/LedgerReportService.java` | Builds filtered/ordered ledger result sets from raw SQL through Spring Data JDBC projections. |
-
-## Behavioral Notes
-
-- This module has NO own repositories — it reads via repository interfaces/projections owned by `core/account_master/` and `voucher/`. Keep it that way to avoid duplicate data access.
-- Report queries should be time-bounded (financial-year aware via `common/util/FinancialYearDateUtil` or `core/.../utils/DateUtils`).
-- Frequently run reports map to Flyway index migrations (see `V17__add_ledger_report_indexes.sql`). If you change a report's WHERE/ORDER, verify indexes still cover it.
+Add notes here only for non-obvious internals (invariants, ordering rules,
+query/index contracts). Never define domain terms here; the glossary lives
+in `CONTEXT.md` (see `AGENT.md` Cross-Cutting Rules).

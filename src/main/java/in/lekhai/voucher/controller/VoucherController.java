@@ -7,10 +7,7 @@ import in.lekhai.contract.model.JournalVoucherRequest;
 import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.contract.model.ReceiptVoucherRequest;
 import in.lekhai.contract.model.VoucherResponse;
-import in.lekhai.voucher.service.ContraVoucherService;
-import in.lekhai.voucher.service.JournalVoucherService;
-import in.lekhai.voucher.service.PaymentVoucherService;
-import in.lekhai.voucher.service.ReceiptVoucherService;
+import in.lekhai.voucher.service.VoucherIntakeService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,28 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @PreAuthorize(SecurityExpressions.IS_SHOP_OWNER)
 public class VoucherController implements VoucherApi {
-    private final PaymentVoucherService paymentVoucherService;
-    private final ReceiptVoucherService receiptVoucherService;
-    private final ContraVoucherService contraVoucherService;
-    private final JournalVoucherService journalVoucherService;
+    private final VoucherIntakeService voucherIntakeService;
 
     public VoucherController(
-            PaymentVoucherService paymentVoucherService,
-            ReceiptVoucherService receiptVoucherService,
-            ContraVoucherService contraVoucherService,
-            JournalVoucherService journalVoucherService
+            VoucherIntakeService voucherIntakeService
     ) {
-        this.paymentVoucherService = paymentVoucherService;
-        this.receiptVoucherService = receiptVoucherService;
-        this.contraVoucherService = contraVoucherService;
-        this.journalVoucherService = journalVoucherService;
+        this.voucherIntakeService = voucherIntakeService;
     }
 
     @Override
     public ResponseEntity<VoucherResponse> createPaymentVoucher(
             @Valid PaymentVoucherRequest paymentVoucherRequest
     ) {
-        VoucherResponse response = paymentVoucherService.process(paymentVoucherRequest);
+        VoucherResponse response = voucherIntakeService.processPayment(paymentVoucherRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -48,7 +36,7 @@ public class VoucherController implements VoucherApi {
     public ResponseEntity<VoucherResponse> createReceiptVoucher(
             @Valid ReceiptVoucherRequest receiptVoucherRequest
     ) {
-        VoucherResponse response = receiptVoucherService.process(receiptVoucherRequest);
+        VoucherResponse response = voucherIntakeService.processReceipt(receiptVoucherRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -56,7 +44,7 @@ public class VoucherController implements VoucherApi {
     public ResponseEntity<VoucherResponse> createContraVoucher(
             @Valid ContraVoucherRequest contraVoucherRequest
     ) {
-        VoucherResponse response = contraVoucherService.process(contraVoucherRequest);
+        VoucherResponse response = voucherIntakeService.processContra(contraVoucherRequest);
         return ResponseEntity.ok(response);
     }
 
@@ -64,7 +52,7 @@ public class VoucherController implements VoucherApi {
     public ResponseEntity<VoucherResponse> createJournalVoucher(
             @Valid JournalVoucherRequest journalVoucherRequest
     ) {
-        VoucherResponse response = journalVoucherService.process(journalVoucherRequest);
+        VoucherResponse response = voucherIntakeService.processJournal(journalVoucherRequest);
         return ResponseEntity.ok(response);
     }
 }

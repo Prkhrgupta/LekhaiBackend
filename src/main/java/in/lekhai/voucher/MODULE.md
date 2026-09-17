@@ -18,9 +18,10 @@ Posting mutates the ledgers' balances, so it happens atomically inside a shop-sc
 ## Public API
 
 - `controller/VoucherController` — API surface to create and list vouchers (implements the generated contract).
-- `service/VoucherProcessor<T>` — the template each voucher type follows: **validate → build posting request → post → respond**. Per-type processors: `PaymentVoucherService`, `ReceiptVoucherService`, `ContraVoucherService`, `JournalVoucherService`.
+- `service/VoucherIntakeService` — the single intake for all voucher kinds: **validate → build posting request → post → respond**. Direction (payment vs receipt) and Account-group policy (cash-or-bank vs any ledger) are data inside this module, not separate classes: `processPayment`, `processReceipt`, `processContra`, `processJournal`.
 - `service/posting/VoucherPostingService` — the posting engine: builds the voucher + its entry rows, enforces the debits==credits rule, assigns counters, and persists under a shop-scoped transaction.
-- `service/VoucherCounterService` — issues sequential voucher numbers per type.
+- `service/VoucherCounterService` — issues sequential voucher numbers per type via one atomic `reserveNextNumber` call.
+- `service/VoucherLedgerValidator` — shared Account-group checks (cash-or-bank membership) used by the intake.
 - `entity/Voucher`, `entity/VoucherEntry`, `entity/VoucherCounter` — the recorded voucher, its double-entry lines, and its number counter.
 - `entity/VoucherType` — the four voucher kinds with their prefixes (`PY`, `RC`, `CNT`, `JN`).
 - `dto/posting/PostingRequest`, `PostingEntry` — the internal model a validated voucher converts into before posting.
@@ -36,7 +37,7 @@ Posting mutates the ledgers' balances, so it happens atomically inside a shop-sc
 To let the firm record a new kind of business transaction as a voucher, add a voucher type:
 
 1. Add the type + prefix in `VoucherType` (e.g. a new `PYMT-`/`SR-` series).
-2. Create `<X>VoucherService extends VoucherProcessor<...>` — implement `validate` (reject invalid ledgers/amounts with `LekhaiClientException`s) and the conversion to a `PostingRequest`.
+2. Add a `process<X>` method in `VoucherIntakeService` that validates (reject invalid ledgers/amounts with `LekhaiClientException`s) and converts to a `PostingRequest` via the shared `convertDirectional` / `convertTwoSided` helpers — no new class.
 3. Wire the endpoint in `VoucherController` and expose it via `lekhaiapispec`.
 4. Verify counter behaviour in `VoucherCounterService` and add a migration only if the new type needs its own column/counter seeding.
 

@@ -5,13 +5,10 @@
 | File | Role |
 |---|---|
 | `controller/VoucherController.java` | Endpoints for create/list voucher; implements generated `*Api`. |
-| `service/VoucherProcessor.java` | Abstract base. Template method `process(T)`: `validate` → `covertToVoucherPostRequest` → `voucherPostingService.post(postRequest)` → mapped `VoucherResponse`. |
-| `service/PaymentVoucherService.java` | Payment-specific validate + conversion. |
-| `service/ReceiptVoucherService.java` | Receipt-specific validate + conversion. |
-| `service/ContraVoucherService.java` | Contra-specific validate + conversion. |
-| `service/JournalVoucherService.java` | Journal-specific validate + conversion. |
+| `service/VoucherIntakeService.java` | Single intake for all voucher kinds. Public `processPayment/Receipt/Contra/Journal`: per-kind validation + conversion to `PostingRequest` → `VoucherPostingService.post` → mapped `VoucherResponse`. Shared private helpers own the duplicated guards (null/date/entries/balance) and the two converters (`convertDirectional` for payment/receipt, `convertTwoSided` for contra/journal). |
+| `service/VoucherLedgerValidator.java` | Shared Account-group checks: ledger exists, cash-or-bank membership. |
 | `service/posting/VoucherPostingService.java` | Core engine: builds `Voucher` + `VoucherEntry` rows, assigns counters, persists under `@ShopContextTransactional`. |
-| `service/VoucherCounterService.java` | Generates sequential voucher numbers per type (e.g., `PY-0007`). |
+| `service/VoucherCounterService.java` | Generates sequential voucher numbers per type via atomic `reserveNextNumber` (fetch + advance + save in one call, inside the posting transaction). |
 | `mapper/VoucherPostingMapper.java` | Maps posted `Voucher` → contract `VoucherResponse`. |
 | `entity/Voucher.java` | Voucher header (type, date, party, totals, status). Extends `ShopAwareEntity`. |
 | `entity/VoucherEntry.java` | Double-entry line (ledger + debit/credit + amount). |
@@ -31,8 +28,7 @@
 ## Adding a Voucher Type — Full Walkthrough
 
 1. Add enum constant + prefix in `VoucherType`.
-2. Create `XyzVoucherService extends VoucherProcessor<ContractDto>`: construct via the protected two-arg constructor.
-3. Implement `validate(ContractDto)` — throw appropriate `LekhaiClientException`s for invalid books/ledgers/amounts.
-4. Implement `covertToVoucherPostRequest(ContractDto)` returning a `PostingRequest`.
-5. Register the endpoint in `VoucherController` and expose via `lekhaiapispec`.
-6. Add migration if the new type needs its own table column or counter row seeding.
+2. Add `process<X>` in `VoucherIntakeService`: validate (throw appropriate `LekhaiClientException`s for invalid books/ledgers/amounts), reusing `requireVoucherDate`, `requireEntriesPresent`, `sumEntries` with the matching `LedgerKind`, and `requireBalanced` where both sides are user-supplied.
+3. Convert with `convertDirectional` (one cash-or-bank side + item lines) or `convertTwoSided` (explicit debit/credit lines).
+4. Register the endpoint in `VoucherController` and expose via `lekhaiapispec`.
+5. Add migration if the new type needs its own table column or counter row seeding.
