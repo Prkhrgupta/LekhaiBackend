@@ -38,8 +38,11 @@ public class PermissionBitCalculator {
             Roles role
     ) {
         int maxSize = Math.max(
-                categoryPermissions.size(),
-                Math.max(rolePermissions.size(), userPermissions.size())
+                categoryPermissions != null ? categoryPermissions.size() : 0,
+                Math.max(
+                        rolePermissions != null ? rolePermissions.size() : 0,
+                        userPermissions != null ? userPermissions.size() : 0
+                )
         );
 
         List<Long> finalPermissionBits = new ArrayList<>(maxSize);
@@ -47,7 +50,7 @@ public class PermissionBitCalculator {
             finalPermissionBits.add(
                     CollectionUtils.getOrDefault(categoryPermissions, i, Long.MAX_VALUE) &
                             CollectionUtils.getOrDefault(rolePermissions, i,
-                                    Roles.SHOP_OWNER.equals(role) ? Long.MAX_VALUE : 0L) &
+                                    Roles.SHOP_OWNER.equals(role) || Roles.SUPER_ADMIN.equals(role) ? Long.MAX_VALUE : 0L) &
                             CollectionUtils.getOrDefault(userPermissions, i, Long.MAX_VALUE)
             );
         }

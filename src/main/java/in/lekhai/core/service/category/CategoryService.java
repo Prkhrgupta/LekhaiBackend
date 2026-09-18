@@ -43,6 +43,7 @@ public class CategoryService {
                 .map((categories) ->
                         new CategoryResponse(categories.getId(),
                                 categories.getName(),
+                                categories.getPermissions(),
                                 categories.getCreatedAt()
                         ))
                 .toList();
@@ -52,6 +53,7 @@ public class CategoryService {
         //TODO: check if the bits and category id are valid, send a list of category or permission that don't exists
         List<Categories> categoriesList = categoriesRepo.findAllById(request.categoryIdList());
         categoriesList.forEach(category -> {
+            category.getPermissions().clear();
             bitCalculator.enableBits(category.getPermissions(), request.bitsPositionsToBeEnabled());
         });
         categoriesRepo.saveAll(categoriesList);

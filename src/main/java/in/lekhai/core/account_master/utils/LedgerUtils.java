@@ -2,8 +2,10 @@ package in.lekhai.core.account_master.utils;
 
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.domain.*;
+import in.lekhai.gsp.gst.dto.GstDetailsDto;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class LedgerUtils {
 
@@ -142,5 +144,29 @@ public class LedgerUtils {
                                 .distance(address.getDistance())
                                 : null)
                         .createdAt(DateUtils.getCreatedAt(ledger.getCreatedAt()));
+        }
+
+        public static LedgerResponse mapToResponse(
+                GstDetailsDto gstDetailResponse,
+                String pan,
+                String stateCode
+        ) {
+            return new LedgerResponse()
+                    .gstInNumber(gstDetailResponse.gstin())
+                    .name(gstDetailResponse.tradeName())
+                    .legalName(gstDetailResponse.legalName())
+                    .pan(pan)
+                    .address(
+                            new LedgerAddress()
+                                    .addressLine1(String.join(" ",
+                                            Objects.requireNonNullElse(gstDetailResponse.floorNumber(), ""),
+                                            Objects.requireNonNullElse(gstDetailResponse.buildingNumber(), ""),
+                                            Objects.requireNonNullElse(gstDetailResponse.buildingName(), "")
+                                    ).trim().replaceAll("\\s+", " "))
+                                    .addressLine2(gstDetailResponse.street())
+                                    .addressLine3(gstDetailResponse.location())
+                                    .pincode(gstDetailResponse.pincode().toString())
+                                    .stateId(stateCode)
+                    );
         }
 }

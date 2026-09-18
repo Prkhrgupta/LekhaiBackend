@@ -1,17 +1,27 @@
 package in.lekhai.core.inventory_master.service;
 
+import in.lekhai.contract.model.*;
 import in.lekhai.core.inventory_master.domain.Commodity;
-import in.lekhai.core.inventory_master.dto.CommodityRequest;
-import in.lekhai.core.inventory_master.dto.CommodityResponse;
 import in.lekhai.core.inventory_master.repository.CommodityRepository;
+import in.lekhai.error.controller.commodity.exception.CommodityNotFoundException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
 @Service
 public class CommodityService {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final CommodityRepository commodityRepository;
 
@@ -23,163 +33,105 @@ public class CommodityService {
     public CommodityResponse createCommodity(CommodityRequest request) {
         Commodity commodity = mapToEntity(request, new Commodity());
         Commodity saved = commodityRepository.save(commodity);
+        log.info("Saved commodity :: item id {}", saved.getItemId());
         return mapToResponse(saved);
     }
 
     @ShopContextTransactional
     public CommodityResponse updateCommodity(Long id, CommodityRequest request) {
         Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
-
+                .orElseThrow(() -> new CommodityNotFoundException(id));
         mapToEntity(request, commodity);
         Commodity saved = commodityRepository.save(commodity);
+        log.info("Updated commodity :: item id {}", saved.getItemId());
         return mapToResponse(saved);
     }
 
     @ShopContextTransactional
-    public CommodityResponse getCommodity(Long id) {
+    public void deleteCommodity(Long id) {
         Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
+                .orElseThrow(() -> new CommodityNotFoundException(id));
+        commodity.setDeleted(Boolean.TRUE);
+        commodityRepository.save(commodity);
+        log.info("Soft-deleted commodity :: item id {}", commodity.getItemId());
+    }
+
+    @ShopContextTransactional
+    public CommodityResponse getCommodityById(Long id) {
+        Commodity commodity = commodityRepository.findById(id)
+                .orElseThrow(() -> new CommodityNotFoundException(id));
         return mapToResponse(commodity);
     }
 
     @ShopContextTransactional
     public List<CommodityResponse> listCommodities() {
         return StreamSupport.stream(commodityRepository.findAll().spliterator(), false)
+                .filter(commodity -> !Boolean.TRUE.equals(commodity.getDeleted()))
                 .map(this::mapToResponse)
                 .toList();
     }
 
+    @ShopContextTransactional
+    public CommoditySummaryResponse listCommoditySummaries(
+            CommoditySearchableField commoditySearchableField,
+            String searchQuery,
+            Pageable pageable) {
+        List<Commodity> commodities = commodityRepository.findAllActive(pageable.getPageSize(), pageable.getOffset());
+        long total = commodityRepository.countAllActive();
+        Page<Commodity> commoditiesPage = new PageImpl<>(commodities, pageable, total);
+
+        List<CommoditySummaryItem> data = commoditiesPage.getContent().stream()
+                .map(commodity -> new CommoditySummaryItem()
+                        .id(commodity.getItemId())
+                        .name(commodity.getItemName())
+                        .hsnSacCode(commodity.getHsnSacCode())
+                        .unitOfMeasurement(commodity.getUom())
+                        .gstRateSale(toDouble(commodity.getGstRateSale()))
+                        .gstRatePurchase(toDouble(commodity.getGstRatePurchase())))
+                .toList();
+
+        return new CommoditySummaryResponse()
+                .data(data)
+                .pagination(new PaginationMeta()
+                        .page(commoditiesPage.getNumber())
+                        .size(commoditiesPage.getSize())
+                        .totalElements(commoditiesPage.getTotalElements())
+                        .totalPages(commoditiesPage.getTotalPages()));
+    }
+
     private Commodity mapToEntity(CommodityRequest request, Commodity commodity) {
-        commodity.setItemName(request.itemName());
-        commodity.setHsnSacCode(request.hsnSacCode());
-        commodity.setDescription(request.description());
-        commodity.setUom(request.uom());
-        commodity.setGstRateSale(request.gstRateSale());
-        commodity.setGstRatePurchase(request.gstRatePurchase());
-        commodity.setIsSalePurchaseActive(request.isSalePurchaseActive());
-
-        if (request.salesLedgerConfig() != null) {
-            var sales = request.salesLedgerConfig();
-            commodity.setSaleAcInStateId(sales.inStateAccountId());
-            commodity.setSaleCgstPercent(sales.cgstPercent());
-            commodity.setSaleSgstPercent(sales.sgstPercent());
-            commodity.setSaleCessPercent(sales.cessPercent());
-            commodity.setRoundOffAcId(sales.roundOffAccountId());
-            commodity.setSaleAcOutStateId(sales.outStateAccountId());
-            commodity.setSaleIgstPercent(sales.igstPercent());
-            commodity.setSaleCessOutPercent(sales.outCessPercent());
-        }
-
-        if (request.purchaseLedgerConfig() != null) {
-            var purchase = request.purchaseLedgerConfig();
-            commodity.setPurchaseAcInStateId(purchase.inStateAccountId());
-            commodity.setPurchaseCgstPercent(purchase.cgstPercent());
-            commodity.setPurchaseSgstPercent(purchase.sgstPercent());
-            commodity.setPurchaseCessPercent(purchase.cessPercent());
-            commodity.setPurchaseAcOutStateId(purchase.outStateAccountId());
-            commodity.setPurchaseIgstPercent(purchase.igstPercent());
-            commodity.setPurchaseCessOutPercent(purchase.outCessPercent());
-        }
+        commodity.setItemName(request.getName());
+        commodity.setHsnSacCode(request.getHsnSacCode());
+        commodity.setDescription(request.getDescription());
+        commodity.setUom(request.getUnitOfMeasurement());
+        commodity.setGstRateSale(toBigDecimal(request.getGstRateSale()));
+        commodity.setGstRatePurchase(toBigDecimal(request.getGstRatePurchase()));
 
         return commodity;
     }
 
-    @ShopContextTransactional
-    public CommodityResponse patchCommodity(Long id, CommodityRequest request) {
-        Commodity commodity = commodityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commodity not found with id: " + id));
-
-        patchToEntity(request, commodity);
-        Commodity saved = commodityRepository.save(commodity);
-        return mapToResponse(saved);
-    }
-
-    private void patchToEntity(CommodityRequest request, Commodity commodity) {
-        if (request.itemName() != null)
-            commodity.setItemName(request.itemName());
-        if (request.hsnSacCode() != null)
-            commodity.setHsnSacCode(request.hsnSacCode());
-        if (request.description() != null)
-            commodity.setDescription(request.description());
-        if (request.uom() != null)
-            commodity.setUom(request.uom());
-        if (request.gstRateSale() != null)
-            commodity.setGstRateSale(request.gstRateSale());
-        if (request.gstRatePurchase() != null)
-            commodity.setGstRatePurchase(request.gstRatePurchase());
-        if (request.isSalePurchaseActive() != null)
-            commodity.setIsSalePurchaseActive(request.isSalePurchaseActive());
-
-        if (request.salesLedgerConfig() != null) {
-            var sales = request.salesLedgerConfig();
-            if (sales.inStateAccountId() != null)
-                commodity.setSaleAcInStateId(sales.inStateAccountId());
-            if (sales.cgstPercent() != null)
-                commodity.setSaleCgstPercent(sales.cgstPercent());
-            if (sales.sgstPercent() != null)
-                commodity.setSaleSgstPercent(sales.sgstPercent());
-            if (sales.cessPercent() != null)
-                commodity.setSaleCessPercent(sales.cessPercent());
-            if (sales.roundOffAccountId() != null)
-                commodity.setRoundOffAcId(sales.roundOffAccountId());
-            if (sales.outStateAccountId() != null)
-                commodity.setSaleAcOutStateId(sales.outStateAccountId());
-            if (sales.igstPercent() != null)
-                commodity.setSaleIgstPercent(sales.igstPercent());
-            if (sales.outCessPercent() != null)
-                commodity.setSaleCessOutPercent(sales.outCessPercent());
-        }
-
-        if (request.purchaseLedgerConfig() != null) {
-            var purchase = request.purchaseLedgerConfig();
-            if (purchase.inStateAccountId() != null)
-                commodity.setPurchaseAcInStateId(purchase.inStateAccountId());
-            if (purchase.cgstPercent() != null)
-                commodity.setPurchaseCgstPercent(purchase.cgstPercent());
-            if (purchase.sgstPercent() != null)
-                commodity.setPurchaseSgstPercent(purchase.sgstPercent());
-            if (purchase.cessPercent() != null)
-                commodity.setPurchaseCessPercent(purchase.cessPercent());
-            if (purchase.outStateAccountId() != null)
-                commodity.setPurchaseAcOutStateId(purchase.outStateAccountId());
-            if (purchase.igstPercent() != null)
-                commodity.setPurchaseIgstPercent(purchase.igstPercent());
-            if (purchase.outCessPercent() != null)
-                commodity.setPurchaseCessOutPercent(purchase.outCessPercent());
-        }
-    }
-
     private CommodityResponse mapToResponse(Commodity commodity) {
-        var salesConfig = new CommodityResponse.SalesLedgerConfigDto(
-                commodity.getSaleAcInStateId(),
-                commodity.getSaleCgstPercent(),
-                commodity.getSaleSgstPercent(),
-                commodity.getSaleCessPercent(),
-                commodity.getRoundOffAcId(),
-                commodity.getSaleAcOutStateId(),
-                commodity.getSaleIgstPercent(),
-                commodity.getSaleCessOutPercent());
+        return new CommodityResponse()
+                .id(commodity.getItemId())
+                .name(commodity.getItemName())
+                .hsnSacCode(commodity.getHsnSacCode())
+                .description(commodity.getDescription())
+                .gstRateSale(toDouble(commodity.getGstRateSale()))
+                .gstRatePurchase(toDouble(commodity.getGstRatePurchase()))
+                .unitOfMeasurement(commodity.getUom())
+                .isActive(!Boolean.TRUE.equals(commodity.getDeleted()))
+                .createdAt(toOffsetDateTime(commodity.getCreatedAt()));
+    }
 
-        var purchaseConfig = new CommodityResponse.PurchaseLedgerConfigDto(
-                commodity.getPurchaseAcInStateId(),
-                commodity.getPurchaseCgstPercent(),
-                commodity.getPurchaseSgstPercent(),
-                commodity.getPurchaseCessPercent(),
-                commodity.getPurchaseAcOutStateId(),
-                commodity.getPurchaseIgstPercent(),
-                commodity.getPurchaseCessOutPercent());
+    private static BigDecimal toBigDecimal(Double value) {
+        return value == null ? null : BigDecimal.valueOf(value);
+    }
 
-        return new CommodityResponse(
-                commodity.getItemId(),
-                commodity.getItemName(),
-                commodity.getHsnSacCode(),
-                commodity.getDescription(),
-                commodity.getUom(),
-                commodity.getGstRateSale(),
-                commodity.getGstRatePurchase(),
-                commodity.getIsSalePurchaseActive(),
-                salesConfig,
-                purchaseConfig);
+    private static Double toDouble(BigDecimal value) {
+        return value == null ? null : value.doubleValue();
+    }
+
+    private static java.time.OffsetDateTime toOffsetDateTime(Instant instant) {
+        return instant == null ? null : instant.atOffset(ZoneOffset.UTC);
     }
 }

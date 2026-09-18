@@ -16,6 +16,7 @@ import in.lekhai.error.controller.LekhaiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,10 +28,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import org.mockito.ArgumentCaptor;
 import java.util.Map;
+import java.util.Optional;
 
 import static in.lekhai.common.JwtConstants.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -98,13 +97,14 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(6, claims.size(), "Super Admin login token should have exactly 6 claims");
+        assertEquals(7, claims.size(), "Super Admin login token should have exactly 7 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
         assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
     }
 
     @Test
@@ -141,13 +141,14 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(6, claims.size(), "User login token should have exactly 6 claims");
+        assertEquals(7, claims.size(), "User login token should have exactly 7 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
         assertTrue(claims.containsKey(SCOPE), "Missing scope claim");
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
         assertFalse(claims.containsKey(SHOP_CODE), "Login token must not contain shop_code");
     }
 
@@ -215,7 +216,7 @@ class JwtTokenServiceTest {
         verify(jwtEncoder, times(1)).encode(captor.capture());
 
         Map<String, Object> claims = captor.getValue().getClaims().getClaims();
-        assertEquals(7, claims.size(), "Shop token should have exactly 7 claims");
+        assertEquals(8, claims.size(), "Shop token should have exactly 8 claims");
         assertTrue(claims.containsKey("iss"), "Missing issuer claim");
         assertTrue(claims.containsKey("iat"), "Missing issuedAt claim");
         assertTrue(claims.containsKey("exp"), "Missing expiresAt claim");
@@ -223,6 +224,7 @@ class JwtTokenServiceTest {
         assertTrue(claims.containsKey(SUBJECT), "Missing subject claim");
         assertTrue(claims.containsKey(UUID), "Missing uuid claim");
         assertTrue(claims.containsKey(SHOP_CODE), "Missing shop_code claim");
+        assertTrue(claims.containsKey(FY_START), "Missing financialYearStart claim");
         assertEquals(12345, claims.get(SHOP_CODE));
     }
 

@@ -2,14 +2,13 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.AreaApi;
-import in.lekhai.contract.model.AreaRequest;
-import in.lekhai.contract.model.AreaResponse;
-import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.AreaService;
 import in.lekhai.shop.context.model.ShopContext;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +35,14 @@ public class AreaController implements AreaApi {
     }
 
     @Override
+    public ResponseEntity<AreaResponse> getArea(Long id) {
+        log.info("Got a request to fetch area {} :: area id {}", ShopContext.getShopCode(), id);
+        AreaResponse response = areaService.getAreaById(id);
+        log.info("Successfully fetched area {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
     public ResponseEntity<List<DropdownItem>> getAreaDropdownOptions() {
         log.info("Got a request to list all areas {}", ShopContext.getShopCode());
         List<DropdownItem> response = areaService.listAreas();
@@ -43,4 +50,21 @@ public class AreaController implements AreaApi {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<AreaResponse> updateArea(Long id, AreaRequest request) {
+        log.info("Got a request to update area {} :: {}", ShopContext.getShopCode(), request.toString());
+        AreaResponse response = areaService.updateArea(id, request);
+        log.info("Successfully updated area {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AreaSummaryPageResponse> getAreaSummaries(@Valid AreaSearchableField areaSearchableField,
+                                                                    @Valid String query,
+                                                                    Pageable pageable) {
+        log.info("Got a request to fetch area summary {}", ShopContext.getShopCode());
+        AreaSummaryPageResponse response = areaService.listAreaSummaries(areaSearchableField, query, pageable);
+        log.info("Successfully fetched area summary {} :: {}", ShopContext.getShopCode(), response.toString());
+        return ResponseEntity.ok(response);
+    }
 }

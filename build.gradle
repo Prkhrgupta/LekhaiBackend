@@ -26,12 +26,23 @@ java {
 repositories {
     mavenLocal()
 	mavenCentral()
+	maven {
+		name = 'Reposilite'
+		url = 'https://mavenrepo.sitswiftcloud.in/releases'
+
+		// Include this if you disabled anonymous reads in Reposilite
+		credentials {
+			username = project.findProperty('reposiliteUser') ?: System.getenv('REPOSILITE_USER')
+			password = project.findProperty('reposilitePassword') ?: System.getenv('REPOSILITE_PASSWORD')
+		}
+	}
 }
 
 dependencies {
     // Lekhai Api Spec
 //    implementation "in.lekhai:lekhai-api-spec:1.0.4"
-    implementation 'in.lekhai:lekhaiapispec:1.0.4'
+    implementation 'in.lekhai:lekhaiapispec:1.1.3'
+
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -70,9 +81,21 @@ dependencies {
 
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testImplementation 'org.flywaydb:flyway-core:11.6.0'
+	testImplementation 'org.flywaydb:flyway-database-postgresql:11.6.0'
+	testImplementation 'io.cucumber:cucumber-java:7.21.1'
+	testImplementation 'io.cucumber:cucumber-spring:7.21.1'
+	testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.21.1'
+	testImplementation 'org.junit.platform:junit-platform-suite-api:1.11.4'
+	testImplementation 'io.rest-assured:rest-assured:5.5.0'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testRuntimeOnly 'org.junit.platform:junit-platform-suite'
 }
+
+ext['testcontainers.version'] = '1.21.4'
 
 tasks.named('test') {
 	useJUnitPlatform()
@@ -93,7 +116,6 @@ jib {
 	}
 	to {
 		image = 'docker.io/prkhrgupta/lekhai-backend'
-		tags = ['latest']
 	}
 	container {
 		mainClass = 'in.lekhai.LekhaiApplication'

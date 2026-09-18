@@ -7,4 +7,5 @@ public class JwtConstants {
     public static String ISSUER = "self";
     public static String SUBJECT = "subject";
     public static String UUID = "adminUuid";
+    public static String FY_START = "financialYearStart";
 }

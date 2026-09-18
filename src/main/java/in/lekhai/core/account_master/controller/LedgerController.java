@@ -2,17 +2,20 @@ package in.lekhai.core.account_master.controller;
 
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.LedgerApi;
-import in.lekhai.contract.model.LedgerRequest;
-import in.lekhai.contract.model.LedgerResponse;
-import in.lekhai.contract.model.LedgerSummaryResponse;
+import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -45,18 +48,36 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerSummaryResponse> getLedgerSummaries() {
-        log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
-        LedgerSummaryResponse response = ledgerService.listLedgerSummaries();
-        log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
+    public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(
+            @NotNull Long ledgerId,
+            @Nullable @Valid LocalDate fromDate,
+            @Nullable @Valid LocalDate toDate
+    ) {
+        LedgerBalanceResponse res = ledgerService.ledgerBalanceDetails(ledgerId, fromDate, toDate);
+        return ResponseEntity.ok(res);
+    }
+
+    @Override
+    public ResponseEntity<LedgerResponse> getLedgerByGstin(@NotNull @Valid String gstIn) {
+        LedgerResponse ledgerResponseByGstIn = ledgerService.getLedgerResponseByGstIn(gstIn);
+        return ResponseEntity.ok(ledgerResponseByGstIn);
+    }
+
+    @Override
+    public ResponseEntity<List<DropdownItem>> getLedgerDropdownOptions(@Valid List<Long> underAccountGroup) {
+        log.info("Got a request to list all ledgers {}", ShopContext.getShopCode());
+        List<DropdownItem> response = ledgerService.listLedgers(underAccountGroup);
+        log.info("Successfully listed all ledgers {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<List<LedgerResponse>> listLedgers() {
-        log.info("Got a request to list all ledgers {}", ShopContext.getShopCode());
-        List<LedgerResponse> response = ledgerService.listLedgers();
-        log.info("Successfully listed all ledgers {}", ShopContext.getShopCode());
+    public ResponseEntity<LedgerSummaryPageResponse> getLedgerSummaries(@Valid LedgerSearchableField ledgerSearchableField,
+                                                                        @Valid String query,
+                                                                        Pageable pageable) {
+        log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
+        LedgerSummaryPageResponse response = ledgerService.listLedgerSummaries(ledgerSearchableField, query, pageable);
+        log.info("Successfully fetched ledger summary {} :: {}", ShopContext.getShopCode(), response.toString());
         return ResponseEntity.ok(response);
     }
 

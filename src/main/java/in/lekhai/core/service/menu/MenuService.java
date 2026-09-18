@@ -56,19 +56,18 @@ public class MenuService {
         }
 
         public MenuResponse generateMenu() {
-                String uuid = JwtUtil.extractJwtClaim().uuid();
                 Roles role = JwtUtil.extractJwtClaim().role();
+                String uuid = JwtUtil.extractJwtClaim().uuid();
 
                 Users userEntity = usersRepo.findByUuid(uuid)
                                 .orElseThrow(() -> new RuntimeException(
-                                                String.format("UnException exception, uuid : %s not found. But extracted from JWT",
+                                                String.format("Unexpected exception, uuid : %s not found. But extracted from JWT",
                                                                 uuid)));
 
-                UserShopAccess userShopAccess = userShopAccessRepo.findByUserId(userEntity.getId()).stream()
-                                .findFirst()
-                                .orElseThrow(() -> new RuntimeException("No shop access found for user"));
-
                 Integer categoryId = userEntity.getCategoryId();
+                if (categoryId == null) {
+                        throw new RuntimeException(String.format("No category assigned to user: %s", uuid));
+                }
 
                 Categories categories = categoriesRepo
                                 .findById(categoryId)
@@ -78,10 +77,13 @@ public class MenuService {
                                 .findByCategoryIdAndRoleId(categoryId, role)
                                 .orElseThrow(() -> new RoleForCategoryDoesNotExistException(role, categoryId));
 
+                List<UserShopAccess> shopAccessList = userShopAccessRepo.findByUserId(userEntity.getId());
+                List<Long> userShopPermissions = shopAccessList.isEmpty() ? List.of() : shopAccessList.get(0).getPermissions();
+
                 List<Long> finalPermissionBits = permissionBitCalculator.calculateFinalPermissions(
                                 categories.getPermissions(),
                                 rolePermissions.getPermissions(),
-                                userShopAccess.getPermissions(),
+                                userShopPermissions,
                                 role);
 
                 Set<Integer> enabledBitPositions = permissionBitCalculator
@@ -92,6 +94,14 @@ public class MenuService {
         }
 
         public TopBarResponse generateTopBar() {
+            Roles role = JwtUtil.extractJwtClaim().role();
+            if (role == Roles.SUPER_ADMIN) {
+                TopBarResponse response = new TopBarResponse();
+                response.setFirmName("SuperAdmin Console");
+                response.setGstin("N/A");
+                response.setName("Super Admin");
+                return response;
+            }
             Integer shopCode = JwtUtil.extractJwtClaim().shopCode();
             String uuid = JwtUtil.extractJwtClaim().uuid();
             Optional<Shops> shop = shopsRepo.findByShopCode(shopCode);

@@ -1,8 +1,8 @@
 package in.lekhai.shop.context.transaction.manager.config;
 
+import in.lekhai.shop.context.transaction.manager.ShopContextTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import in.lekhai.shop.context.transaction.manager.ShopContextTransactionManager;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 

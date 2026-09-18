@@ -45,6 +45,10 @@ public class Area {
         return areaName;
     }
 
+    public void setAreaName(String areaName) {
+        this.areaName = areaName;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
