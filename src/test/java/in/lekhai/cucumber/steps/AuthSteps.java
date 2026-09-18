@@ -72,32 +72,15 @@ public class AuthSteps {
         testContext.setResponse(response);
     }
 
-    @Given("the super admin creates a category {string}")
-    public void theSuperAdminCreatesACategory(String categoryName) {
-        String superAdminToken = testContext.get("superAdminToken");
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("categoryName", categoryName);
-
-        Response response = RestAssured.given()
-                .auth().oauth2(superAdminToken)
-                .contentType(ContentType.JSON)
-                .body(requestBody)
-                .when()
-                .post("/api/category/create");
-
-        assertThat(response.getStatusCode(), anyOf(equalTo(200), equalTo(400)));
-        testContext.set("categoryName", categoryName);
-    }
-
     @When("the super admin creates a new shop:")
-    public void theSuperAdminCreatesANewShopWithCategory(Map<String, String> shopData) {
+    public void theSuperAdminCreatesANewShop(Map<String, String> shopData) {
         String superAdminToken = testContext.get("superAdminToken");
 
         Map<String, Object> adminMap = new HashMap<>();
         adminMap.put("username", shopData.get("adminUsername"));
         adminMap.put("password", shopData.get("adminPassword"));
         adminMap.put("name", shopData.get("adminName"));
-        adminMap.put("category", shopData.get("category"));
+        adminMap.put("category", shopData.getOrDefault("category", "SAREE"));
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("firmName", shopData.get("firmName"));
@@ -120,20 +103,6 @@ public class AuthSteps {
         }
     }
 
-    @When("a token request is sent for the created shop")
-    public void aTokenRequestIsSentForTheCreatedShop() {
-        String token = testContext.get("userToken");
-        Integer createdShopCode = testContext.get("createdShopCode");
-        Response response = RestAssured.given()
-                .auth().oauth2(token)
-                .header("shopcode", createdShopCode)
-                .contentType(ContentType.JSON)
-                .when()
-                .get("/auth/shop-token");
-
-        testContext.setResponse(response);
-    }
-
     @When("the admin registers another admin:")
     public void theAdminRegistersAnotherAdmin(Map<String, String> adminData) {
         String shopScopedToken = testContext.get("shopScopedToken");
@@ -142,7 +111,7 @@ public class AuthSteps {
         requestBody.put("username", adminData.get("username"));
         requestBody.put("password", adminData.get("password"));
         requestBody.put("name", adminData.get("name"));
-        requestBody.put("category", adminData.get("category"));
+        requestBody.put("category", adminData.getOrDefault("category", "SAREE"));
 
         Response response = RestAssured.given()
                 .auth().oauth2(shopScopedToken)
@@ -152,13 +121,6 @@ public class AuthSteps {
                 .post("/api/admin/register/new-admin");
 
         testContext.setResponse(response);
-    }
-
-    @Then("the response status should be {int}")
-    public void theResponseStatusShouldBe(int statusCode) {
-        Response response = testContext.getResponse();
-        assertThat(response, notNullValue());
-        assertThat(response.getStatusCode(), equalTo(statusCode));
     }
 
     @Then("the response should contain a valid JWT token")
@@ -190,5 +152,6 @@ public class AuthSteps {
         assertThat(token, notNullValue());
         assertThat(token.split("\\.").length, equalTo(3));
         testContext.set("shopScopedToken", token);
+        testContext.set("token", token);
     }
 }

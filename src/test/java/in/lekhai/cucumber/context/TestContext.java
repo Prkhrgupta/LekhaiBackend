@@ -28,6 +28,17 @@ public class TestContext {
         return (T) sessionData.get(key);
     }
 
+    public String resolvePlaceholders(String text) {
+        if (text == null) return null;
+        for (Map.Entry<String, Object> entry : sessionData.entrySet()) {
+            String placeholder = "{" + entry.getKey() + "}";
+            if (text.contains(placeholder) && entry.getValue() != null) {
+                text = text.replace(placeholder, String.valueOf(entry.getValue()));
+            }
+        }
+        return text;
+    }
+
     public void clear() {
         response = null;
         sessionData.clear();
