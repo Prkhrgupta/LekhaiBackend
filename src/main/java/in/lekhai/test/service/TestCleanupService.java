@@ -61,6 +61,13 @@ public class TestCleanupService {
     public void cleanupAllTestData() {
         log.info("Executing comprehensive test data cleanup");
         jdbcTemplate.execute("SET LOCAL app.bypass_rls = 'on'");
+        jdbcTemplate.update("DELETE FROM voucher_entry");
+        jdbcTemplate.update("DELETE FROM voucher");
+        jdbcTemplate.update("DELETE FROM voucher_counter");
+        jdbcTemplate.update("DELETE FROM stock_item_master");
+        jdbcTemplate.update("DELETE FROM item_factory_master");
+        jdbcTemplate.update("DELETE FROM item_category_master");
+        jdbcTemplate.update("DELETE FROM commodity_master");
         jdbcTemplate.update("DELETE FROM gst_details");
         jdbcTemplate.update("DELETE FROM ledger_address");
         jdbcTemplate.update("DELETE FROM ledger");
