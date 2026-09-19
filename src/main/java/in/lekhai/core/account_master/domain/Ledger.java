@@ -1,6 +1,7 @@
 package in.lekhai.core.account_master.domain;
 
 import in.lekhai.contract.model.AccountEntryType;
+import in.lekhai.contract.model.DeducteeType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -8,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Table("ledger")
 public class Ledger {
@@ -32,6 +34,15 @@ public class Ledger {
     private String gstInNumber;
     private String location;
     private Boolean isActive;
+
+    // TDS on payments/credits to this party (see TdsSection)
+    private Boolean isTdsApplicable = Boolean.FALSE;
+    private Long tdsSectionId;
+    private DeducteeType deducteeType;
+    private String ldcCertificateNumber;
+    private BigDecimal ldcRate;
+    private LocalDate ldcValidFrom;
+    private LocalDate ldcValidTo;
 
     @CreatedDate
     private Instant createdAt;
@@ -229,6 +240,62 @@ public class Ledger {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public Boolean getTdsApplicable() {
+        return isTdsApplicable;
+    }
+
+    public void setTdsApplicable(Boolean tdsApplicable) {
+        isTdsApplicable = tdsApplicable;
+    }
+
+    public Long getTdsSectionId() {
+        return tdsSectionId;
+    }
+
+    public void setTdsSectionId(Long tdsSectionId) {
+        this.tdsSectionId = tdsSectionId;
+    }
+
+    public DeducteeType getDeducteeType() {
+        return deducteeType;
+    }
+
+    public void setDeducteeType(DeducteeType deducteeType) {
+        this.deducteeType = deducteeType;
+    }
+
+    public String getLdcCertificateNumber() {
+        return ldcCertificateNumber;
+    }
+
+    public void setLdcCertificateNumber(String ldcCertificateNumber) {
+        this.ldcCertificateNumber = ldcCertificateNumber;
+    }
+
+    public BigDecimal getLdcRate() {
+        return ldcRate;
+    }
+
+    public void setLdcRate(BigDecimal ldcRate) {
+        this.ldcRate = ldcRate;
+    }
+
+    public LocalDate getLdcValidFrom() {
+        return ldcValidFrom;
+    }
+
+    public void setLdcValidFrom(LocalDate ldcValidFrom) {
+        this.ldcValidFrom = ldcValidFrom;
+    }
+
+    public LocalDate getLdcValidTo() {
+        return ldcValidTo;
+    }
+
+    public void setLdcValidTo(LocalDate ldcValidTo) {
+        this.ldcValidTo = ldcValidTo;
     }
 
     public Boolean getActive() {

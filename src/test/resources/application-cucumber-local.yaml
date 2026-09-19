@@ -1,0 +1,9 @@
+# Cucumber scenarios wipe shops/users before each run, so never point this at a database with data you need.
+spring:
+  datasource:
+    url: ${CUCUMBER_DB_URL:jdbc:postgresql://localhost:5432/lekhai_test}
+    username: ${CUCUMBER_DB_USERNAME:lekhai_user}
+    password: ${CUCUMBER_DB_PASSWORD:password}
+  flyway:
+    user: ${CUCUMBER_FLYWAY_USERNAME:postgres}
+    password: ${CUCUMBER_FLYWAY_PASSWORD:postgres}

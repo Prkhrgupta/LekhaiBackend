@@ -8,9 +8,10 @@ import java.math.BigDecimal;
 
 /**
  * Duties &amp; taxes ledger-account configuration for a single sale ledger, e.g.
- * "SALE IN-UP @12%" → CGST @ 6% / SGST @ 6%. Previously modelled per commodity;
+ * "SALE IN-UP @18%" → CGST @ 9% / SGST @ 9%. Previously modelled per commodity;
  * it belongs to the sale ledger account instead, since many commodities share
- * one configuration.
+ * one configuration. The CGST/SGST/IGST percentages are derived from
+ * {@code gstRate} by {@link in.lekhai.core.account_master.utils.GstLedgerSettingRules}.
  */
 @Table("sale_ledger_setting_master")
 public class SaleLedgerSetting extends ShopAwareEntity {
@@ -20,6 +21,7 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     private Long saleLedgerId;
     private String saleType;
+    private String taxability;
     private BigDecimal gstRate;
 
     private BigDecimal cgstPercentage;
@@ -33,8 +35,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     private Long freightPackingLedgerId;
     private Long roundOffLedgerId;
-    private BigDecimal tcsPercentage;
-    private Long tcsLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -63,6 +63,14 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     public void setSaleType(String saleType) {
         this.saleType = saleType;
+    }
+
+    public String getTaxability() {
+        return taxability;
+    }
+
+    public void setTaxability(String taxability) {
+        this.taxability = taxability;
     }
 
     public BigDecimal getGstRate() {
@@ -151,22 +159,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     public void setRoundOffLedgerId(Long roundOffLedgerId) {
         this.roundOffLedgerId = roundOffLedgerId;
-    }
-
-    public BigDecimal getTcsPercentage() {
-        return tcsPercentage;
-    }
-
-    public void setTcsPercentage(BigDecimal tcsPercentage) {
-        this.tcsPercentage = tcsPercentage;
-    }
-
-    public Long getTcsLedgerId() {
-        return tcsLedgerId;
-    }
-
-    public void setTcsLedgerId(Long tcsLedgerId) {
-        this.tcsLedgerId = tcsLedgerId;
     }
 
     public Boolean getDeleted() {

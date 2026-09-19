@@ -1,6 +1,7 @@
 package in.lekhai.core.account_master.service;
 
 import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.GstTaxability;
 import in.lekhai.contract.model.PaginationMeta;
 import in.lekhai.contract.model.SaleLedgerSettingRequest;
 import in.lekhai.contract.model.SaleLedgerSettingResponse;
@@ -11,6 +12,8 @@ import in.lekhai.core.account_master.domain.Ledger;
 import in.lekhai.core.account_master.domain.SaleLedgerSetting;
 import in.lekhai.core.account_master.repository.LedgerRepository;
 import in.lekhai.core.account_master.repository.SaleLedgerSettingRepository;
+import in.lekhai.core.account_master.utils.GstLedgerSettingRules;
+import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.error.controller.saleledgersetting.exception.SaleLedgerSettingNotFoundException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import org.slf4j.Logger;
@@ -18,9 +21,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +93,9 @@ public class SaleLedgerSettingService {
         return settings.stream()
                 .map(setting -> new DropdownItem()
                         .id(setting.getId())
-                        .label(ledgerNames.get(setting.getSaleLedgerId())))
+                        .label(setting.getSaleType() == null
+                                ? ledgerNames.get(setting.getSaleLedgerId())
+                                : ledgerNames.get(setting.getSaleLedgerId()) + " (" + setting.getSaleType() + ")"))
                 .toList();
     }
 
@@ -127,24 +134,62 @@ public class SaleLedgerSettingService {
                         .totalPages(settingsPage.getTotalPages()));
     }
 
+    /**
+     * Validates the request against the GST rules and copies it onto
+     * {@code setting}. The CGST/SGST/IGST percentages are never taken from the
+     * client: they are derived from the GST rate and the sale type.
+     */
     private SaleLedgerSetting mapToEntity(SaleLedgerSettingRequest request, SaleLedgerSetting setting) {
-        setting.setSaleLedgerId(request.getSaleLedgerId());
-        setting.setSaleType(request.getSaleType() == null ? null : request.getSaleType().getValue());
-        setting.setGstRate(toBigDecimal(request.getGstRate()));
+        SaleType saleType = request.getSaleType();
+        if (request.getSaleLedgerId() == null || saleType == null) {
+            throw new LekhaiClientException("Sale ledger and sale type are required", HttpStatus.BAD_REQUEST);
+        }
+        GstTaxability taxability = request.getTaxability() == null
+                ? GstTaxability.TAXABLE : request.getTaxability();
+        GstLedgerSettingRules.SupplyKind kind = GstLedgerSettingRules.kindOf(saleType);
+        BigDecimal requestedRate = toBigDecimal(request.getGstRate());
+        BigDecimal cessPercentage = toBigDecimal(request.getCessPercentage());
 
-        setting.setCgstPercentage(toBigDecimal(request.getCgstPercentage()));
+        GstLedgerSettingRules.validateTaxLedgers(kind, taxability, requestedRate,
+                request.getCgstLedgerId(), request.getSgstLedgerId(), request.getIgstLedgerId(),
+                cessPercentage, request.getCessLedgerId());
+        GstLedgerSettingRules.requireLedgersExist(ledgerRepository, Arrays.asList(
+                request.getSaleLedgerId(),
+                request.getCgstLedgerId(),
+                request.getSgstLedgerId(),
+                request.getIgstLedgerId(),
+                request.getCessLedgerId(),
+                request.getFreightPackingLedgerId(),
+                request.getRoundOffLedgerId()));
+
+        long excludeId = setting.getId() == null ? 0L : setting.getId();
+        if (saleLedgerSettingRepository.existsActiveBySaleLedgerIdAndSaleType(
+                request.getSaleLedgerId(), saleType.getValue(), excludeId)) {
+            throw new LekhaiClientException(
+                    "A " + saleType.getValue() + " setting already exists for this sale ledger",
+                    HttpStatus.CONFLICT);
+        }
+
+        BigDecimal gstRate = GstLedgerSettingRules.effectiveRate(kind, taxability, requestedRate);
+        GstLedgerSettingRules.TaxPercentages percentages =
+                GstLedgerSettingRules.derivePercentages(kind, taxability, gstRate);
+
+        setting.setSaleLedgerId(request.getSaleLedgerId());
+        setting.setSaleType(saleType.getValue());
+        setting.setTaxability(taxability.getValue());
+        setting.setGstRate(gstRate);
+
+        setting.setCgstPercentage(percentages.cgst());
         setting.setCgstLedgerId(request.getCgstLedgerId());
-        setting.setSgstPercentage(toBigDecimal(request.getSgstPercentage()));
+        setting.setSgstPercentage(percentages.sgst());
         setting.setSgstLedgerId(request.getSgstLedgerId());
-        setting.setIgstPercentage(toBigDecimal(request.getIgstPercentage()));
+        setting.setIgstPercentage(percentages.igst());
         setting.setIgstLedgerId(request.getIgstLedgerId());
-        setting.setCessPercentage(toBigDecimal(request.getCessPercentage()));
+        setting.setCessPercentage(cessPercentage == null ? BigDecimal.ZERO : cessPercentage);
         setting.setCessLedgerId(request.getCessLedgerId());
 
         setting.setFreightPackingLedgerId(request.getFreightPackingLedgerId());
         setting.setRoundOffLedgerId(request.getRoundOffLedgerId());
-        setting.setTcsPercentage(toBigDecimal(request.getTcsPercentage()));
-        setting.setTcsLedgerId(request.getTcsLedgerId());
 
         return setting;
     }
@@ -155,6 +200,8 @@ public class SaleLedgerSettingService {
                 .saleLedgerId(setting.getSaleLedgerId())
                 .saleLedgerName(ledgerNames.get(setting.getSaleLedgerId()))
                 .saleType(setting.getSaleType() == null ? null : SaleType.fromValue(setting.getSaleType()))
+                .taxability(setting.getTaxability() == null
+                        ? null : GstTaxability.fromValue(setting.getTaxability()))
                 .gstRate(toDouble(setting.getGstRate()))
                 .cgstPercentage(toDouble(setting.getCgstPercentage()))
                 .cgstLedgerId(setting.getCgstLedgerId())
@@ -171,10 +218,7 @@ public class SaleLedgerSettingService {
                 .freightPackingLedgerId(setting.getFreightPackingLedgerId())
                 .freightPackingLedgerName(ledgerNames.get(setting.getFreightPackingLedgerId()))
                 .roundOffLedgerId(setting.getRoundOffLedgerId())
-                .roundOffLedgerName(ledgerNames.get(setting.getRoundOffLedgerId()))
-                .tcsPercentage(toDouble(setting.getTcsPercentage()))
-                .tcsLedgerId(setting.getTcsLedgerId())
-                .tcsLedgerName(ledgerNames.get(setting.getTcsLedgerId()));
+                .roundOffLedgerName(ledgerNames.get(setting.getRoundOffLedgerId()));
     }
 
     /**
@@ -190,8 +234,7 @@ public class SaleLedgerSettingService {
                         setting.getIgstLedgerId(),
                         setting.getCessLedgerId(),
                         setting.getFreightPackingLedgerId(),
-                        setting.getRoundOffLedgerId(),
-                        setting.getTcsLedgerId()))
+                        setting.getRoundOffLedgerId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 

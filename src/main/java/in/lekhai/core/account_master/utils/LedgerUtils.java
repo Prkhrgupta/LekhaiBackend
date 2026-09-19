@@ -13,7 +13,7 @@ public class LedgerUtils {
         }
 
         public static Ledger createLedgerObject(LedgerRequest request) {
-                return new Ledger(
+                Ledger ledger = new Ledger(
                                 request.getName(),
                                 request.getLegalName(),
                                 request.getAccountGroup(),
@@ -33,6 +33,26 @@ public class LedgerUtils {
                                 request.getGstInNumber(),
                                 request.getLocation()
                 );
+                applyTdsDetails(ledger, request);
+                return ledger;
+        }
+
+        /**
+         * Copies the party's TDS details. When TDS is not applicable every TDS
+         * field is cleared, so a stale section or certificate is never kept.
+         */
+        public static void applyTdsDetails(Ledger ledger, LedgerRequest request) {
+                boolean applicable = Boolean.TRUE.equals(request.getTdsApplicable());
+                boolean hasLdc = applicable && request.getLdcCertificateNumber() != null
+                        && !request.getLdcCertificateNumber().isBlank();
+                ledger.setTdsApplicable(applicable);
+                ledger.setTdsSectionId(applicable ? request.getTdsSectionId() : null);
+                ledger.setDeducteeType(applicable ? request.getDeducteeType() : null);
+                ledger.setLdcCertificateNumber(hasLdc ? request.getLdcCertificateNumber().trim() : null);
+                ledger.setLdcRate(hasLdc && request.getLdcRate() != null
+                        ? BigDecimal.valueOf(request.getLdcRate()) : null);
+                ledger.setLdcValidFrom(hasLdc ? request.getLdcValidFrom() : null);
+                ledger.setLdcValidTo(hasLdc ? request.getLdcValidTo() : null);
         }
 
         public static GstInDetails createGstInDetailsObject(GstInDetail request, Long ledgerId) {
@@ -78,6 +98,7 @@ public class LedgerUtils {
                 ledger.setPhoneNumber(request.getPhoneNumber());
                 ledger.setGstInNumber(request.getGstInNumber());
                 ledger.setLocation(request.getLocation());
+                applyTdsDetails(ledger, request);
         }
 
         public static LedgerResponse mapToResponse(
@@ -87,7 +108,8 @@ public class LedgerUtils {
                 Transport transport,
                 AccountGroup accountGroup,
                 GstInDetails gstInDetails,
-                Address address
+                Address address,
+                TdsSection tdsSection
         ) {
                 return new LedgerResponse()
                         .id(ledger.getId())
@@ -143,6 +165,14 @@ public class LedgerUtils {
                                 .pincode(address.getPincode())
                                 .distance(address.getDistance())
                                 : null)
+                        .tdsApplicable(ledger.getTdsApplicable())
+                        .tdsSectionId(ledger.getTdsSectionId())
+                        .tdsSectionLabel(tdsSection != null ? tdsSection.getLabel() : null)
+                        .deducteeType(ledger.getDeducteeType())
+                        .ldcCertificateNumber(ledger.getLdcCertificateNumber())
+                        .ldcRate(ledger.getLdcRate() != null ? ledger.getLdcRate().doubleValue() : null)
+                        .ldcValidFrom(ledger.getLdcValidFrom())
+                        .ldcValidTo(ledger.getLdcValidTo())
                         .createdAt(DateUtils.getCreatedAt(ledger.getCreatedAt()));
         }
 

@@ -5,11 +5,16 @@ import io.restassured.RestAssured;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @CucumberContextConfiguration
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "spring.flyway.enabled=true"
+)
+@Import(CucumberTestcontainersConfiguration.class)
+@ActiveProfiles(resolver = CucumberDbProfileResolver.class)
 public class CucumberSpringConfiguration {
 
     @LocalServerPort

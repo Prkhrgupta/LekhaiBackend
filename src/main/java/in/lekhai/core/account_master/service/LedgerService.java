@@ -43,6 +43,7 @@ public class LedgerService {
         private final AccountGroupRepository accountGroupRepository;
         private final StateRepository stateRepository;
         private final VoucherEntryRepository voucherEntryRepository;
+        private final TdsSectionRepository tdsSectionRepository;
         private final TaxProGstClient taxProGstClient;
 
         public LedgerService(
@@ -55,6 +56,7 @@ public class LedgerService {
                 AccountGroupRepository accountGroupRepository,
                 StateRepository stateRepository,
                 VoucherEntryRepository voucherEntryRepository,
+                TdsSectionRepository tdsSectionRepository,
                 TaxProGstClient taxProGstClient
         ) {
             this.ledgerRepository = ledgerRepository;
@@ -66,11 +68,13 @@ public class LedgerService {
             this.accountGroupRepository = accountGroupRepository;
             this.stateRepository = stateRepository;
             this.voucherEntryRepository = voucherEntryRepository;
+            this.tdsSectionRepository = tdsSectionRepository;
             this.taxProGstClient = taxProGstClient;
         }
 
         @ShopContextTransactional
         public LedgerResponse createLedger(LedgerRequest request) {
+                TdsSection tdsSection = validateTdsDetails(request);
                 Ledger ledger = ledgerRepository.save(createLedgerObject(request));
                 log.info("Saved ledger for shop {} :: ledger id {}", request.getName(), ledger.getId());
                 if (Boolean.TRUE.equals(request.getGstInDetailsPresent()) && request.getGstInDetails() != null) {
@@ -96,7 +100,8 @@ public class LedgerService {
 
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null,
+                                tdsSection);
         }
 
         @ShopContextTransactional
@@ -104,6 +109,7 @@ public class LedgerService {
                 Ledger ledger = ledgerRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Ledger not found with id: " + id));
 
+                TdsSection tdsSection = validateTdsDetails(request);
                 updateLedgerFromRequest(ledger, request);
                 ledgerRepository.save(ledger);
                 log.info("Updated ledger for shop {} :: ledger id {}", request.getName(), ledger.getId());
@@ -172,7 +178,8 @@ public class LedgerService {
 
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null);
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, null,
+                                tdsSection);
         }
 
         @ShopContextTransactional
@@ -198,7 +205,63 @@ public class LedgerService {
 
                 GstInDetails gstInDetails = gstDetailsRepository.findByLedgerId(ledger.getId()).orElse(null);
 
-                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, address);
+                TdsSection tdsSection = ledger.getTdsSectionId() != null
+                                ? tdsSectionRepository.findById(ledger.getTdsSectionId()).orElse(null)
+                                : null;
+
+                return LedgerUtils.mapToResponse(ledger, area, broker, transport, accountGroup, gstInDetails, address,
+                                tdsSection);
+        }
+
+        /**
+         * Validates the party's TDS details and returns the chosen section, or
+         * {@code null} when TDS is not applicable. A lower deduction certificate
+         * (section 197) must be complete and allow a rate below the section's.
+         */
+        private TdsSection validateTdsDetails(LedgerRequest request) {
+                if (!Boolean.TRUE.equals(request.getTdsApplicable())) {
+                        return null;
+                }
+                if (request.getTdsSectionId() == null || request.getDeducteeType() == null) {
+                        throw new LekhaiClientException(
+                                "TDS section and deductee type are required when TDS is applicable",
+                                HttpStatus.BAD_REQUEST);
+                }
+                TdsSection section = tdsSectionRepository.findById(request.getTdsSectionId())
+                                .filter(s -> Boolean.TRUE.equals(s.getActive()))
+                                .orElseThrow(() -> new LekhaiClientException(
+                                        "TDS section not found: " + request.getTdsSectionId(),
+                                        HttpStatus.BAD_REQUEST));
+
+                String certificateNumber = request.getLdcCertificateNumber();
+                boolean hasCertificateNumber = certificateNumber != null && !certificateNumber.isBlank();
+                boolean anyLdcField = hasCertificateNumber || request.getLdcRate() != null
+                        || request.getLdcValidFrom() != null || request.getLdcValidTo() != null;
+                if (!anyLdcField) {
+                        return section;
+                }
+                if (!hasCertificateNumber || request.getLdcRate() == null
+                        || request.getLdcValidFrom() == null || request.getLdcValidTo() == null) {
+                        throw new LekhaiClientException(
+                                "A lower deduction certificate needs its number, rate and validity period",
+                                HttpStatus.BAD_REQUEST);
+                }
+                if (request.getLdcValidTo().isBefore(request.getLdcValidFrom())) {
+                        throw new LekhaiClientException(
+                                "Lower deduction certificate validity must end on or after it starts",
+                                HttpStatus.BAD_REQUEST);
+                }
+                BigDecimal sectionRate = request.getDeducteeType() == DeducteeType.INDIVIDUAL_HUF
+                        ? section.getRateIndividualHuf()
+                        : section.getRateOthers();
+                BigDecimal ldcRate = BigDecimal.valueOf(request.getLdcRate());
+                if (ldcRate.signum() < 0 || ldcRate.compareTo(sectionRate) >= 0) {
+                        throw new LekhaiClientException(
+                                "Lower deduction rate must be at least 0 and below the section rate of "
+                                        + sectionRate.stripTrailingZeros().toPlainString() + "%",
+                                HttpStatus.BAD_REQUEST);
+                }
+                return section;
         }
 
         @ShopContextTransactional

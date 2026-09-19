@@ -8,8 +8,9 @@ import java.math.BigDecimal;
 
 /**
  * Purchase-side counterpart of {@link SaleLedgerSetting}: duties &amp; taxes
- * ledger-account configuration for a single purchase ledger. Carries TDS where
- * the sale side carries TCS.
+ * ledger-account configuration for a single purchase ledger. On top of the sale
+ * side it records input tax credit eligibility and reverse charge, whose tax is
+ * self-assessed into the RCM payable ledgers.
  */
 @Table("purchase_ledger_setting_master")
 public class PurchaseLedgerSetting extends ShopAwareEntity {
@@ -19,6 +20,9 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
 
     private Long purchaseLedgerId;
     private String purchaseType;
+    private String taxability;
+    private String itcEligibility;
+    private Boolean isReverseCharge = Boolean.FALSE;
     private BigDecimal gstRate;
 
     private BigDecimal cgstPercentage;
@@ -32,8 +36,10 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
 
     private Long freightPackingLedgerId;
     private Long roundOffLedgerId;
-    private BigDecimal tdsPercentage;
-    private Long tdsLedgerId;
+
+    private Long rcmCgstPayableLedgerId;
+    private Long rcmSgstPayableLedgerId;
+    private Long rcmIgstPayableLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -62,6 +68,30 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
 
     public void setPurchaseType(String purchaseType) {
         this.purchaseType = purchaseType;
+    }
+
+    public String getTaxability() {
+        return taxability;
+    }
+
+    public void setTaxability(String taxability) {
+        this.taxability = taxability;
+    }
+
+    public String getItcEligibility() {
+        return itcEligibility;
+    }
+
+    public void setItcEligibility(String itcEligibility) {
+        this.itcEligibility = itcEligibility;
+    }
+
+    public Boolean getReverseCharge() {
+        return isReverseCharge;
+    }
+
+    public void setReverseCharge(Boolean reverseCharge) {
+        isReverseCharge = reverseCharge;
     }
 
     public BigDecimal getGstRate() {
@@ -152,20 +182,28 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
         this.roundOffLedgerId = roundOffLedgerId;
     }
 
-    public BigDecimal getTdsPercentage() {
-        return tdsPercentage;
+    public Long getRcmCgstPayableLedgerId() {
+        return rcmCgstPayableLedgerId;
     }
 
-    public void setTdsPercentage(BigDecimal tdsPercentage) {
-        this.tdsPercentage = tdsPercentage;
+    public void setRcmCgstPayableLedgerId(Long rcmCgstPayableLedgerId) {
+        this.rcmCgstPayableLedgerId = rcmCgstPayableLedgerId;
     }
 
-    public Long getTdsLedgerId() {
-        return tdsLedgerId;
+    public Long getRcmSgstPayableLedgerId() {
+        return rcmSgstPayableLedgerId;
     }
 
-    public void setTdsLedgerId(Long tdsLedgerId) {
-        this.tdsLedgerId = tdsLedgerId;
+    public void setRcmSgstPayableLedgerId(Long rcmSgstPayableLedgerId) {
+        this.rcmSgstPayableLedgerId = rcmSgstPayableLedgerId;
+    }
+
+    public Long getRcmIgstPayableLedgerId() {
+        return rcmIgstPayableLedgerId;
+    }
+
+    public void setRcmIgstPayableLedgerId(Long rcmIgstPayableLedgerId) {
+        this.rcmIgstPayableLedgerId = rcmIgstPayableLedgerId;
     }
 
     public Boolean getDeleted() {

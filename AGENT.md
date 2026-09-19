@@ -77,6 +77,7 @@ Run from the repo root:
 * **Clean:** `./gradlew clean`
 * **Build (skip tests):** `./gradlew build -x test`
 * **Tests:** `./gradlew test`
+* **Cucumber on local `lekhai_test` DB (instead of Testcontainers):** `./gradlew test -PcucumberDb=local` (create the DB once with `sql/init_test_db.sql`; override via `CUCUMBER_DB_URL`/`CUCUMBER_DB_USERNAME`/`CUCUMBER_DB_PASSWORD`)
 * **Run locally:** `./gradlew bootRun`
 * **Flyway migrate:** `./gradlew flywayMigrate -Duser.timezone=UTC`
 * **Docker image (local):** `./gradlew jibDockerBuild`

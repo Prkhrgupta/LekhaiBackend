@@ -1,6 +1,6 @@
 -- The ledger/tax configuration moved out of the commodity master into the
 -- stand-alone sale_ledger_setting_master / purchase_ledger_setting_master
--- screens (V16, V17). These mappings belong to a sale/purchase ledger account,
+-- screens (V20, V18). These mappings belong to a sale/purchase ledger account,
 -- not to an individual commodity.
 ALTER TABLE commodity_master
     DROP COLUMN is_sale_purchase_active,

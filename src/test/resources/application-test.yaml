@@ -1,3 +1,8 @@
+# Tests wipe data, so never fall back to application.yaml's real DB; the container config or cucumber-local profile must override this.
+spring:
+  datasource:
+    url: jdbc:postgresql://test-database-not-configured.invalid:5432/none
+
 management:
   endpoints:
     web:

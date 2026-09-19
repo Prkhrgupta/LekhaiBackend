@@ -34,4 +34,12 @@ public interface PurchaseLedgerSettingRepository extends CrudRepository<Purchase
             + "WHERE (p.is_deleted IS NULL OR p.is_deleted = FALSE) "
             + "AND l.name ILIKE '%' || :query || '%'")
     long countActiveByPurchaseLedgerNameContainingIgnoreCase(@Param("query") String query);
+
+    /** Pass {@code excludeId = 0} when creating (ids start at 1). */
+    @Query("SELECT EXISTS (SELECT 1 FROM purchase_ledger_setting_master "
+            + "WHERE (is_deleted IS NULL OR is_deleted = FALSE) "
+            + "AND purchase_ledger_id = :ledgerId AND purchase_type = :purchaseType AND id <> :excludeId)")
+    boolean existsActiveByPurchaseLedgerIdAndPurchaseType(@Param("ledgerId") Long ledgerId,
+                                                          @Param("purchaseType") String purchaseType,
+                                                          @Param("excludeId") long excludeId);
 }

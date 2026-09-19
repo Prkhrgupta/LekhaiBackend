@@ -10,7 +10,8 @@ This module is the foundation every other accounting feature builds on. A shop c
 - **Ledgers** — the individual accounts a business actually posts to: cash, bank, customers (sundry debtors), suppliers (sundry creditors), sales, purchases, expenses. Every ledger carries its opening balance (so books carry forward from the previous year / previous software), credit limit, contact & tax details (GSTIN, PAN), and default area/broker/transporter so vouchers auto-fill.
 - **Trade-party masters** — Area (sales territories), Broker (commission agents), Transport (goods carriers, with GST no). They attach to ledgers and feed both voucher entry and E-way bill generation.
 - **States (system-level)** — GST codes for every Indian state, shared by all shops; used to determine CGST/SGST/IGST and resolve addresses.
-- **Purchase & sale ledger settings** — for each purchase/sale ledger, which ledgers its tax components (CGST/SGST/IGST/cess), freight/packing, round-off, TDS (on purchases) and TCS (on sales) post to. This is what lets a purchase or sales voucher automatically split the bill into the correct duty & tax accounts.
+- **Purchase & sale ledger settings** — for each purchase/sale ledger: its place of supply (in-state, out-state, export/SEZ with IGST or under LUT, import), GST taxability (taxable/exempt/nil-rated/non-GST) and rate, and which ledgers its tax components (CGST/SGST/IGST/cess), freight/packing and round-off post to. Purchases also record input tax credit eligibility and reverse charge (with the RCM payable ledgers). The CGST/SGST/IGST split is derived from the rate, never typed in. This is what lets a purchase or sales voucher automatically split the bill into the correct duty & tax accounts.
+- **TDS** — TDS is a party + nature-of-payment concern, not a ledger-setting one: a system-level **TDS section** master (194C, 194H, 194Q…, with rates and thresholds) and, on each party ledger, whether TDS applies, the section, the deductee type and any lower deduction certificate. (TCS on sale of goods, 206C(1H), was omitted from 1 Apr 2025, so sale settings carry no TCS.)
 
 Everything downstream depends on this module: `voucher/` posts to ledgers, `accountbooks/` reports from them, `csv/` bulk-loads these masters, and `gsp/` + `category/` validate GSTINs and move goods on the parties' behalf.
 
@@ -18,11 +19,12 @@ Everything downstream depends on this module: `voucher/` posts to ledgers, `acco
 
 Organised as the standard 4-layer pattern (controller → service → repository → domain) per master:
 
-- `Ledger*` — the ledger of accounts (account group, GSTIN, address, opening balance, credit limit, defaults, PAN/TAN/email...).
+- `Ledger*` — the ledger of accounts (account group, GSTIN, address, opening balance, credit limit, defaults, PAN/TAN/email, TDS details...).
 - `AccountGroup*` — the group tree that structures all ledgers.
 - `Area*` / `Broker*` / `Transport*` — trade-party masters for territories, commission agents, and goods carriers.
 - `State*` — India GST states (system-level).
-- `PurchaseLedgerSetting*` / `SaleLedgerSetting*` — duty & tax ledger configuration per purchase/sale ledger.
+- `PurchaseLedgerSetting*` / `SaleLedgerSetting*` — duty & tax ledger configuration per purchase/sale ledger; GST rules shared in `utils/GstLedgerSettingRules`.
+- `TdsSection*` — TDS sections / nature of payment (system-level, seeded by Flyway).
 - `GstInDetails`, `Address` — tax-registration and address records owned by a ledger.
 - `domain/LedgerSummaryProjection` — aggregate debit/credit/net balance of a ledger.
 - `seeders/` — boot-time master seeding from `resources/seeds/*.csv`.

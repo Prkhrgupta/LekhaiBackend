@@ -41,7 +41,7 @@ repositories {
 dependencies {
     // Lekhai Api Spec
 //    implementation "in.lekhai:lekhai-api-spec:1.0.4"
-    implementation 'in.lekhai:lekhaiapispec:1.1.3'
+    implementation 'in.lekhai:lekhaiapispec:1.1.4'
 
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -99,6 +99,8 @@ ext['testcontainers.version'] = '1.21.4'
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// ./gradlew test -PcucumberDb=local runs Cucumber against lekhai_test instead of a Testcontainers Postgres
+	systemProperty 'cucumber.db', project.findProperty('cucumberDb') ?: 'container'
 }
 
 jar {
