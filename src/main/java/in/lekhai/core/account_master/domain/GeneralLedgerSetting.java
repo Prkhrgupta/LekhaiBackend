@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 
 /**
  * Shop-level ledger defaults shared by sale and purchase flows: freight,
- * round-off, TDS and TCS. One active row per shop.
+ * round-off, TDS, TCS and the output/input cess ledgers (rates come from
+ * the commodity). One active row per shop.
  */
 @Table("general_ledger_setting_master")
 public class GeneralLedgerSetting extends ShopAwareEntity {
@@ -22,6 +23,8 @@ public class GeneralLedgerSetting extends ShopAwareEntity {
     private Long tdsLedgerId;
     private BigDecimal tcsPercentage;
     private Long tcsLedgerId;
+    private Long outputCessLedgerId;
+    private Long inputCessLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -82,6 +85,22 @@ public class GeneralLedgerSetting extends ShopAwareEntity {
 
     public void setTcsLedgerId(Long tcsLedgerId) {
         this.tcsLedgerId = tcsLedgerId;
+    }
+
+    public Long getOutputCessLedgerId() {
+        return outputCessLedgerId;
+    }
+
+    public void setOutputCessLedgerId(Long outputCessLedgerId) {
+        this.outputCessLedgerId = outputCessLedgerId;
+    }
+
+    public Long getInputCessLedgerId() {
+        return inputCessLedgerId;
+    }
+
+    public void setInputCessLedgerId(Long inputCessLedgerId) {
+        this.inputCessLedgerId = inputCessLedgerId;
     }
 
     public Boolean getDeleted() {

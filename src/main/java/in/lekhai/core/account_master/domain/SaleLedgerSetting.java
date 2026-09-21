@@ -25,8 +25,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
     private Long cgstLedgerId;
     private Long sgstLedgerId;
     private Long igstLedgerId;
-    private BigDecimal cessPercentage;
-    private Long cessLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -87,22 +85,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     public void setIgstLedgerId(Long igstLedgerId) {
         this.igstLedgerId = igstLedgerId;
-    }
-
-    public BigDecimal getCessPercentage() {
-        return cessPercentage;
-    }
-
-    public void setCessPercentage(BigDecimal cessPercentage) {
-        this.cessPercentage = cessPercentage;
-    }
-
-    public Long getCessLedgerId() {
-        return cessLedgerId;
-    }
-
-    public void setCessLedgerId(Long cessLedgerId) {
-        this.cessLedgerId = cessLedgerId;
     }
 
     public Boolean getDeleted() {

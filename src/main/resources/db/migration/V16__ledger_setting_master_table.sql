@@ -8,8 +8,10 @@ CREATE TABLE general_ledger_setting_master (
    round_off_ledger_id BIGINT REFERENCES ledger(id),
    tds_percentage NUMERIC(6, 3) DEFAULT 0.000,
    tds_ledger_id BIGINT REFERENCES ledger(id),
-   tcs_percentage NUMERIC(6, 3) DEFAULT 0.000,
-   tcs_ledger_id BIGINT REFERENCES ledger(id),
+    tcs_percentage NUMERIC(6, 3) DEFAULT 0.000,
+    tcs_ledger_id BIGINT REFERENCES ledger(id),
+    output_cess_ledger_id BIGINT REFERENCES ledger(id),
+    input_cess_ledger_id BIGINT REFERENCES ledger(id),
 
     -- Audit & Shop
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -38,9 +40,6 @@ CREATE TABLE sale_ledger_setting_master (
     sgst_ledger_id BIGINT REFERENCES ledger(id),
     igst_ledger_id BIGINT REFERENCES ledger(id),
 
-    cess_percentage NUMERIC(6, 3) DEFAULT 0.000,
-    cess_ledger_id BIGINT REFERENCES ledger(id),
-
     -- Audit & Shop
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -68,9 +67,6 @@ CREATE TABLE purchase_ledger_setting_master (
     cgst_ledger_id BIGINT REFERENCES ledger(id),
     sgst_ledger_id BIGINT REFERENCES ledger(id),
     igst_ledger_id BIGINT REFERENCES ledger(id),
-
-    cess_percentage NUMERIC(6, 3) DEFAULT 0.000,
-    cess_ledger_id BIGINT REFERENCES ledger(id),
 
     -- Audit & Shop
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
