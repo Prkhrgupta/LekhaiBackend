@@ -4,7 +4,6 @@ import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.PaginationMeta;
 import in.lekhai.contract.model.SaleLedgerSettingRequest;
 import in.lekhai.contract.model.SaleLedgerSettingResponse;
-import in.lekhai.contract.model.SaleLedgerSettingSearchableField;
 import in.lekhai.contract.model.SaleLedgerSettingSummaryPageResponse;
 import in.lekhai.contract.model.SaleType;
 import in.lekhai.core.account_master.domain.Ledger;
@@ -94,24 +93,11 @@ public class SaleLedgerSettingService {
 
     @ShopContextTransactional
     public SaleLedgerSettingSummaryPageResponse listSaleLedgerSettingSummaries(
-            SaleLedgerSettingSearchableField searchableField,
-            String searchText,
             Pageable pageable) {
-        Page<SaleLedgerSetting> settingsPage;
-        if (searchText != null && !searchText.trim().isEmpty()
-                && searchableField == SaleLedgerSettingSearchableField.SALE_LEDGER_NAME) {
-            List<SaleLedgerSetting> settings = saleLedgerSettingRepository
-                    .findActiveBySaleLedgerNameContainingIgnoreCase(
-                            searchText.trim(), pageable.getPageSize(), pageable.getOffset());
-            long total = saleLedgerSettingRepository
-                    .countActiveBySaleLedgerNameContainingIgnoreCase(searchText.trim());
-            settingsPage = new PageImpl<>(settings, pageable, total);
-        } else {
-            List<SaleLedgerSetting> settings = saleLedgerSettingRepository
-                    .findAllActive(pageable.getPageSize(), pageable.getOffset());
-            long total = saleLedgerSettingRepository.countAllActive();
-            settingsPage = new PageImpl<>(settings, pageable, total);
-        }
+        List<SaleLedgerSetting> settings = saleLedgerSettingRepository
+                .findAllActive(pageable.getPageSize(), pageable.getOffset());
+        long total = saleLedgerSettingRepository.countAllActive();
+        Page<SaleLedgerSetting> settingsPage = new PageImpl<>(settings, pageable, total);
 
         Map<Long, String> ledgerNames = resolveLedgerNames(settingsPage.getContent());
         List<SaleLedgerSettingResponse> data = settingsPage.getContent().stream()
@@ -132,19 +118,11 @@ public class SaleLedgerSettingService {
         setting.setSaleType(request.getSaleType() == null ? null : request.getSaleType().getValue());
         setting.setGstRate(toBigDecimal(request.getGstRate()));
 
-        setting.setCgstPercentage(toBigDecimal(request.getCgstPercentage()));
         setting.setCgstLedgerId(request.getCgstLedgerId());
-        setting.setSgstPercentage(toBigDecimal(request.getSgstPercentage()));
         setting.setSgstLedgerId(request.getSgstLedgerId());
-        setting.setIgstPercentage(toBigDecimal(request.getIgstPercentage()));
         setting.setIgstLedgerId(request.getIgstLedgerId());
         setting.setCessPercentage(toBigDecimal(request.getCessPercentage()));
         setting.setCessLedgerId(request.getCessLedgerId());
-
-        setting.setFreightPackingLedgerId(request.getFreightPackingLedgerId());
-        setting.setRoundOffLedgerId(request.getRoundOffLedgerId());
-        setting.setTcsPercentage(toBigDecimal(request.getTcsPercentage()));
-        setting.setTcsLedgerId(request.getTcsLedgerId());
 
         return setting;
     }
@@ -156,30 +134,20 @@ public class SaleLedgerSettingService {
                 .saleLedgerName(ledgerNames.get(setting.getSaleLedgerId()))
                 .saleType(setting.getSaleType() == null ? null : SaleType.fromValue(setting.getSaleType()))
                 .gstRate(toDouble(setting.getGstRate()))
-                .cgstPercentage(toDouble(setting.getCgstPercentage()))
                 .cgstLedgerId(setting.getCgstLedgerId())
                 .cgstLedgerName(ledgerNames.get(setting.getCgstLedgerId()))
-                .sgstPercentage(toDouble(setting.getSgstPercentage()))
                 .sgstLedgerId(setting.getSgstLedgerId())
                 .sgstLedgerName(ledgerNames.get(setting.getSgstLedgerId()))
-                .igstPercentage(toDouble(setting.getIgstPercentage()))
                 .igstLedgerId(setting.getIgstLedgerId())
                 .igstLedgerName(ledgerNames.get(setting.getIgstLedgerId()))
                 .cessPercentage(toDouble(setting.getCessPercentage()))
                 .cessLedgerId(setting.getCessLedgerId())
-                .cessLedgerName(ledgerNames.get(setting.getCessLedgerId()))
-                .freightPackingLedgerId(setting.getFreightPackingLedgerId())
-                .freightPackingLedgerName(ledgerNames.get(setting.getFreightPackingLedgerId()))
-                .roundOffLedgerId(setting.getRoundOffLedgerId())
-                .roundOffLedgerName(ledgerNames.get(setting.getRoundOffLedgerId()))
-                .tcsPercentage(toDouble(setting.getTcsPercentage()))
-                .tcsLedgerId(setting.getTcsLedgerId())
-                .tcsLedgerName(ledgerNames.get(setting.getTcsLedgerId()));
+                .cessLedgerName(ledgerNames.get(setting.getCessLedgerId()));
     }
 
     /**
      * One lookup for every ledger referenced anywhere in {@code settings}, so a
-     * page of rows costs a single query instead of eight per row.
+     * page of rows costs a single query instead of five per row.
      */
     private Map<Long, String> resolveLedgerNames(Collection<SaleLedgerSetting> settings) {
         Set<Long> ledgerIds = settings.stream()
@@ -188,10 +156,7 @@ public class SaleLedgerSettingService {
                         setting.getCgstLedgerId(),
                         setting.getSgstLedgerId(),
                         setting.getIgstLedgerId(),
-                        setting.getCessLedgerId(),
-                        setting.getFreightPackingLedgerId(),
-                        setting.getRoundOffLedgerId(),
-                        setting.getTcsLedgerId()))
+                        setting.getCessLedgerId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 

@@ -14,10 +14,9 @@ public class Commodity extends ShopAwareEntity {
     private String itemName;
     private String hsnSacCode;
     private String description;
-    private String uom;
+    private String unitOfMeasure;
 
-    private BigDecimal gstRateSale;
-    private BigDecimal gstRatePurchase;
+    private BigDecimal gstRate;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -56,28 +55,20 @@ public class Commodity extends ShopAwareEntity {
         this.description = description;
     }
 
-    public String getUom() {
-        return uom;
+    public String getUnitOfMeasure() {
+        return unitOfMeasure;
     }
 
-    public void setUom(String uom) {
-        this.uom = uom;
+    public void setUnitOfMeasure(String unitOfMeasure) {
+        this.unitOfMeasure = unitOfMeasure;
     }
 
-    public BigDecimal getGstRateSale() {
-        return gstRateSale;
+    public BigDecimal getGstRate() {
+        return gstRate;
     }
 
-    public void setGstRateSale(BigDecimal gstRateSale) {
-        this.gstRateSale = gstRateSale;
-    }
-
-    public BigDecimal getGstRatePurchase() {
-        return gstRatePurchase;
-    }
-
-    public void setGstRatePurchase(BigDecimal gstRatePurchase) {
-        this.gstRatePurchase = gstRatePurchase;
+    public void setGstRate(BigDecimal gstRate) {
+        this.gstRate = gstRate;
     }
 
     public Boolean getDeleted() {

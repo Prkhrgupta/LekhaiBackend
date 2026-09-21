@@ -34,7 +34,7 @@ To add a new inventory master, follow this module's own pattern plus a Flyway mi
 2. `repository/<X>Repository` — Spring Data JDBC interface.
 3. `service/<X>Service` — business rules; throw `error/` exceptions on invalid references.
 4. `controller/<X>Controller` — generated `*Api`, `@PreAuthorize` only.
-5. Add the migration (append-only, never edit an applied one — note `V19` deliberately dropped a commodity↔ledger linkage; do not reintroduce it without a fresh migration).
+5. Add the migration (append-only, never edit an applied one — note the commodity↔ledger linkage was deliberately removed from `V10`; do not reintroduce it without a fresh migration).
 
 ## Deep Dive
 

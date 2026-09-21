@@ -10,7 +10,8 @@ This module is the foundation every other accounting feature builds on. A shop c
 - **Ledgers** — the individual accounts a business actually posts to: cash, bank, customers (sundry debtors), suppliers (sundry creditors), sales, purchases, expenses. Every ledger carries its opening balance (so books carry forward from the previous year / previous software), credit limit, contact & tax details (GSTIN, PAN), and default area/broker/transporter so vouchers auto-fill.
 - **Trade-party masters** — Area (sales territories), Broker (commission agents), Transport (goods carriers, with GST no). They attach to ledgers and feed both voucher entry and E-way bill generation.
 - **States (system-level)** — GST codes for every Indian state, shared by all shops; used to determine CGST/SGST/IGST and resolve addresses.
-- **Purchase & sale ledger settings** — for each purchase/sale ledger, which ledgers its tax components (CGST/SGST/IGST/cess), freight/packing, round-off, TDS (on purchases) and TCS (on sales) post to. This is what lets a purchase or sales voucher automatically split the bill into the correct duty & tax accounts.
+- **Purchase & sale ledger settings** — for each purchase/sale ledger, which ledgers its tax components (CGST/SGST/IGST/cess) post to. This is what lets a purchase or sales voucher automatically split the bill into the correct duty & tax accounts.
+- **General ledger setting** — one row per shop holding the shared defaults: freight/packing and round-off ledgers, TDS (percentage + ledger) and TCS (percentage + ledger).
 
 Everything downstream depends on this module: `voucher/` posts to ledgers, `accountbooks/` reports from them, and `gsp/` + `category/` validate GSTINs and move goods on the parties' behalf.
 
@@ -23,6 +24,7 @@ Organised as the standard 4-layer pattern (controller → service → repository
 - `Area*` / `Broker*` / `Transport*` — trade-party masters for territories, commission agents, and goods carriers.
 - `State*` — India GST states (system-level).
 - `PurchaseLedgerSetting*` / `SaleLedgerSetting*` — duty & tax ledger configuration per purchase/sale ledger.
+- `GeneralLedgerSetting*` — singleton-per-shop shared defaults (freight/packing, round-off, TDS/TCS); singleton GET + PUT upsert, no dropdown/summary.
 - `GstInDetails`, `Address` — tax-registration and address records owned by a ledger.
 - `domain/LedgerSummaryProjection` — aggregate debit/credit/net balance of a ledger.
 - `seeders/` — boot-time master seeding from `resources/seeds/*.csv`.

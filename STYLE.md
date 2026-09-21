@@ -46,6 +46,10 @@ Mandatory for all code written in this repo. These rules keep the codebase consi
 - Validate request bodies with Jakarta `@Valid` + constraints (`@NotNull`, `@Size`, `@Pattern`).
 - Partial updates: null-check before applying; don't overwrite with nulls.
 
+## Database Migrations (PostgreSQL)
+
+- Avoid `CHECK (col IN (...))`. Use it only for closed sets that can never expand (e.g. `DR`/`CR`); enforce open business enums in code instead. If unsure, ask the user: fact or expandable — default to no `CHECK`.
+
 ## Testing
 
 - Name tests `<ClassUnderTest>Test` / `<ClassUnderTest>IntegrationTest`, live in a mirrored package under `src/test/java/`.

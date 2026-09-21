@@ -6,6 +6,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,14 @@ public interface RolePermissionsRepo extends ListCrudRepository<RolePermissions,
             AND role = :role
             """)
     Optional<RolePermissions> findByCategoryIdAndRoleId(Integer categoryId, Roles role);
+
+    @Query("""
+            SELECT *
+            FROM role_permissions
+            WHERE category_id IN (:categoryIds)
+            AND role IN (:roles)
+            """)
+    List<RolePermissions> findByCategoryIdInAndRoleIn(List<Integer> categoryIds, List<Roles> roles);
 
 
 }

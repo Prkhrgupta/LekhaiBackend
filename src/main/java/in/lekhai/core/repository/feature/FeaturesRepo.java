@@ -22,6 +22,13 @@ public interface FeaturesRepo extends ListCrudRepository<Features, Long> {
     Integer findNextAvailableBitPosition();
 
     @Query(value = """
+        SELECT COALESCE(MAX(display_order), -1)
+        FROM features
+        WHERE parent_id IS NOT DISTINCT FROM :parentId
+        """)
+    Integer findMaxDisplayOrderByParentId(Long parentId);
+
+    @Query(value = """
             WITH RECURSIVE parent_hierarchy AS (
                 SELECT
                     id,

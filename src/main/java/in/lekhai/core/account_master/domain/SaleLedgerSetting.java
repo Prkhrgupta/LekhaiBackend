@@ -22,19 +22,11 @@ public class SaleLedgerSetting extends ShopAwareEntity {
     private String saleType;
     private BigDecimal gstRate;
 
-    private BigDecimal cgstPercentage;
     private Long cgstLedgerId;
-    private BigDecimal sgstPercentage;
     private Long sgstLedgerId;
-    private BigDecimal igstPercentage;
     private Long igstLedgerId;
     private BigDecimal cessPercentage;
     private Long cessLedgerId;
-
-    private Long freightPackingLedgerId;
-    private Long roundOffLedgerId;
-    private BigDecimal tcsPercentage;
-    private Long tcsLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -73,14 +65,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
         this.gstRate = gstRate;
     }
 
-    public BigDecimal getCgstPercentage() {
-        return cgstPercentage;
-    }
-
-    public void setCgstPercentage(BigDecimal cgstPercentage) {
-        this.cgstPercentage = cgstPercentage;
-    }
-
     public Long getCgstLedgerId() {
         return cgstLedgerId;
     }
@@ -89,28 +73,12 @@ public class SaleLedgerSetting extends ShopAwareEntity {
         this.cgstLedgerId = cgstLedgerId;
     }
 
-    public BigDecimal getSgstPercentage() {
-        return sgstPercentage;
-    }
-
-    public void setSgstPercentage(BigDecimal sgstPercentage) {
-        this.sgstPercentage = sgstPercentage;
-    }
-
     public Long getSgstLedgerId() {
         return sgstLedgerId;
     }
 
     public void setSgstLedgerId(Long sgstLedgerId) {
         this.sgstLedgerId = sgstLedgerId;
-    }
-
-    public BigDecimal getIgstPercentage() {
-        return igstPercentage;
-    }
-
-    public void setIgstPercentage(BigDecimal igstPercentage) {
-        this.igstPercentage = igstPercentage;
     }
 
     public Long getIgstLedgerId() {
@@ -135,38 +103,6 @@ public class SaleLedgerSetting extends ShopAwareEntity {
 
     public void setCessLedgerId(Long cessLedgerId) {
         this.cessLedgerId = cessLedgerId;
-    }
-
-    public Long getFreightPackingLedgerId() {
-        return freightPackingLedgerId;
-    }
-
-    public void setFreightPackingLedgerId(Long freightPackingLedgerId) {
-        this.freightPackingLedgerId = freightPackingLedgerId;
-    }
-
-    public Long getRoundOffLedgerId() {
-        return roundOffLedgerId;
-    }
-
-    public void setRoundOffLedgerId(Long roundOffLedgerId) {
-        this.roundOffLedgerId = roundOffLedgerId;
-    }
-
-    public BigDecimal getTcsPercentage() {
-        return tcsPercentage;
-    }
-
-    public void setTcsPercentage(BigDecimal tcsPercentage) {
-        this.tcsPercentage = tcsPercentage;
-    }
-
-    public Long getTcsLedgerId() {
-        return tcsLedgerId;
-    }
-
-    public void setTcsLedgerId(Long tcsLedgerId) {
-        this.tcsLedgerId = tcsLedgerId;
     }
 
     public Boolean getDeleted() {

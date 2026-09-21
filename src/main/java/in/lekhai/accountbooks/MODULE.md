@@ -27,7 +27,6 @@ To add a new report the firm's accountant would expect:
 
 1. Add the endpoint in `LedgerReportController` and expose it via `lekhaiapispec`.
 2. Implement the query in `LedgerReportService` **reusing** the existing projections/repos from `core/account_master/` and `voucher/` — keep this module free of its own data access.
-3. Keep report queries time-bounded (financial-year aware) and verify any changed WHERE/ORDER is still covered by the report indexes (see Flyway `V17__add_ledger_report_indexes.sql`).
 
 ## Deep Dive
 

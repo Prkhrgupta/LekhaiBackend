@@ -85,9 +85,8 @@ public class CommodityService {
                         .id(commodity.getItemId())
                         .name(commodity.getItemName())
                         .hsnSacCode(commodity.getHsnSacCode())
-                        .unitOfMeasurement(commodity.getUom())
-                        .gstRateSale(toDouble(commodity.getGstRateSale()))
-                        .gstRatePurchase(toDouble(commodity.getGstRatePurchase())))
+                        .unitOfMeasurement(commodity.getUnitOfMeasure())
+                        .gstRate(toDouble(commodity.getGstRate())))
                 .toList();
 
         return new CommoditySummaryResponse()
@@ -103,9 +102,8 @@ public class CommodityService {
         commodity.setItemName(request.getName());
         commodity.setHsnSacCode(request.getHsnSacCode());
         commodity.setDescription(request.getDescription());
-        commodity.setUom(request.getUnitOfMeasurement());
-        commodity.setGstRateSale(toBigDecimal(request.getGstRateSale()));
-        commodity.setGstRatePurchase(toBigDecimal(request.getGstRatePurchase()));
+        commodity.setUnitOfMeasure(request.getUnitOfMeasurement());
+        commodity.setGstRate(toBigDecimal(request.getGstRate()));
 
         return commodity;
     }
@@ -116,9 +114,8 @@ public class CommodityService {
                 .name(commodity.getItemName())
                 .hsnSacCode(commodity.getHsnSacCode())
                 .description(commodity.getDescription())
-                .gstRateSale(toDouble(commodity.getGstRateSale()))
-                .gstRatePurchase(toDouble(commodity.getGstRatePurchase()))
-                .unitOfMeasurement(commodity.getUom())
+                .gstRate(toDouble(commodity.getGstRate()))
+                .unitOfMeasurement(commodity.getUnitOfMeasure())
                 .isActive(!Boolean.TRUE.equals(commodity.getDeleted()))
                 .createdAt(toOffsetDateTime(commodity.getCreatedAt()));
     }

@@ -17,5 +17,6 @@
 ## Behavioral Notes
 
 - Feature/menu logic depends on `RolePermissions` + `Features`; changes ripple into frontend menus via `MenuController`. Keep feature keys stable once shipped.
+- `Features.display_order` is the per-sibling menu order (roots among roots, children among siblings). `FeatureService` auto-appends `MAX+1` under the parent on create; reordering is done with direct SQL for now (no reorder endpoint). `MenuBuilder` sorts by it, nulls last.
 - Shop creation is a multi-step write — use `@ShopContextTransactional` (see `shop/`) so RLS scoping is correct during seeding.
 - Caching is Caffeine-based (`common/config/CacheConfig`); invalidate feature/menu caches when registers change.

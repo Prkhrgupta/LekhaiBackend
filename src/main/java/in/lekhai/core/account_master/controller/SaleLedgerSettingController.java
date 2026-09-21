@@ -5,7 +5,6 @@ import in.lekhai.contract.api.SaleLedgerSettingApi;
 import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.SaleLedgerSettingRequest;
 import in.lekhai.contract.model.SaleLedgerSettingResponse;
-import in.lekhai.contract.model.SaleLedgerSettingSearchableField;
 import in.lekhai.contract.model.SaleLedgerSettingSummaryPageResponse;
 import in.lekhai.core.account_master.service.SaleLedgerSettingService;
 import in.lekhai.shop.context.model.ShopContext;
@@ -74,12 +73,10 @@ public class SaleLedgerSettingController implements SaleLedgerSettingApi {
 
     @Override
     public ResponseEntity<SaleLedgerSettingSummaryPageResponse> getSaleLedgerSettingSummaries(
-            @Valid SaleLedgerSettingSearchableField searchableField,
-            @Valid String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch sale ledger setting summary {}", ShopContext.getShopCode());
         SaleLedgerSettingSummaryPageResponse response = saleLedgerSettingService
-                .listSaleLedgerSettingSummaries(searchableField, searchText, pageable);
+                .listSaleLedgerSettingSummaries(pageable);
         log.info("Successfully fetched sale ledger setting summary {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }

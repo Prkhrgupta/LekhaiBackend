@@ -10,6 +10,7 @@ import in.lekhai.error.controller.feature.exception.ParentIdDoesNotExistExceptio
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,19 +48,29 @@ public class FeatureService {
                 .featureKey(request.featureKey())
                 .parentFeatureId(parentFeatureId)
                 .bitPosition(request.isScreen() ? featuresRepo.findNextAvailableBitPosition() : null)
+                .displayOrder(resolveNextDisplayOrder(parentFeatureId))
                 .icon(request.icon())
                 .title(request.title())
                 .route(route)
                 .build();
 
         Features savedFeatures = featuresRepo.save(featuresToBeCreated);
+        return toCreationResponse(savedFeatures);
+    }
+
+    private FeatureCreationResponse toCreationResponse(Features savedFeatures) {
         return new FeatureCreationResponse(
                 savedFeatures.getId(),
                 savedFeatures.getFeatureKey(),
                 savedFeatures.getBitPosition(),
                 savedFeatures.getTitle(),
                 savedFeatures.getIcon(),
-                savedFeatures.getRoute());
+                savedFeatures.getRoute(),
+                savedFeatures.getDisplayOrder());
+    }
+
+    private Integer resolveNextDisplayOrder(Long parentFeatureId) {
+        return featuresRepo.findMaxDisplayOrderByParentId(parentFeatureId) + 1;
     }
 
     private String generateRouteForScreenFeature(Long id, String featureKey) {
@@ -74,6 +85,9 @@ public class FeatureService {
         return featureMapService.getRootFeatures()
                 .stream()
                 .map(feature -> buildFeatureResponse(feature, featureMap))
+                .sorted(Comparator
+                        .comparing(FeatureResponse::parentId, Comparator.nullsFirst(Long::compareTo))
+                        .thenComparing(FeatureResponse::displayOrder, Comparator.nullsLast(Integer::compareTo)))
                 .collect(Collectors.toList());
     }
 
@@ -87,6 +101,8 @@ public class FeatureService {
                 feature.getBitPosition(),
                 feature.getIsActive(),
                 featureHierarchyBuilder.getParentTitles(hierarchy),
-                featureHierarchyBuilder.buildRoute(hierarchy));
+                featureHierarchyBuilder.buildRoute(hierarchy),
+                feature.getParentFeatureId(),
+                feature.getDisplayOrder());
     }
 }
