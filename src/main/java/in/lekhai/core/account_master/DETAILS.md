@@ -9,7 +9,7 @@ repository/<X>Repository   Spring Data JDBC (CrudRepository/ListCrudRepository)
 domain/<X>                   entity, extends ShopAwareEntity unless system-level
 ```
 
-Masters: **AccountGroup, Area, Broker, Ledger, State, Transport, PurchaseLedgerSetting, SaleLedgerSetting**. Plus `GstInDetails`, `Address` (owned by Ledger).
+Masters: **AccountGroup, Area, Broker, Ledger, State, Transport, PurchaseLedgerSetting, SaleLedgerSetting, GeneralLedgerSetting**. Plus `GstInDetails`, `Address` (owned by Ledger).
 
 ## Ledger specifics
 
@@ -26,6 +26,7 @@ Masters: **AccountGroup, Area, Broker, Ledger, State, Transport, PurchaseLedgerS
 ## Ledger Settings
 
 - `PurchaseLedgerSetting` / `SaleLedgerSetting` (+ controllers/services/repos) — per-shop defaults used when vouchers post. Keep in sync with voucher validation rules.
+- `GeneralLedgerSetting` (+ controller/service/repo) — singleton per shop (`uq_general_ledger_setting_shop`); GET current + PUT upsert, no dropdown/summary.
 
 ## Seeding
 
@@ -34,5 +35,5 @@ Masters: **AccountGroup, Area, Broker, Ledger, State, Transport, PurchaseLedgerS
 
 ## Behavioral Notes
 
-- Ledger side and voucher posting must agree on account group / ledger references; `LekhaiClientException`s for "not found" flows come from `error/controller/account|purchaseledgersetting|saleledgersetting/exception/`.
+- Ledger side and voucher posting must agree on account group / ledger references; `LekhaiClientException`s for "not found" flows come from `error/controller/account|purchaseledgersetting|saleledgersetting|generalledgersetting/exception/`.
 - All shop-scoped masters rely on RLS (`shop/`) — never query without `ShopContext` active.

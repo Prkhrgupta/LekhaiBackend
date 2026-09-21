@@ -12,5 +12,7 @@ public record FeatureResponse(
         Integer bitPosition,
         Boolean isActive,
         List<String> parentFeaturesOrder,
-        String route
+        String route,
+        Long parentId,
+        Integer displayOrder
 ) { }

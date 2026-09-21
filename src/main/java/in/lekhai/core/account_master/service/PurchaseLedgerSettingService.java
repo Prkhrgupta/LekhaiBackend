@@ -4,7 +4,6 @@ import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.PaginationMeta;
 import in.lekhai.contract.model.PurchaseLedgerSettingRequest;
 import in.lekhai.contract.model.PurchaseLedgerSettingResponse;
-import in.lekhai.contract.model.PurchaseLedgerSettingSearchableField;
 import in.lekhai.contract.model.PurchaseLedgerSettingSummaryPageResponse;
 import in.lekhai.contract.model.PurchaseType;
 import in.lekhai.core.account_master.domain.Ledger;
@@ -94,24 +93,11 @@ public class PurchaseLedgerSettingService {
 
     @ShopContextTransactional
     public PurchaseLedgerSettingSummaryPageResponse listPurchaseLedgerSettingSummaries(
-            PurchaseLedgerSettingSearchableField searchableField,
-            String searchText,
             Pageable pageable) {
-        Page<PurchaseLedgerSetting> settingsPage;
-        if (searchText != null && !searchText.trim().isEmpty()
-                && searchableField == PurchaseLedgerSettingSearchableField.PURCHASE_LEDGER_NAME) {
-            List<PurchaseLedgerSetting> settings = purchaseLedgerSettingRepository
-                    .findActiveByPurchaseLedgerNameContainingIgnoreCase(
-                            searchText.trim(), pageable.getPageSize(), pageable.getOffset());
-            long total = purchaseLedgerSettingRepository
-                    .countActiveByPurchaseLedgerNameContainingIgnoreCase(searchText.trim());
-            settingsPage = new PageImpl<>(settings, pageable, total);
-        } else {
-            List<PurchaseLedgerSetting> settings = purchaseLedgerSettingRepository
-                    .findAllActive(pageable.getPageSize(), pageable.getOffset());
-            long total = purchaseLedgerSettingRepository.countAllActive();
-            settingsPage = new PageImpl<>(settings, pageable, total);
-        }
+        List<PurchaseLedgerSetting> settings = purchaseLedgerSettingRepository
+                .findAllActive(pageable.getPageSize(), pageable.getOffset());
+        long total = purchaseLedgerSettingRepository.countAllActive();
+        Page<PurchaseLedgerSetting> settingsPage = new PageImpl<>(settings, pageable, total);
 
         Map<Long, String> ledgerNames = resolveLedgerNames(settingsPage.getContent());
         List<PurchaseLedgerSettingResponse> data = settingsPage.getContent().stream()
@@ -132,19 +118,11 @@ public class PurchaseLedgerSettingService {
         setting.setPurchaseType(request.getPurchaseType() == null ? null : request.getPurchaseType().getValue());
         setting.setGstRate(toBigDecimal(request.getGstRate()));
 
-        setting.setCgstPercentage(toBigDecimal(request.getCgstPercentage()));
         setting.setCgstLedgerId(request.getCgstLedgerId());
-        setting.setSgstPercentage(toBigDecimal(request.getSgstPercentage()));
         setting.setSgstLedgerId(request.getSgstLedgerId());
-        setting.setIgstPercentage(toBigDecimal(request.getIgstPercentage()));
         setting.setIgstLedgerId(request.getIgstLedgerId());
         setting.setCessPercentage(toBigDecimal(request.getCessPercentage()));
         setting.setCessLedgerId(request.getCessLedgerId());
-
-        setting.setFreightPackingLedgerId(request.getFreightPackingLedgerId());
-        setting.setRoundOffLedgerId(request.getRoundOffLedgerId());
-        setting.setTdsPercentage(toBigDecimal(request.getTdsPercentage()));
-        setting.setTdsLedgerId(request.getTdsLedgerId());
 
         return setting;
     }
@@ -157,30 +135,20 @@ public class PurchaseLedgerSettingService {
                 .purchaseType(setting.getPurchaseType() == null
                         ? null : PurchaseType.fromValue(setting.getPurchaseType()))
                 .gstRate(toDouble(setting.getGstRate()))
-                .cgstPercentage(toDouble(setting.getCgstPercentage()))
                 .cgstLedgerId(setting.getCgstLedgerId())
                 .cgstLedgerName(ledgerNames.get(setting.getCgstLedgerId()))
-                .sgstPercentage(toDouble(setting.getSgstPercentage()))
                 .sgstLedgerId(setting.getSgstLedgerId())
                 .sgstLedgerName(ledgerNames.get(setting.getSgstLedgerId()))
-                .igstPercentage(toDouble(setting.getIgstPercentage()))
                 .igstLedgerId(setting.getIgstLedgerId())
                 .igstLedgerName(ledgerNames.get(setting.getIgstLedgerId()))
                 .cessPercentage(toDouble(setting.getCessPercentage()))
                 .cessLedgerId(setting.getCessLedgerId())
-                .cessLedgerName(ledgerNames.get(setting.getCessLedgerId()))
-                .freightPackingLedgerId(setting.getFreightPackingLedgerId())
-                .freightPackingLedgerName(ledgerNames.get(setting.getFreightPackingLedgerId()))
-                .roundOffLedgerId(setting.getRoundOffLedgerId())
-                .roundOffLedgerName(ledgerNames.get(setting.getRoundOffLedgerId()))
-                .tdsPercentage(toDouble(setting.getTdsPercentage()))
-                .tdsLedgerId(setting.getTdsLedgerId())
-                .tdsLedgerName(ledgerNames.get(setting.getTdsLedgerId()));
+                .cessLedgerName(ledgerNames.get(setting.getCessLedgerId()));
     }
 
     /**
      * One lookup for every ledger referenced anywhere in {@code settings}, so a
-     * page of rows costs a single query instead of eight per row.
+     * page of rows costs a single query instead of five per row.
      */
     private Map<Long, String> resolveLedgerNames(Collection<PurchaseLedgerSetting> settings) {
         Set<Long> ledgerIds = settings.stream()
@@ -189,10 +157,7 @@ public class PurchaseLedgerSettingService {
                         setting.getCgstLedgerId(),
                         setting.getSgstLedgerId(),
                         setting.getIgstLedgerId(),
-                        setting.getCessLedgerId(),
-                        setting.getFreightPackingLedgerId(),
-                        setting.getRoundOffLedgerId(),
-                        setting.getTdsLedgerId()))
+                        setting.getCessLedgerId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 

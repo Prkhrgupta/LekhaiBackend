@@ -26,7 +26,7 @@ public class Features {
 
     Integer bitPosition;
 
-    Long displayOrder;
+    Integer displayOrder;
 
     Boolean isActive = Boolean.TRUE;
 
@@ -42,7 +42,7 @@ public class Features {
     }
 
     public Features(Long id, String featureKey, Long parentFeatureId, String title, String icon, String route,
-            Integer bitPosition, Long displayOrder, Boolean isActive, Boolean isDeleted, LocalDateTime createdAt,
+            Integer bitPosition, Integer displayOrder, Boolean isActive, Boolean isDeleted, LocalDateTime createdAt,
             LocalDateTime updatedAt) {
         this.id = id;
         this.featureKey = featureKey;
@@ -90,7 +90,7 @@ public class Features {
         return this.bitPosition;
     }
 
-    public Long getDisplayOrder() {
+    public Integer getDisplayOrder() {
         return this.displayOrder;
     }
 
@@ -138,7 +138,7 @@ public class Features {
         this.bitPosition = bitPosition;
     }
 
-    public void setDisplayOrder(Long displayOrder) {
+    public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
     }
 
@@ -174,7 +174,7 @@ public class Features {
         private String icon;
         private String route;
         private Integer bitPosition;
-        private Long displayOrder;
+        private Integer displayOrder;
         private Boolean isActive = Boolean.TRUE;
         private Boolean isDeleted = Boolean.FALSE;
         private LocalDateTime createdAt;
@@ -218,7 +218,7 @@ public class Features {
             return this;
         }
 
-        public FeaturesBuilder displayOrder(Long displayOrder) {
+        public FeaturesBuilder displayOrder(Integer displayOrder) {
             this.displayOrder = displayOrder;
             return this;
         }

@@ -8,8 +8,7 @@ import java.math.BigDecimal;
 
 /**
  * Purchase-side counterpart of {@link SaleLedgerSetting}: duties &amp; taxes
- * ledger-account configuration for a single purchase ledger. Carries TDS where
- * the sale side carries TCS.
+ * ledger-account configuration for a single purchase ledger.
  */
 @Table("purchase_ledger_setting_master")
 public class PurchaseLedgerSetting extends ShopAwareEntity {
@@ -21,19 +20,11 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
     private String purchaseType;
     private BigDecimal gstRate;
 
-    private BigDecimal cgstPercentage;
     private Long cgstLedgerId;
-    private BigDecimal sgstPercentage;
     private Long sgstLedgerId;
-    private BigDecimal igstPercentage;
     private Long igstLedgerId;
     private BigDecimal cessPercentage;
     private Long cessLedgerId;
-
-    private Long freightPackingLedgerId;
-    private Long roundOffLedgerId;
-    private BigDecimal tdsPercentage;
-    private Long tdsLedgerId;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -72,14 +63,6 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
         this.gstRate = gstRate;
     }
 
-    public BigDecimal getCgstPercentage() {
-        return cgstPercentage;
-    }
-
-    public void setCgstPercentage(BigDecimal cgstPercentage) {
-        this.cgstPercentage = cgstPercentage;
-    }
-
     public Long getCgstLedgerId() {
         return cgstLedgerId;
     }
@@ -88,28 +71,12 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
         this.cgstLedgerId = cgstLedgerId;
     }
 
-    public BigDecimal getSgstPercentage() {
-        return sgstPercentage;
-    }
-
-    public void setSgstPercentage(BigDecimal sgstPercentage) {
-        this.sgstPercentage = sgstPercentage;
-    }
-
     public Long getSgstLedgerId() {
         return sgstLedgerId;
     }
 
     public void setSgstLedgerId(Long sgstLedgerId) {
         this.sgstLedgerId = sgstLedgerId;
-    }
-
-    public BigDecimal getIgstPercentage() {
-        return igstPercentage;
-    }
-
-    public void setIgstPercentage(BigDecimal igstPercentage) {
-        this.igstPercentage = igstPercentage;
     }
 
     public Long getIgstLedgerId() {
@@ -134,38 +101,6 @@ public class PurchaseLedgerSetting extends ShopAwareEntity {
 
     public void setCessLedgerId(Long cessLedgerId) {
         this.cessLedgerId = cessLedgerId;
-    }
-
-    public Long getFreightPackingLedgerId() {
-        return freightPackingLedgerId;
-    }
-
-    public void setFreightPackingLedgerId(Long freightPackingLedgerId) {
-        this.freightPackingLedgerId = freightPackingLedgerId;
-    }
-
-    public Long getRoundOffLedgerId() {
-        return roundOffLedgerId;
-    }
-
-    public void setRoundOffLedgerId(Long roundOffLedgerId) {
-        this.roundOffLedgerId = roundOffLedgerId;
-    }
-
-    public BigDecimal getTdsPercentage() {
-        return tdsPercentage;
-    }
-
-    public void setTdsPercentage(BigDecimal tdsPercentage) {
-        this.tdsPercentage = tdsPercentage;
-    }
-
-    public Long getTdsLedgerId() {
-        return tdsLedgerId;
-    }
-
-    public void setTdsLedgerId(Long tdsLedgerId) {
-        this.tdsLedgerId = tdsLedgerId;
     }
 
     public Boolean getDeleted() {

@@ -54,6 +54,9 @@ CREATE INDEX idx_voucher_entry_voucher ON voucher_entry(voucher_id);
 
 CREATE INDEX idx_voucher_entry_account ON voucher_entry(shop_code, ledger_id);
 
+CREATE INDEX idx_voucher_entry_ledger_line
+    ON voucher_entry (shop_code, ledger_id, voucher_id, line_number, id);
+
 CALL create_shop_isolation_policy('voucher_entry', 'shop_isolation_voucher_entry');
 
 

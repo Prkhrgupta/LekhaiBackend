@@ -201,7 +201,7 @@ public class StockItemService {
                 .commodityId(stockItem.getCommodityId())
                 .commodityName(commodity == null ? null : commodity.getItemName())
                 .hsnCode(commodity == null ? null : commodity.getHsnSacCode())
-                .gstPercentage(commodity == null ? null : toDouble(commodity.getGstRateSale()))
+                .gstPercentage(commodity == null ? null : toDouble(commodity.getGstRate()))
                 .ratePer(stockItem.getRatePer() == null
                         ? null : RatePerUnit.fromValue(stockItem.getRatePer()))
                 .openingPcs(toDouble(stockItem.getOpeningPcs()))

@@ -5,7 +5,6 @@ import in.lekhai.contract.api.PurchaseLedgerSettingApi;
 import in.lekhai.contract.model.DropdownItem;
 import in.lekhai.contract.model.PurchaseLedgerSettingRequest;
 import in.lekhai.contract.model.PurchaseLedgerSettingResponse;
-import in.lekhai.contract.model.PurchaseLedgerSettingSearchableField;
 import in.lekhai.contract.model.PurchaseLedgerSettingSummaryPageResponse;
 import in.lekhai.core.account_master.service.PurchaseLedgerSettingService;
 import in.lekhai.shop.context.model.ShopContext;
@@ -80,12 +79,10 @@ public class PurchaseLedgerSettingController implements PurchaseLedgerSettingApi
 
     @Override
     public ResponseEntity<PurchaseLedgerSettingSummaryPageResponse> getPurchaseLedgerSettingSummaries(
-            @Valid PurchaseLedgerSettingSearchableField searchableField,
-            @Valid String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch purchase ledger setting summary {}", ShopContext.getShopCode());
         PurchaseLedgerSettingSummaryPageResponse response = purchaseLedgerSettingService
-                .listPurchaseLedgerSettingSummaries(searchableField, searchText, pageable);
+                .listPurchaseLedgerSettingSummaries(pageable);
         log.info("Successfully fetched purchase ledger setting summary {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
     }

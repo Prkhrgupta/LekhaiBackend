@@ -78,7 +78,7 @@ public class MenuBuilder {
     private List<Features> getRootFeatures(Map<Long, Features> allFeatures) {
         return allFeatures.values().stream()
                 .filter(feature -> feature.getParentFeatureId() == null)
-                .sorted(Comparator.comparing(f -> f.getDisplayOrder() != null ? f.getDisplayOrder() : Long.MAX_VALUE))
+                .sorted(Comparator.comparing(f -> f.getDisplayOrder() != null ? f.getDisplayOrder() : Integer.MAX_VALUE))
                 .toList();
     }
 
@@ -89,7 +89,7 @@ public class MenuBuilder {
         List<Features> childFeatures = childrenByParentId
                 .getOrDefault(feature.getId(), List.of())
                 .stream()
-                .sorted(Comparator.comparing(f -> f.getDisplayOrder() != null ? f.getDisplayOrder() : Long.MAX_VALUE))
+                .sorted(Comparator.comparing(f -> f.getDisplayOrder() != null ? f.getDisplayOrder() : Integer.MAX_VALUE))
                 .toList();
 
         if (childFeatures.isEmpty()) {
