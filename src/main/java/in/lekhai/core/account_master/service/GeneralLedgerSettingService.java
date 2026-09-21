@@ -59,6 +59,8 @@ public class GeneralLedgerSettingService {
         setting.setTdsLedgerId(request.getTdsLedgerId());
         setting.setTcsPercentage(toBigDecimal(request.getTcsPercentage()));
         setting.setTcsLedgerId(request.getTcsLedgerId());
+        setting.setOutputCessLedgerId(request.getOutputCessLedgerId());
+        setting.setInputCessLedgerId(request.getInputCessLedgerId());
 
         return setting;
     }
@@ -75,7 +77,11 @@ public class GeneralLedgerSettingService {
                 .tdsLedgerName(ledgerNames.get(setting.getTdsLedgerId()))
                 .tcsPercentage(toDouble(setting.getTcsPercentage()))
                 .tcsLedgerId(setting.getTcsLedgerId())
-                .tcsLedgerName(ledgerNames.get(setting.getTcsLedgerId()));
+                .tcsLedgerName(ledgerNames.get(setting.getTcsLedgerId()))
+                .outputCessLedgerId(setting.getOutputCessLedgerId())
+                .outputCessLedgerName(ledgerNames.get(setting.getOutputCessLedgerId()))
+                .inputCessLedgerId(setting.getInputCessLedgerId())
+                .inputCessLedgerName(ledgerNames.get(setting.getInputCessLedgerId()));
     }
 
     private Map<Long, String> resolveLedgerNames(Collection<GeneralLedgerSetting> settings) {
@@ -84,7 +90,9 @@ public class GeneralLedgerSettingService {
                         setting.getFreightPackingLedgerId(),
                         setting.getRoundOffLedgerId(),
                         setting.getTdsLedgerId(),
-                        setting.getTcsLedgerId()))
+                        setting.getTcsLedgerId(),
+                        setting.getOutputCessLedgerId(),
+                        setting.getInputCessLedgerId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 

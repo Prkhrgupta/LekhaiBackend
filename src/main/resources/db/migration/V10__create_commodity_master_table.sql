@@ -7,6 +7,9 @@ CREATE TABLE commodity_master (
 
     -- Single GST rate dictating both purchase and sale tax
     gst_rate NUMERIC(5, 2),
+
+    -- Cess rate for the commodity; ledgers live in general_ledger_setting_master
+    cess_percentage NUMERIC(6, 3) DEFAULT 0.000,
     
     -- Audit & Shop
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

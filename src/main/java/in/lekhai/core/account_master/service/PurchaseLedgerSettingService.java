@@ -121,8 +121,6 @@ public class PurchaseLedgerSettingService {
         setting.setCgstLedgerId(request.getCgstLedgerId());
         setting.setSgstLedgerId(request.getSgstLedgerId());
         setting.setIgstLedgerId(request.getIgstLedgerId());
-        setting.setCessPercentage(toBigDecimal(request.getCessPercentage()));
-        setting.setCessLedgerId(request.getCessLedgerId());
 
         return setting;
     }
@@ -140,15 +138,12 @@ public class PurchaseLedgerSettingService {
                 .sgstLedgerId(setting.getSgstLedgerId())
                 .sgstLedgerName(ledgerNames.get(setting.getSgstLedgerId()))
                 .igstLedgerId(setting.getIgstLedgerId())
-                .igstLedgerName(ledgerNames.get(setting.getIgstLedgerId()))
-                .cessPercentage(toDouble(setting.getCessPercentage()))
-                .cessLedgerId(setting.getCessLedgerId())
-                .cessLedgerName(ledgerNames.get(setting.getCessLedgerId()));
+                .igstLedgerName(ledgerNames.get(setting.getIgstLedgerId()));
     }
 
     /**
      * One lookup for every ledger referenced anywhere in {@code settings}, so a
-     * page of rows costs a single query instead of five per row.
+     * page of rows costs a single query instead of four per row.
      */
     private Map<Long, String> resolveLedgerNames(Collection<PurchaseLedgerSetting> settings) {
         Set<Long> ledgerIds = settings.stream()
@@ -156,8 +151,7 @@ public class PurchaseLedgerSettingService {
                         setting.getPurchaseLedgerId(),
                         setting.getCgstLedgerId(),
                         setting.getSgstLedgerId(),
-                        setting.getIgstLedgerId(),
-                        setting.getCessLedgerId()))
+                        setting.getIgstLedgerId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 

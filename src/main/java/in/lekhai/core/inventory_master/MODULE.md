@@ -7,7 +7,7 @@ The **stock master** — the goods the firm trades. In Tally terms, this is the 
 A trading firm's books aren't complete from ledgers alone — it must also know what it trades: the stock items, how they're grouped, and where they come from. This module captures that catalogue per shop:
 
 - **Stock items** — each buyable/sellable unit of goods, with purchase price, sale price, rate per (piece/meter/…), and its **opening stock** (pieces, meters, rate, value — the inventory counterpart of a ledger's opening balance). A stock item references a **commodity**, an **item category**, and a **factory**.
-- **Commodity** — the broad class of product being traded (e.g. yarn, fabric), used to group items.
+- **Commodity** — the broad class of product being traded (e.g. yarn, fabric), used to group items. Carries the GST rate and the cess percentage (cess ledgers live in the general ledger setting).
 - **Item category** — the finer classification an item falls under.
 - **Item factory** — the manufacturing unit/plain of origin the item comes from (with a reference percentage).
 

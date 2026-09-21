@@ -17,6 +17,7 @@ public class Commodity extends ShopAwareEntity {
     private String unitOfMeasure;
 
     private BigDecimal gstRate;
+    private BigDecimal cessPercentage;
 
     private Boolean isDeleted = Boolean.FALSE;
 
@@ -69,6 +70,14 @@ public class Commodity extends ShopAwareEntity {
 
     public void setGstRate(BigDecimal gstRate) {
         this.gstRate = gstRate;
+    }
+
+    public BigDecimal getCessPercentage() {
+        return cessPercentage;
+    }
+
+    public void setCessPercentage(BigDecimal cessPercentage) {
+        this.cessPercentage = cessPercentage;
     }
 
     public Boolean getDeleted() {

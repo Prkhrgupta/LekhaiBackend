@@ -86,7 +86,8 @@ public class CommodityService {
                         .name(commodity.getItemName())
                         .hsnSacCode(commodity.getHsnSacCode())
                         .unitOfMeasurement(commodity.getUnitOfMeasure())
-                        .gstRate(toDouble(commodity.getGstRate())))
+                        .gstRate(toDouble(commodity.getGstRate()))
+                        .cessPercentage(toDouble(commodity.getCessPercentage())))
                 .toList();
 
         return new CommoditySummaryResponse()
@@ -104,6 +105,7 @@ public class CommodityService {
         commodity.setDescription(request.getDescription());
         commodity.setUnitOfMeasure(request.getUnitOfMeasurement());
         commodity.setGstRate(toBigDecimal(request.getGstRate()));
+        commodity.setCessPercentage(toBigDecimal(request.getCessPercentage()));
 
         return commodity;
     }
@@ -115,6 +117,7 @@ public class CommodityService {
                 .hsnSacCode(commodity.getHsnSacCode())
                 .description(commodity.getDescription())
                 .gstRate(toDouble(commodity.getGstRate()))
+                .cessPercentage(toDouble(commodity.getCessPercentage()))
                 .unitOfMeasurement(commodity.getUnitOfMeasure())
                 .isActive(!Boolean.TRUE.equals(commodity.getDeleted()))
                 .createdAt(toOffsetDateTime(commodity.getCreatedAt()));
