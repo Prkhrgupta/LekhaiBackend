@@ -89,3 +89,17 @@ Run from the repo root:
 3. **Testing.** Tests live in `src/test/java/in/lekhai/`. Run via `./gradlew test`. TestContainers required for DB-dependent tests.
 4. **Doc maintenance.** After changing a module's public API (adding/removing public classes or changing service contracts), update that module's `MODULE.md` and `DETAILS.md` as part of the same change.
 5. **Glossary lives in one place.** `CONTEXT.md` is the sole glossary. Never define or redefine domain terms in `MODULE.md` / `DETAILS.md` — reference the `CONTEXT.md` term instead (e.g. write "posts a **Voucher**", don't explain what a voucher is). If a term is missing, ambiguous, or wrong, update `CONTEXT.md` itself (per the `domain-modeling` skill), never work around it with a local definition.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical roles, label string equals role name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
