@@ -14,7 +14,6 @@ public class Commodity extends ShopAwareEntity {
     private String itemName;
     private String hsnSacCode;
     private String description;
-    private String unitOfMeasure;
 
     private BigDecimal gstRate;
     private BigDecimal cessPercentage;
@@ -54,14 +53,6 @@ public class Commodity extends ShopAwareEntity {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getUnitOfMeasure() {
-        return unitOfMeasure;
-    }
-
-    public void setUnitOfMeasure(String unitOfMeasure) {
-        this.unitOfMeasure = unitOfMeasure;
     }
 
     public BigDecimal getGstRate() {
