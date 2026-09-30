@@ -4,7 +4,6 @@ import in.lekhai.contract.api.GspCredentialsApi;
 import in.lekhai.contract.model.GspCredentialsRequest;
 import in.lekhai.contract.model.GspCredentialsResponse;
 import in.lekhai.gsp.ewb.service.GspCredentialService;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +16,7 @@ public class GspController implements GspCredentialsApi {
     }
 
     @Override
-    public ResponseEntity<GspCredentialsResponse> upsertGspCredentials(@Valid GspCredentialsRequest gspCredentialsRequest) {
+    public ResponseEntity<GspCredentialsResponse> upsertGspCredentials(GspCredentialsRequest gspCredentialsRequest) {
         GspCredentialsResponse response = gspCredentialService.upsertGspEwbCredentials(gspCredentialsRequest);
         return ResponseEntity.ok(response);
     }

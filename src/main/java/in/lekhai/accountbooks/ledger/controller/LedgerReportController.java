@@ -4,8 +4,6 @@ import in.lekhai.accountbooks.ledger.service.LedgerReportService;
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.AccountLedgerApi;
 import in.lekhai.contract.model.AccountLedgerPageResponse;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,9 +24,9 @@ public class LedgerReportController implements AccountLedgerApi {
 
     @Override
     public ResponseEntity<AccountLedgerPageResponse> getAccountLedgerEntries(
-            @NotNull Long ledgerId,
-            @Valid LocalDate fromDate,
-            @Valid LocalDate toDate,
+            Long ledgerId,
+            LocalDate fromDate,
+            LocalDate toDate,
             Pageable pageable
     ) {
         AccountLedgerPageResponse accountLedgerEntries =

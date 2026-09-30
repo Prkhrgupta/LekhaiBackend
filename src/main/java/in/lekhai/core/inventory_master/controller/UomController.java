@@ -9,7 +9,6 @@ import in.lekhai.contract.model.UomSearchableField;
 import in.lekhai.contract.model.UomSummaryPageResponse;
 import in.lekhai.core.inventory_master.service.UomService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class UomController implements UomApi {
     }
 
     @Override
-    public ResponseEntity<UomResponse> createUom(@Valid UomRequest request) {
+    public ResponseEntity<UomResponse> createUom(UomRequest request) {
         log.info("Got a request to create UOM {} :: {}", ShopContext.getShopCode(), request.toString());
         UomResponse response = uomService.createUom(request);
         log.info("Successfully created UOM {} :: id {}", ShopContext.getShopCode(), response.getId());
@@ -63,7 +62,7 @@ public class UomController implements UomApi {
     }
 
     @Override
-    public ResponseEntity<UomResponse> updateUom(Long id, @Valid UomRequest request) {
+    public ResponseEntity<UomResponse> updateUom(Long id, UomRequest request) {
         log.info("Got a request to update UOM {} :: {}", ShopContext.getShopCode(), request.toString());
         UomResponse response = uomService.updateUom(id, request);
         log.info("Successfully updated UOM {} :: id {}", ShopContext.getShopCode(), response.getId());
@@ -72,8 +71,8 @@ public class UomController implements UomApi {
 
     @Override
     public ResponseEntity<UomSummaryPageResponse> getUomSummaries(
-            @Valid UomSearchableField searchableField,
-            @Valid String searchText,
+            UomSearchableField searchableField,
+            String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch UOM summary {}", ShopContext.getShopCode());
         UomSummaryPageResponse response = uomService.listUomSummaries(searchableField, searchText, pageable);

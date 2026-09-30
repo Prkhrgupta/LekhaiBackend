@@ -8,7 +8,6 @@ import in.lekhai.contract.model.PurchaseLedgerSettingResponse;
 import in.lekhai.contract.model.PurchaseLedgerSettingSummaryPageResponse;
 import in.lekhai.core.account_master.service.PurchaseLedgerSettingService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class PurchaseLedgerSettingController implements PurchaseLedgerSettingApi
 
     @Override
     public ResponseEntity<PurchaseLedgerSettingResponse> createPurchaseLedgerSetting(
-            @Valid PurchaseLedgerSettingRequest request) {
+            PurchaseLedgerSettingRequest request) {
         log.info("Got a request to create purchase ledger setting {} :: {}",
                 ShopContext.getShopCode(), request.toString());
         PurchaseLedgerSettingResponse response = purchaseLedgerSettingService.createPurchaseLedgerSetting(request);

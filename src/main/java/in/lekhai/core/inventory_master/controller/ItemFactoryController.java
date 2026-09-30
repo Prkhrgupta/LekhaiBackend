@@ -9,7 +9,6 @@ import in.lekhai.contract.model.ItemFactorySearchableField;
 import in.lekhai.contract.model.ItemFactorySummaryPageResponse;
 import in.lekhai.core.inventory_master.service.ItemFactoryService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class ItemFactoryController implements ItemFactoryApi {
     }
 
     @Override
-    public ResponseEntity<ItemFactoryResponse> createItemFactory(@Valid ItemFactoryRequest request) {
+    public ResponseEntity<ItemFactoryResponse> createItemFactory(ItemFactoryRequest request) {
         log.info("Got a request to create item factory {} :: {}", ShopContext.getShopCode(), request.toString());
         ItemFactoryResponse response = itemFactoryService.createItemFactory(request);
         log.info("Successfully created item factory {} :: id {}", ShopContext.getShopCode(), response.getId());
@@ -72,8 +71,8 @@ public class ItemFactoryController implements ItemFactoryApi {
 
     @Override
     public ResponseEntity<ItemFactorySummaryPageResponse> getItemFactorySummaries(
-            @Valid ItemFactorySearchableField searchableField,
-            @Valid String searchText,
+            ItemFactorySearchableField searchableField,
+            String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch item factory summary {}", ShopContext.getShopCode());
         ItemFactorySummaryPageResponse response = itemFactoryService.listItemFactorySummaries(

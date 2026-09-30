@@ -8,7 +8,6 @@ import in.lekhai.contract.model.CommoditySearchableField;
 import in.lekhai.contract.model.CommoditySummaryResponse;
 import in.lekhai.core.inventory_master.service.CommodityService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -71,8 +70,8 @@ public class CommodityController implements CommodityApi {
 
     @Override
     public ResponseEntity<CommoditySummaryResponse> getCommoditySummaries(
-            @Valid CommoditySearchableField commoditySearchableField,
-            @Valid String searchQuery,
+            CommoditySearchableField commoditySearchableField,
+            String searchQuery,
             Pageable pageable
     ) {
         log.info("Got a request to fetch commodity summary {}", ShopContext.getShopCode());

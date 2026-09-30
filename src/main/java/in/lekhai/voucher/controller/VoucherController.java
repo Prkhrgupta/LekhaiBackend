@@ -8,7 +8,6 @@ import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.contract.model.ReceiptVoucherRequest;
 import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.voucher.service.VoucherIntakeService;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +25,7 @@ public class VoucherController implements VoucherApi {
 
     @Override
     public ResponseEntity<VoucherResponse> createPaymentVoucher(
-            @Valid PaymentVoucherRequest paymentVoucherRequest
+            PaymentVoucherRequest paymentVoucherRequest
     ) {
         VoucherResponse response = voucherIntakeService.processPayment(paymentVoucherRequest);
         return ResponseEntity.ok(response);
@@ -34,7 +33,7 @@ public class VoucherController implements VoucherApi {
 
     @Override
     public ResponseEntity<VoucherResponse> createReceiptVoucher(
-            @Valid ReceiptVoucherRequest receiptVoucherRequest
+            ReceiptVoucherRequest receiptVoucherRequest
     ) {
         VoucherResponse response = voucherIntakeService.processReceipt(receiptVoucherRequest);
         return ResponseEntity.ok(response);
@@ -42,7 +41,7 @@ public class VoucherController implements VoucherApi {
 
     @Override
     public ResponseEntity<VoucherResponse> createContraVoucher(
-            @Valid ContraVoucherRequest contraVoucherRequest
+            ContraVoucherRequest contraVoucherRequest
     ) {
         VoucherResponse response = voucherIntakeService.processContra(contraVoucherRequest);
         return ResponseEntity.ok(response);
@@ -50,7 +49,7 @@ public class VoucherController implements VoucherApi {
 
     @Override
     public ResponseEntity<VoucherResponse> createJournalVoucher(
-            @Valid JournalVoucherRequest journalVoucherRequest
+            JournalVoucherRequest journalVoucherRequest
     ) {
         VoucherResponse response = voucherIntakeService.processJournal(journalVoucherRequest);
         return ResponseEntity.ok(response);
