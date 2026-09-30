@@ -5,7 +5,6 @@ import in.lekhai.contract.api.AccountGroupApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.AccountGroupService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +28,7 @@ public class AccountGroupController implements AccountGroupApi {
     }
 
     @Override
-    public ResponseEntity<AccountGroupResponse> createAccountGroup(@Valid AccountGroupRequest request) {
+    public ResponseEntity<AccountGroupResponse> createAccountGroup(AccountGroupRequest request) {
         log.info("Got a request to create account group {} :: {}", ShopContext.getShopCode(), request.toString());
         AccountGroupResponse response = accountGroupService.createAccountGroup(request);
         log.info("Successfully created account group {} :: {}", ShopContext.getShopCode(), response.toString());
@@ -45,8 +44,8 @@ public class AccountGroupController implements AccountGroupApi {
     }
 
     @Override
-    public ResponseEntity<AccountGroupSummaryPageResponse> getAccountGroupSummaries(@Valid AccountGroupSearchableField accountGroupSearchableField,
-                                                                                    @Valid String query,
+    public ResponseEntity<AccountGroupSummaryPageResponse> getAccountGroupSummaries(AccountGroupSearchableField accountGroupSearchableField,
+                                                                                    String query,
                                                                                     Pageable pageable) {
         log.info("Got a request to fetch account group summary {}", ShopContext.getShopCode());
         AccountGroupSummaryPageResponse response = accountGroupService.listAccountGroupSummaries(accountGroupSearchableField, query, pageable);

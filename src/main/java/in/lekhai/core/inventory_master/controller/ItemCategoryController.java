@@ -9,7 +9,6 @@ import in.lekhai.contract.model.ItemCategorySearchableField;
 import in.lekhai.contract.model.ItemCategorySummaryPageResponse;
 import in.lekhai.core.inventory_master.service.ItemCategoryService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class ItemCategoryController implements ItemCategoryApi {
     }
 
     @Override
-    public ResponseEntity<ItemCategoryResponse> createItemCategory(@Valid ItemCategoryRequest request) {
+    public ResponseEntity<ItemCategoryResponse> createItemCategory(ItemCategoryRequest request) {
         log.info("Got a request to create item category {} :: {}", ShopContext.getShopCode(), request.toString());
         ItemCategoryResponse response = itemCategoryService.createItemCategory(request);
         log.info("Successfully created item category {} :: id {}", ShopContext.getShopCode(), response.getId());
@@ -72,8 +71,8 @@ public class ItemCategoryController implements ItemCategoryApi {
 
     @Override
     public ResponseEntity<ItemCategorySummaryPageResponse> getItemCategorySummaries(
-            @Valid ItemCategorySearchableField searchableField,
-            @Valid String searchText,
+            ItemCategorySearchableField searchableField,
+            String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch item category summary {}", ShopContext.getShopCode());
         ItemCategorySummaryPageResponse response = itemCategoryService.listItemCategorySummaries(

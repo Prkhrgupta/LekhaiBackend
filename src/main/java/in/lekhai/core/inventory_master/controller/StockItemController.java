@@ -9,7 +9,6 @@ import in.lekhai.contract.model.StockItemSearchableField;
 import in.lekhai.contract.model.StockItemSummaryPageResponse;
 import in.lekhai.core.inventory_master.service.StockItemService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class StockItemController implements StockItemApi {
     }
 
     @Override
-    public ResponseEntity<StockItemResponse> createStockItem(@Valid StockItemRequest request) {
+    public ResponseEntity<StockItemResponse> createStockItem(StockItemRequest request) {
         log.info("Got a request to create stock item {} :: {}", ShopContext.getShopCode(), request.toString());
         StockItemResponse response = stockItemService.createStockItem(request);
         log.info("Successfully created stock item {} :: id {}", ShopContext.getShopCode(), response.getId());
@@ -72,8 +71,8 @@ public class StockItemController implements StockItemApi {
 
     @Override
     public ResponseEntity<StockItemSummaryPageResponse> getStockItemSummaries(
-            @Valid StockItemSearchableField searchableField,
-            @Valid String searchText,
+            StockItemSearchableField searchableField,
+            String searchText,
             Pageable pageable) {
         log.info("Got a request to fetch stock item summary {}", ShopContext.getShopCode());
         StockItemSummaryPageResponse response = stockItemService.listStockItemSummaries(

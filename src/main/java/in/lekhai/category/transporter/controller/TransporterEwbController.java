@@ -7,8 +7,6 @@ import in.lekhai.contract.api.TransporterEwbApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -40,9 +38,9 @@ public class TransporterEwbController implements TransporterEwbApi{
 
     @Override
     public ResponseEntity<Resource> downloadEwbExpiring(
-            @NotNull @Valid Day day,
-            @Valid Boolean includeDelivery,
-            @Valid Format format
+            Day day,
+            Boolean includeDelivery,
+            Format format
     ) {
         log.error("Got request to download expiring Ewb for : {} for shop=[{}]", day, ShopContext.getShopCode());
         if (Objects.requireNonNull(format) == Format.EXCEL) {
@@ -55,9 +53,9 @@ public class TransporterEwbController implements TransporterEwbApi{
 
     @Override
     public ResponseEntity<Resource> downloadTransporterEwbs(
-            @NotNull @Valid LocalDate fromDate,
-            @NotNull @Valid LocalDate toDate,
-            @Valid Format format
+            LocalDate fromDate,
+            LocalDate toDate,
+            Format format
     ) {
         log.info("Got a request to download EWBS for shop {} :: date : {} to {}",
                 ShopContext.getShopCode(), fromDate, toDate);
@@ -76,8 +74,8 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<EwbExtendResponse> extendEwbValidity(@NotNull String ewbNo,
-                                                               @Valid EwbExtendRequest ewbExtendRequest) {
+    public ResponseEntity<EwbExtendResponse> extendEwbValidity(String ewbNo,
+                                                               EwbExtendRequest ewbExtendRequest) {
         log.info("Got a request to extend EWB validity for shop {} : {} :: {}",
                 ShopContext.getShopCode(), ewbNo, ewbExtendRequest.getExtensionReason());
         EwbExtendResponse ewbResponse = transporterService.extendEwbValidity(ewbNo, ewbExtendRequest);
@@ -86,7 +84,7 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<EwbDetails> getEwbDetails(@NotNull String ewbNo) {
+    public ResponseEntity<EwbDetails> getEwbDetails(String ewbNo) {
         log.info("Got a request to fetch EWB details for shop {} : {}", ShopContext.getShopCode(), ewbNo);
         EwbDetails response = transporterService.ewbDetailsByNo(ewbNo);
         log.info("Successfully fetched EWB details for shop {} : {}", ShopContext.getShopCode(), ewbNo);
@@ -94,8 +92,8 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<List<EwbSummary>> getEwbExpiring(@NotNull @Valid Day day,
-                                                           @Valid Boolean includeDelivered) {
+    public ResponseEntity<List<EwbSummary>> getEwbExpiring(Day day,
+                                                           Boolean includeDelivered) {
         log.info("Got a request to fetch expiring EWBs for shop {} :: {}", ShopContext.getShopCode(), day);
         List<EwbSummary> response;
 
@@ -111,10 +109,10 @@ public class TransporterEwbController implements TransporterEwbApi{
 
     @Override
     public ResponseEntity<List<EwbSummary>> getTransporterEwbs(
-            @NotNull @Valid LocalDate fromDate,
-            @NotNull @Valid LocalDate toDate,
-            @Valid Boolean includeDelivered,
-            @Valid EwbStatus ewbStatus
+            LocalDate fromDate,
+            LocalDate toDate,
+            Boolean includeDelivered,
+            EwbStatus ewbStatus
     ) {
         log.info("Got a request to fetch EWBs for shop {} :: date : {} to {}",
                 ShopContext.getShopCode(), fromDate, toDate);
@@ -128,14 +126,14 @@ public class TransporterEwbController implements TransporterEwbApi{
     }
 
     @Override
-    public ResponseEntity<Void> markEwbDelivered(@NotNull String ewbNo) {
+    public ResponseEntity<Void> markEwbDelivered(String ewbNo) {
         transporterService.setDeliveredStatus(ewbNo, true);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
     }
 
     @Override
-    public ResponseEntity<Void> markEwbNonDelivered(@NotNull String ewbNo) {
+    public ResponseEntity<Void> markEwbNonDelivered(String ewbNo) {
         transporterService.setDeliveredStatus(ewbNo, false);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();

@@ -3,7 +3,6 @@ package in.lekhai.authentication.controller;
 import in.lekhai.authentication.service.JwtTokenService;
 import in.lekhai.contract.api.AuthApi;
 import in.lekhai.contract.model.LoginResponse;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,7 +27,7 @@ public class LoginController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<LoginResponse> generateTokenForShopCode(@NotNull Integer shopCode) {
+    public ResponseEntity<LoginResponse> generateTokenForShopCode(Integer shopCode) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         LoginResponse response = jwtTokenService.generateShopJwtToken(authentication, shopCode);
         return ResponseEntity.ok(response);

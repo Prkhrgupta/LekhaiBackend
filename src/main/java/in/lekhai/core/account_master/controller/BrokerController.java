@@ -5,7 +5,6 @@ import in.lekhai.contract.api.BrokerApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.BrokerService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +28,7 @@ public class BrokerController implements BrokerApi {
     }
 
     @Override
-    public ResponseEntity<BrokerResponse> createBroker(@Valid BrokerRequest request) {
+    public ResponseEntity<BrokerResponse> createBroker(BrokerRequest request) {
         log.info("Got a request to create a broker {} :: {}", ShopContext.getShopCode(), request.toString());
         BrokerResponse response = brokerService.createBroker(request);
         log.info("Successfully create broker {} :: {}", ShopContext.getShopCode(), response.toString());
@@ -61,8 +60,8 @@ public class BrokerController implements BrokerApi {
     }
 
     @Override
-    public ResponseEntity<BrokerSummaryPageResponse> getBrokerSummaries(@Valid BrokerSearchableField brokerSearchableField,
-                                                                        @Valid String query,
+    public ResponseEntity<BrokerSummaryPageResponse> getBrokerSummaries(BrokerSearchableField brokerSearchableField,
+                                                                        String query,
                                                                         Pageable pageable) {
         log.info("Got a request to fetch broker summary {}", ShopContext.getShopCode());
         BrokerSummaryPageResponse response = brokerService.listBrokerSummaries(brokerSearchableField, query, pageable);

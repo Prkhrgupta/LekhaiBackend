@@ -5,7 +5,6 @@ import in.lekhai.contract.api.AreaApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.AreaService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +26,7 @@ public class AreaController implements AreaApi {
     }
 
     @Override
-    public ResponseEntity<AreaResponse> createArea(@Valid AreaRequest request) {
+    public ResponseEntity<AreaResponse> createArea(AreaRequest request) {
         log.info("Got a request to create area {} :: {}", ShopContext.getShopCode(), request.toString());
         AreaResponse response = areaService.createArea(request);
         log.info("Successfully created area {} :: {}", ShopContext.getShopCode(), response.toString());
@@ -59,8 +58,8 @@ public class AreaController implements AreaApi {
     }
 
     @Override
-    public ResponseEntity<AreaSummaryPageResponse> getAreaSummaries(@Valid AreaSearchableField areaSearchableField,
-                                                                    @Valid String query,
+    public ResponseEntity<AreaSummaryPageResponse> getAreaSummaries(AreaSearchableField areaSearchableField,
+                                                                    String query,
                                                                     Pageable pageable) {
         log.info("Got a request to fetch area summary {}", ShopContext.getShopCode());
         AreaSummaryPageResponse response = areaService.listAreaSummaries(areaSearchableField, query, pageable);

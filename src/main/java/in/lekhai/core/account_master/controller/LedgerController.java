@@ -5,8 +5,6 @@ import in.lekhai.contract.api.LedgerApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.LedgerService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,22 +47,22 @@ public class LedgerController implements LedgerApi {
 
     @Override
     public ResponseEntity<LedgerBalanceResponse> getLedgerBalance(
-            @NotNull Long ledgerId,
-            @Nullable @Valid LocalDate fromDate,
-            @Nullable @Valid LocalDate toDate
+            Long ledgerId,
+            @Nullable LocalDate fromDate,
+            @Nullable LocalDate toDate
     ) {
         LedgerBalanceResponse res = ledgerService.ledgerBalanceDetails(ledgerId, fromDate, toDate);
         return ResponseEntity.ok(res);
     }
 
     @Override
-    public ResponseEntity<LedgerResponse> getLedgerByGstin(@NotNull @Valid String gstIn) {
+    public ResponseEntity<LedgerResponse> getLedgerByGstin(String gstIn) {
         LedgerResponse ledgerResponseByGstIn = ledgerService.getLedgerResponseByGstIn(gstIn);
         return ResponseEntity.ok(ledgerResponseByGstIn);
     }
 
     @Override
-    public ResponseEntity<List<DropdownItem>> getLedgerDropdownOptions(@Valid List<Long> underAccountGroup) {
+    public ResponseEntity<List<DropdownItem>> getLedgerDropdownOptions(List<Long> underAccountGroup) {
         log.info("Got a request to list all ledgers {}", ShopContext.getShopCode());
         List<DropdownItem> response = ledgerService.listLedgers(underAccountGroup);
         log.info("Successfully listed all ledgers {}", ShopContext.getShopCode());
@@ -72,8 +70,8 @@ public class LedgerController implements LedgerApi {
     }
 
     @Override
-    public ResponseEntity<LedgerSummaryPageResponse> getLedgerSummaries(@Valid LedgerSearchableField ledgerSearchableField,
-                                                                        @Valid String query,
+    public ResponseEntity<LedgerSummaryPageResponse> getLedgerSummaries(LedgerSearchableField ledgerSearchableField,
+                                                                        String query,
                                                                         Pageable pageable) {
         log.info("Got a request to fetch ledger summary {}", ShopContext.getShopCode());
         LedgerSummaryPageResponse response = ledgerService.listLedgerSummaries(ledgerSearchableField, query, pageable);

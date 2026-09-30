@@ -8,7 +8,6 @@ import in.lekhai.contract.model.SaleLedgerSettingResponse;
 import in.lekhai.contract.model.SaleLedgerSettingSummaryPageResponse;
 import in.lekhai.core.account_master.service.SaleLedgerSettingService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class SaleLedgerSettingController implements SaleLedgerSettingApi {
 
     @Override
     public ResponseEntity<SaleLedgerSettingResponse> createSaleLedgerSetting(
-            @Valid SaleLedgerSettingRequest request) {
+            SaleLedgerSettingRequest request) {
         log.info("Got a request to create sale ledger setting {} :: {}", ShopContext.getShopCode(), request.toString());
         SaleLedgerSettingResponse response = saleLedgerSettingService.createSaleLedgerSetting(request);
         log.info("Successfully created sale ledger setting {} :: id {}", ShopContext.getShopCode(), response.getId());

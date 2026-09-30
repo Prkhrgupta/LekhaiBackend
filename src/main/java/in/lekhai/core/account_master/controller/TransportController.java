@@ -5,7 +5,6 @@ import in.lekhai.contract.api.TransportApi;
 import in.lekhai.contract.model.*;
 import in.lekhai.core.account_master.service.TransportService;
 import in.lekhai.shop.context.model.ShopContext;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +28,7 @@ public class TransportController implements TransportApi {
     }
 
     @Override
-    public ResponseEntity<TransportResponse> createTransport(@Valid TransportRequest request) {
+    public ResponseEntity<TransportResponse> createTransport(TransportRequest request) {
         log.info("Got a request to create a new transport {} :: {}", ShopContext.getShopCode(), request.toString());
         TransportResponse response = transportService.createTransport(request);
         log.info("Successfully added transport details {} :: {}", ShopContext.getShopCode(), response.toString());
@@ -61,8 +60,8 @@ public class TransportController implements TransportApi {
     }
 
     @Override
-    public ResponseEntity<TransportSummaryPageResponse> getTransportSummaries(@Valid TransportSearchableField transportSearchableField,
-                                                                              @Valid String query,
+    public ResponseEntity<TransportSummaryPageResponse> getTransportSummaries(TransportSearchableField transportSearchableField,
+                                                                              String query,
                                                                               Pageable pageable) {
         log.info("Got a request to fetch transport summary {}", ShopContext.getShopCode());
         TransportSummaryPageResponse response = transportService.listTransportSummaries(transportSearchableField, query, pageable);
