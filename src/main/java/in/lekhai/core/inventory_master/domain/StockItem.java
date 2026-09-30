@@ -19,10 +19,11 @@ public class StockItem extends ShopAwareEntity {
     private BigDecimal purchasePrice;
     private BigDecimal salePrice;
     private Long commodityId;
-    private String ratePer;
+    private Long primaryUomId;
+    private Long alternateUomId;
+    private BigDecimal conversionFactor;
 
-    private BigDecimal openingPcs;
-    private BigDecimal openingMeter;
+    private BigDecimal openingQty;
     private BigDecimal openingRate;
     private BigDecimal openingValue;
 
@@ -95,28 +96,36 @@ public class StockItem extends ShopAwareEntity {
         this.commodityId = commodityId;
     }
 
-    public String getRatePer() {
-        return ratePer;
+    public Long getPrimaryUomId() {
+        return primaryUomId;
     }
 
-    public void setRatePer(String ratePer) {
-        this.ratePer = ratePer;
+    public void setPrimaryUomId(Long primaryUomId) {
+        this.primaryUomId = primaryUomId;
     }
 
-    public BigDecimal getOpeningPcs() {
-        return openingPcs;
+    public Long getAlternateUomId() {
+        return alternateUomId;
     }
 
-    public void setOpeningPcs(BigDecimal openingPcs) {
-        this.openingPcs = openingPcs;
+    public void setAlternateUomId(Long alternateUomId) {
+        this.alternateUomId = alternateUomId;
     }
 
-    public BigDecimal getOpeningMeter() {
-        return openingMeter;
+    public BigDecimal getConversionFactor() {
+        return conversionFactor;
     }
 
-    public void setOpeningMeter(BigDecimal openingMeter) {
-        this.openingMeter = openingMeter;
+    public void setConversionFactor(BigDecimal conversionFactor) {
+        this.conversionFactor = conversionFactor;
+    }
+
+    public BigDecimal getOpeningQty() {
+        return openingQty;
+    }
+
+    public void setOpeningQty(BigDecimal openingQty) {
+        this.openingQty = openingQty;
     }
 
     public BigDecimal getOpeningRate() {
