@@ -6,7 +6,8 @@ The **stock master** — the goods the firm trades. In Tally terms, this is the 
 
 A trading firm's books aren't complete from ledgers alone — it must also know what it trades: the stock items, how they're grouped, and where they come from. This module captures that catalogue per shop:
 
-- **Stock items** — each buyable/sellable unit of goods, with purchase price, sale price, rate per (piece/meter/…), and its **opening stock** (pieces, meters, rate, value — the inventory counterpart of a ledger's opening balance). A stock item references a **commodity**, an **item category**, and a **factory**.
+- **Stock items** — each buyable/sellable unit of goods, with purchase price, sale price, its **Primary UOM** (the stock and rate unit) plus an optional **Alternate UOM** with a fixed **Conversion Factor**, and its **opening stock** (quantity in the Primary unit, rate, value — the inventory counterpart of a ledger's opening balance). A stock item references a **commodity**, an **item category**, and a **factory**.
+- **UOM** — the shop-owned sellable units behind stock items. Each unit carries a display label mapped to an official GST quantity code; rates and values always stay in the Primary UOM while the Alternate quantity is derived at runtime.
 - **Commodity** — the broad class of product being traded (e.g. yarn, fabric), used to group items. Carries the GST rate and the cess percentage (cess ledgers live in the general ledger setting).
 - **Item category** — the finer classification an item falls under.
 - **Item factory** — the manufacturing unit/plain of origin the item comes from (with a reference percentage).
@@ -20,7 +21,8 @@ Organised as the standard 4-layer pattern (controller → service → repository
 - `Commodity*` — product-type master.
 - `ItemCategory*` — item classification master.
 - `ItemFactory*` — factory/unit-of-origin master.
-- `StockItem*` — the stock-keeping item that aggregates commodity + category (+factory), with prices, rate-per, and opening stock.
+- `StockItem*` — the stock-keeping item that aggregates commodity + category (+factory), with prices, Primary/Alternate UOM references, and opening stock.
+- `Uom*` — the shop-scoped unit master (label + GST quantity code); deletion is blocked while stock items reference the unit, and the quantity code of a used unit cannot change.
 
 ## Dependencies
 

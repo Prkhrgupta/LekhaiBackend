@@ -26,4 +26,8 @@ public interface StockItemRepository extends CrudRepository<StockItem, Long> {
 
     @Query("SELECT COUNT(*) FROM stock_item_master WHERE (is_deleted IS NULL OR is_deleted = FALSE) AND item_name ILIKE '%' || :query || '%'")
     long countActiveByNameContainingIgnoreCase(@Param("query") String query);
+
+    @Query("SELECT COUNT(*) FROM stock_item_master WHERE (is_deleted IS NULL OR is_deleted = FALSE) "
+            + "AND (primary_uom_id = :uomId OR alternate_uom_id = :uomId)")
+    long countActiveByUomId(@Param("uomId") Long uomId);
 }
