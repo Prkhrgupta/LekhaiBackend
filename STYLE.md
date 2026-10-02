@@ -31,11 +31,12 @@ Mandatory for all code written in this repo. These rules keep the codebase consi
 - **Blank lines:** one blank line between methods; group related statements logically.
 - **Line length:** target ≤ 120 chars.
 - **Imports:** no wildcard imports. Group: `java` / `javax`, then `org.springframework`, then project (`in.lekhai.contract.*`, `in.lekhai.*`), then others, each group alphabetical.
+- **Multi-line strings:** use Java text blocks (`"""`) instead of `"..." + "..."` concatenation. Single-line strings stay plain `"..."`.
 
 ## Architecture & Error Handling
 
 - **Layers:** Controller → Service → Repository. Controllers stay thin (validation + delegation only); business logic lives in services.
-- **Errors:** throw `LekhaiException`, `LekhaiClientException`, or a domain subclass from `error/`. Never throw raw `RuntimeException` or swallow exceptions.
+- **Errors:** throw `LekhaiException`, `LekhaiClientException`, or a domain subclass from `error/`. Never throw raw `RuntimeException` or swallow exceptions. User-visible failures extend `LekhaiClientException` (see `error/MODULE.md`); backend-only failures extend `LekhaiException`.
 - **Shop scoping:** any entity holding shop data extends `common.domain.ShopAwareEntity`. Never set `shop_code` manually in service code — use `setShopCodeIfNull`.
 - **Contracts:** never hand-write REST DTOs or endpoint signatures that exist in `in.lekhai.contract.*`.
 - **Records for value objects/DTOs:** use Java `record` where the type is immutable.

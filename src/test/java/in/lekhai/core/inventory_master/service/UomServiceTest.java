@@ -6,6 +6,7 @@ import in.lekhai.contract.model.Uqc;
 import in.lekhai.core.inventory_master.domain.Uom;
 import in.lekhai.core.inventory_master.repository.StockItemRepository;
 import in.lekhai.core.inventory_master.repository.UomRepository;
+import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.error.controller.LekhaiException;
 import in.lekhai.error.controller.uom.exception.UomInUseException;
 import in.lekhai.error.controller.uom.exception.UomNotFoundException;
@@ -85,7 +86,9 @@ class UomServiceTest {
         assertThatThrownBy(() -> uomService.updateUom(
                 7L, new UomRequest().unitName("Gunny Bag").quantityCode(Uqc.BOX)))
                 .isInstanceOf(UomInUseException.class)
-                .hasMessageContaining("quantity code");
+                .isInstanceOf(LekhaiClientException.class)
+                .hasMessageContaining("Quantity code")
+                .satisfies(e -> assertThat(((LekhaiClientException) e).getStatusCode().value()).isEqualTo(409));
     }
 
     @Test
@@ -108,7 +111,9 @@ class UomServiceTest {
 
         assertThatThrownBy(() -> uomService.deleteUom(7L))
                 .isInstanceOf(UomInUseException.class)
-                .hasMessageContaining("cannot be deleted");
+                .isInstanceOf(LekhaiClientException.class)
+                .hasMessageContaining("cannot be deleted")
+                .satisfies(e -> assertThat(((LekhaiClientException) e).getStatusCode().value()).isEqualTo(409));
     }
 
     @Test
