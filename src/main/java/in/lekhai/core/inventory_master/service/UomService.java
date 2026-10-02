@@ -59,6 +59,7 @@ public class UomService {
     public void deleteUom(Long id) {
         Uom uom = findActiveById(id);
         if (stockItemRepository.countActiveByUomId(id) > 0) {
+            log.warn("Delete blocked: UOM id {} is used by stock items", id);
             throw new UomInUseException(id);
         }
         uom.setDeleted(Boolean.TRUE);
@@ -119,8 +120,9 @@ public class UomService {
         String next = request.getQuantityCode() == null ? null : request.getQuantityCode().getValue();
         if (current != null && !current.equals(next)
                 && stockItemRepository.countActiveByUomId(existing.getId()) > 0) {
+            log.warn("Update blocked: UOM id {} quantity code change while in use", existing.getId());
             throw new UomInUseException(
-                    existing.getId(), "quantity code cannot be changed while stock items use this unit");
+                    existing.getId(), "Quantity code cannot be changed while stock items use this unit.");
         }
     }
 

@@ -25,7 +25,7 @@ Accounting software must fail loudly and clearly: if a posting is invalid or a p
 
 To surface a new business-rule failure:
 
-1. Create `<Name>Exception` extending `LekhaiException` or `LekhaiClientException`, placed at `error/controller/<domain>/exception/` (the domain is the business area, not the source module).
+1. Create `<Name>Exception` placed at `error/controller/<domain>/exception/` (the domain is the business area, not the source module). Pick the base by audience: user-visible failures (frontend toast via the `Error` envelope) extend `LekhaiClientException` with an explicit 4xx status and a user-safe message (no ids, `shopCode`, or internals — log those at the throw site); backend/logic-only failures extend `LekhaiException`.
 2. Register a handler in `GlobalExceptionHandler` — or let the base handler map it.
 3. Throw it from the service/controller layer where the rule is enforced.
 4. Name exceptions precisely (`XNotFound`, `XAlreadyExist`, `XDoesNotExist`) — don't reuse one exception for many 4xx cases, and don't add a domain exception for cases Spring's `@Valid` already reports.

@@ -1,18 +1,14 @@
 package in.lekhai.error.controller.uom.exception;
 
-import in.lekhai.error.controller.LekhaiException;
-import in.lekhai.shop.context.model.ShopContext;
+import in.lekhai.error.controller.LekhaiClientException;
+import org.springframework.http.HttpStatus;
 
-public class UomInUseException extends LekhaiException {
+public class UomInUseException extends LekhaiClientException {
     public UomInUseException(Long id) {
-        super(String.format(
-                "UOM id=[%s] is used by stock items for shopCode=[%s] and cannot be deleted",
-                id, ShopContext.getShopCode()));
+        super("This unit cannot be deleted because stock items are using it.", HttpStatus.CONFLICT);
     }
 
     public UomInUseException(Long id, String reason) {
-        super(String.format(
-                "UOM id=[%s] is used by stock items for shopCode=[%s]: %s",
-                id, ShopContext.getShopCode(), reason));
+        super(reason, HttpStatus.CONFLICT);
     }
 }
