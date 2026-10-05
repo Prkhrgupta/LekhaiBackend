@@ -27,21 +27,34 @@ public class AdminService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final UsersRepo userRepo;
+    private final in.lekhai.core.repository.shop.ShopsRepo shopsRepo;
+    private final in.lekhai.licensing.service.LicenseService licenseService;
 
     public AdminService(CategoriesRepo categoriesRepo,
                         RolePermissionsRepo rolePermissionsRepo,
                         UserAccountRepository userAccountRepository,
                         PasswordEncoder passwordEncoder,
-                        UsersRepo userRepo) {
+                        UsersRepo userRepo,
+                        in.lekhai.core.repository.shop.ShopsRepo shopsRepo,
+                        in.lekhai.licensing.service.LicenseService licenseService) {
         this.categoriesRepo = categoriesRepo;
         this.rolePermissionsRepo = rolePermissionsRepo;
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRepo = userRepo;
+        this.shopsRepo = shopsRepo;
+        this.licenseService = licenseService;
     }
 
     @Transactional
     public AdminRegistrationResponse registerAdmin(AdminRegistrationRequest request, Integer shopCode) {
+        Integer targetShopCode = shopCode == null ? JwtUtil.extractJwtClaim().shopCode() : shopCode;
+        if (targetShopCode != null) {
+            shopsRepo.findByShopCode(targetShopCode).ifPresent(shop -> {
+                licenseService.checkUserCreationQuota(shop.getId());
+            });
+        }
+
         Categories category = categoriesRepo
                 .findByName(request.category())
                 .orElseThrow(() -> new CategoryDoesNotExistException(request.category()));

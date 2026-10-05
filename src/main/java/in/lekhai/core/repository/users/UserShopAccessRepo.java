@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface UserShopAccessRepo extends ListCrudRepository<UserShopAccess, Long> {
     List<UserShopAccess> findByUserId(Long userId);
+    List<UserShopAccess> findByShopId(Long shopId);
+    long countByShopId(Long shopId);
 
     Optional<UserShopAccess> findByUserIdAndShopId(Long userId, Long shopId);
     Optional<UserShopAccess> findByUserIdAndShopIdAndRole(Long userId, Long shopId, Roles role);
