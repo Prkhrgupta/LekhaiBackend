@@ -1,9 +1,9 @@
 package in.lekhai.error.controller;
 
-import in.lekhai.common.Result;
-import in.lekhai.contract.model.Error;
-import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
-import org.postgresql.util.PSQLException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
@@ -13,6 +13,12 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import in.lekhai.common.Result;
+import in.lekhai.contract.model.Error;
+import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
+
+import org.postgresql.util.PSQLException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,15 +33,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SeriesFyMissingException.class)
     public ResponseEntity<Error> handleSeriesFyMissing(SeriesFyMissingException exception) {
+        // Why bespoke: the contract needs error=SERIES_FY_MISSING with data,
+        // which the base handler cannot produce from status code alone.
         return ResponseEntity.unprocessableEntity().body(
                 new Error()
                         .success(Boolean.FALSE)
                         .error("SERIES_FY_MISSING")
                         .message(exception.getMessage())
-                        .data(java.util.Map.of(
+                        .data(Map.of(
                                 "voucher_type", exception.getVoucherType(),
                                 "financial_year", exception.getFinancialYear()))
-                        .timestamp(java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)));
+                        .timestamp(OffsetDateTime.now(ZoneOffset.UTC)));
     }
 
     @ExceptionHandler(LekhaiClientException.class)

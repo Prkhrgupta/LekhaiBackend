@@ -96,7 +96,23 @@ class SeriesReserveServiceTest {
 
         assertThat(actual.billNo()).isEqualTo(3L);
         assertThat(series.getNextNumber()).isEqualTo(6L);
-        assertThat(actual.firstMissingBillNo()).isEqualTo(3L);
+        assertThat(actual.firstMissingBillNo()).isNull();
+    }
+
+    @Test
+    void backfill_reportsRemainingGapAfterFill() {
+        in.lekhai.voucher.entity.CustomVoucherSeries series = storedSeries(1L, 7L, true, "2025-26");
+        when(seriesRepository.findForUpdate(VoucherType.SALES, "GST", "2025-26"))
+                .thenReturn(Optional.of(series));
+        when(voucherRepository.existsBySeriesAndFyAndNumber(1L, "2025-26", 3L))
+                .thenReturn(false);
+        when(voucherRepository.findBillNumbersBySeriesAndFy(1L, "2025-26"))
+                .thenReturn(List.of(1L, 2L, 4L, 6L));
+
+        SeriesReserveService.ReserveResult actual = reserveService.reserve(
+                VoucherType.SALES, "GST", LocalDate.of(2025, 6, 15), 3L);
+
+        assertThat(actual.firstMissingBillNo()).isEqualTo(5L);
     }
 
     @Test

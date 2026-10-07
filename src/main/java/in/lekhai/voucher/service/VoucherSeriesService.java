@@ -1,31 +1,32 @@
 package in.lekhai.voucher.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import in.lekhai.contract.model.CustomVoucherSeriesListResponse;
-import in.lekhai.contract.model.CreateSeriesRequest;
-import in.lekhai.contract.model.PaginationMeta;
-import in.lekhai.contract.model.UpdateSeriesRequest;
-import in.lekhai.error.controller.LekhaiClientException;
-import in.lekhai.error.controller.voucher.exception.SeriesAlreadyExistsException;
-import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
-import in.lekhai.error.controller.voucher.exception.SeriesImmutableException;
-import in.lekhai.error.controller.voucher.exception.SeriesNotFoundException;
-import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
-import in.lekhai.voucher.entity.VoucherType;
-import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
-import in.lekhai.voucher.repository.VoucherRepository;
-import in.lekhai.voucher.util.FinancialYear;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import in.lekhai.contract.model.CreateSeriesRequest;
+import in.lekhai.contract.model.CustomVoucherSeriesListResponse;
+import in.lekhai.contract.model.PaginationMeta;
+import in.lekhai.contract.model.UpdateSeriesRequest;
+import in.lekhai.error.controller.voucher.exception.SeriesAlreadyExistsException;
+import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
+import in.lekhai.error.controller.voucher.exception.SeriesImmutableException;
+import in.lekhai.error.controller.voucher.exception.SeriesNotFoundException;
+import in.lekhai.error.controller.voucher.exception.SeriesValidationException;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
+import in.lekhai.voucher.repository.VoucherRepository;
+import in.lekhai.voucher.util.FinancialYear;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class VoucherSeriesService {
@@ -121,8 +122,7 @@ public class VoucherSeriesService {
 
     private VoucherType requireSalesType(String voucherType) {
         if (voucherType == null || !voucherType.trim().equalsIgnoreCase(VoucherType.SALES.name())) {
-            throw new LekhaiClientException(
-                    "Only SALES voucher series are supported", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("Only SALES voucher series are supported");
         }
         return VoucherType.SALES;
     }
@@ -134,22 +134,20 @@ public class VoucherSeriesService {
         try {
             return VoucherType.valueOf(voucherType.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new LekhaiClientException(
-                    "Invalid voucher_type filter: " + voucherType, HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("Invalid voucher_type filter: " + voucherType);
         }
     }
 
     private String requireCode(String seriesCode) {
         if (seriesCode == null || seriesCode.trim().isEmpty()) {
-            throw new LekhaiClientException("series_code must not be blank", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("series_code must not be blank");
         }
         return seriesCode.trim().toUpperCase();
     }
 
     private String requireFinancialYear(String financialYear) {
         if (!FinancialYear.isValid(financialYear)) {
-            throw new LekhaiClientException(
-                    "financial_year must be YYYY-YY like 2025-26", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("financial_year must be YYYY-YY like 2025-26");
         }
         return financialYear;
     }
@@ -159,8 +157,7 @@ public class VoucherSeriesService {
                 + String.valueOf(number).length()
                 + (suffix == null ? 0 : suffix.length());
         if (length > MAX_BILL_LENGTH) {
-            throw new LekhaiClientException(
-                    "prefix+number+suffix must fit 16 characters", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("prefix+number+suffix must fit 16 characters");
         }
     }
 
@@ -214,10 +211,12 @@ public class VoucherSeriesService {
     }
 
     private String toColumn(String property) {
+        // Why id-only: the list query pages in id order; accept only id sorts
+        // so callers get an honest error instead of silently ignored ordering.
         return switch (property) {
-            case "seriesCode", "series_code" -> "id";
-            case "financialYear", "financial_year" -> "id";
-            default -> "id";
+            case "id" -> "id";
+            default -> throw new SeriesValidationException(
+                    "Unsupported sort property for voucher series: " + property);
         };
     }
 
@@ -232,7 +231,7 @@ public class VoucherSeriesService {
         try {
             return objectMapper.writeValueAsString(metadata);
         } catch (JsonProcessingException ex) {
-            throw new LekhaiClientException("print_metadata must be JSON", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("print_metadata must be JSON");
         }
     }
 
