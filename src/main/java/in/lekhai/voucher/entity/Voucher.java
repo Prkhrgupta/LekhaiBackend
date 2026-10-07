@@ -16,6 +16,8 @@ public class Voucher {
     private Long voucherNumber;
     private LocalDate voucherDate;
     private String narration;
+    private Long seriesId;
+    private String financialYear;
 
     @CreatedDate
     private Instant createdAt;
@@ -68,6 +70,22 @@ public class Voucher {
 
     public void setNarration(String narration) {
         this.narration = narration;
+    }
+
+    public Long getSeriesId() {
+        return seriesId;
+    }
+
+    public void setSeriesId(Long seriesId) {
+        this.seriesId = seriesId;
+    }
+
+    public String getFinancialYear() {
+        return financialYear;
+    }
+
+    public void setFinancialYear(String financialYear) {
+        this.financialYear = financialYear;
     }
 
     public Instant getCreatedAt() {

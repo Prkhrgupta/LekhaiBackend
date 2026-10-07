@@ -17,13 +17,17 @@ Posting mutates the ledgers' balances, so it happens atomically inside a shop-sc
 
 ## Public API
 
-- `controller/VoucherController` — API surface to create and list vouchers (implements the generated contract).
+- `controller/VoucherController` — API surface to create and list vouchers plus SALES series CRUD (implements the generated contract).
 - `service/VoucherIntakeService` — the single intake for all voucher kinds: **validate → build posting request → post → respond**. Direction (payment vs receipt) and Account-group policy (cash-or-bank vs any ledger) are data inside this module, not separate classes: `processPayment`, `processReceipt`, `processContra`, `processJournal`.
 - `service/posting/VoucherPostingService` — the posting engine: builds the voucher + its entry rows, enforces the debits==credits rule, assigns counters, and persists under a shop-scoped transaction.
-- `service/VoucherCounterService` — issues sequential voucher numbers per type via one atomic `reserveNextNumber` call.
+- `service/VoucherCounterService` — issues sequential voucher numbers per type via one atomic `reserveNextNumber` call (payment/receipt/contra/journal only).
+- `service/VoucherSeriesService` — SALES-only `custom_voucher_series` CRUD: create/list/update with FY validation, 16-char bill check, post-first-use immutability.
+- `service/SeriesReserveService` — dormant FY-scoped bill allocator behind the numbering seam: `FOR UPDATE` lock, auto/manual-bump rule, unique backstop, first-missing gap warning.
 - `service/VoucherLedgerValidator` — shared Account-group checks (cash-or-bank membership) used by the intake.
 - `entity/Voucher`, `entity/VoucherEntry`, `entity/VoucherCounter` — the recorded voucher, its double-entry lines, and its number counter.
-- `entity/VoucherType` — the four voucher kinds with their prefixes (`PY`, `RC`, `CNT`, `JN`).
+- `entity/CustomVoucherSeries` — SALES bill series per shop × type × code × FY with `next_number`.
+- `entity/VoucherType` — the voucher kinds with their prefixes (`PY`, `RC`, `CNT`, `JN`, `SV`).
+- `util/FinancialYear` — FY derivation from `voucher_date` (Kolkata Apr-1) and `YYYY-YY` validation.
 - `dto/posting/PostingRequest`, `PostingEntry` — the internal model a validated voucher converts into before posting.
 - `mapper/VoucherPostingMapper` — posted voucher → contract response.
 - `repository/*` — Spring Data JDBC repos, including `LedgerEntryWithBalanceProjection` (voucher lines joined with ledger + balance, used by reports).
