@@ -1,23 +1,25 @@
 package in.lekhai.voucher.service;
 
-import in.lekhai.error.controller.LekhaiClientException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import in.lekhai.error.controller.voucher.exception.DuplicateBillNumberException;
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
+import in.lekhai.error.controller.voucher.exception.SeriesValidationException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import in.lekhai.voucher.entity.CustomVoucherSeries;
 import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
 import in.lekhai.voucher.util.FinancialYear;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class SeriesReserveService {
+
+    private static final int MAX_BILL_LENGTH = 16;
 
     private final CustomVoucherSeriesRepository seriesRepository;
     private final VoucherRepository voucherRepository;
@@ -49,27 +51,20 @@ public class SeriesReserveService {
     }
 
     private ReserveResult allocateAuto(CustomVoucherSeries series, String fy) {
-        int attempts = 0;
-        while (true) {
-            Long billNo = series.getNextNumber();
-            series.setNextNumber(billNo + 1);
-            try {
-                seriesRepository.save(series);
-                return new ReserveResult(billNo, firstMissing(series.getId(), fy));
-            } catch (DuplicateKeyException ex) {
-                attempts++;
-                if (attempts >= 3) {
-                    throw ex;
-                }
-                series = reload(series.getId());
-            }
-        }
+        // Why no retry here: FOR UPDATE serializes series bumps; the true duplicate
+        // backstop is the voucher unique constraint at insert time, which retries there once wired.
+        Long billNo = series.getNextNumber();
+        requireBillLength(series, billNo);
+        series.setNextNumber(billNo + 1);
+        seriesRepository.save(series);
+        return new ReserveResult(billNo, firstMissingIncluding(series.getId(), fy, billNo));
     }
 
     private ReserveResult allocateManual(CustomVoucherSeries series, String fy, Long manualBillNo) {
         requirePositive(manualBillNo);
+        requireBillLength(series, manualBillNo);
         if (!Boolean.TRUE.equals(series.getAllowManualEntry())) {
-            throw manualNotAllowed();
+            throw new SeriesValidationException("Manual bill entry is not allowed for this series");
         }
         if (voucherRepository.existsBySeriesAndFyAndNumber(series.getId(), fy, manualBillNo)) {
             throw new DuplicateBillNumberException(manualBillNo);
@@ -78,7 +73,7 @@ public class SeriesReserveService {
             series.setNextNumber(manualBillNo + 1);
             seriesRepository.save(series);
         }
-        return new ReserveResult(manualBillNo, firstMissing(series.getId(), fy));
+        return new ReserveResult(manualBillNo, firstMissingIncluding(series.getId(), fy, manualBillNo));
     }
 
     private CustomVoucherSeries lockSeries(VoucherType type, String seriesCode, String fy) {
@@ -86,14 +81,11 @@ public class SeriesReserveService {
                 .orElseThrow(() -> new SeriesFyMissingException(type.name(), fy));
     }
 
-    private CustomVoucherSeries reload(Long id) {
-        return seriesRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new LekhaiClientException(
-                        "Voucher series missing on retry", HttpStatus.CONFLICT));
-    }
-
-    private Long firstMissing(Long seriesId, String fy) {
-        List<Long> numbers = voucherRepository.findBillNumbersBySeriesAndFy(seriesId, fy);
+    private Long firstMissingIncluding(Long seriesId, String fy, Long justAllocated) {
+        List<Long> numbers =
+                new ArrayList<>(voucherRepository.findBillNumbersBySeriesAndFy(seriesId, fy));
+        numbers.add(justAllocated);
+        numbers.sort(Long::compareTo);
         long expected = 1L;
         for (Long actual : numbers) {
             if (actual == null) {
@@ -111,12 +103,16 @@ public class SeriesReserveService {
 
     private void requirePositive(Long manualBillNo) {
         if (manualBillNo == null || manualBillNo <= 0) {
-            throw new LekhaiClientException("Bill no must be positive", HttpStatus.BAD_REQUEST);
+            throw new SeriesValidationException("Bill no must be positive");
         }
     }
 
-    private LekhaiClientException manualNotAllowed() {
-        return new LekhaiClientException(
-                "Manual bill entry is not allowed for this series", HttpStatus.BAD_REQUEST);
+    private void requireBillLength(CustomVoucherSeries series, Long number) {
+        int length = (series.getPrefix() == null ? 0 : series.getPrefix().length())
+                + String.valueOf(number).length()
+                + (series.getSuffix() == null ? 0 : series.getSuffix().length());
+        if (length > MAX_BILL_LENGTH) {
+            throw new SeriesValidationException("prefix+number+suffix must fit 16 characters");
+        }
     }
 }

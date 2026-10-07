@@ -1,14 +1,15 @@
 package in.lekhai.voucher.repository;
 
-import in.lekhai.voucher.entity.CustomVoucherSeries;
-import in.lekhai.voucher.entity.VoucherType;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import in.lekhai.voucher.entity.CustomVoucherSeries;
+import in.lekhai.voucher.entity.VoucherType;
 
 @Repository
 public interface CustomVoucherSeriesRepository extends ListCrudRepository<CustomVoucherSeries, Long> {
