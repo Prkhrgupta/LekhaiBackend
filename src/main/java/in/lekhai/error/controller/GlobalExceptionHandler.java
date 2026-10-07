@@ -2,6 +2,7 @@ package in.lekhai.error.controller;
 
 import in.lekhai.common.Result;
 import in.lekhai.contract.model.Error;
+import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<?>> handleLekhaiException(LekhaiException exception) {
         log.error("{}", exception.getMessage(), exception);
         return ResponseEntity.badRequest().body(Result.error(exception.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(SeriesFyMissingException.class)
+    public ResponseEntity<Error> handleSeriesFyMissing(SeriesFyMissingException exception) {
+        return ResponseEntity.unprocessableEntity().body(
+                new Error()
+                        .success(Boolean.FALSE)
+                        .error("SERIES_FY_MISSING")
+                        .message(exception.getMessage())
+                        .data(java.util.Map.of(
+                                "voucher_type", exception.getVoucherType(),
+                                "financial_year", exception.getFinancialYear()))
+                        .timestamp(java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)));
     }
 
     @ExceptionHandler(LekhaiClientException.class)
