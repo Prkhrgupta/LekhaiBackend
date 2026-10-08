@@ -11,6 +11,7 @@ import in.lekhai.contract.model.VoucherEntry;
 import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.voucher.dto.posting.PostingRequest;
+import in.lekhai.voucher.dto.posting.PostingResult;
 import in.lekhai.voucher.entity.Voucher;
 import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
@@ -50,8 +51,9 @@ class VoucherIntakeServiceTest {
                 .narration("supplier payout")
                 .addItemsItem(item(20L, "500"));
         Voucher saved = new Voucher(VoucherType.PAYMENT, 7L, request.getVoucherDate(), "supplier payout");
-        when(voucherPostingService.post(any())).thenReturn(saved);
-        when(voucherPostingMapper.mapToCommonVoucherResponse(saved))
+        when(voucherPostingService.post(any()))
+                .thenReturn(new PostingResult(saved, "PY-7", null));
+        when(voucherPostingMapper.mapToCommonVoucherResponse(any(), any(), any()))
                 .thenReturn(new VoucherResponse().id(1L).voucherNumber("PY-7"));
 
         VoucherResponse actual = intakeService.processPayment(request);
@@ -59,11 +61,54 @@ class VoucherIntakeServiceTest {
         assertThat(actual.getVoucherNumber()).isEqualTo("PY-7");
         PostingRequest posting = capturePosting();
         assertThat(posting.voucherType()).isEqualTo(VoucherType.PAYMENT);
+        assertThat(posting.seriesCode()).isNull();
+        assertThat(posting.manualBillNo()).isNull();
         assertThat(posting.entries()).hasSize(2);
         assertThat(posting.entries().get(0).debitAmount()).isEqualByComparingTo("500");
         assertThat(posting.entries().get(0).creditAmount()).isEqualByComparingTo("0");
         assertThat(posting.entries().get(1).ledgerId()).isEqualTo(10L);
         assertThat(posting.entries().get(1).creditAmount()).isEqualByComparingTo("500");
+    }
+
+    @Test
+    void processPayment_passesSeriesCodeAndBillNoThrough() {
+        PaymentVoucherRequest request = new PaymentVoucherRequest()
+                .voucherDate(LocalDate.of(2025, 6, 15))
+                .paymentAccountId(10L)
+                .narration("supplier payout")
+                .seriesCode("cash-1")
+                .billNo(43L)
+                .addItemsItem(item(20L, "500"));
+        Voucher saved = new Voucher(VoucherType.PAYMENT, 43L, request.getVoucherDate(), "supplier payout");
+        when(voucherPostingService.post(any()))
+                .thenReturn(new PostingResult(saved, "CASH/43", 5L));
+        when(voucherPostingMapper.mapToCommonVoucherResponse(any(), any(), any()))
+                .thenReturn(new VoucherResponse().id(1L).voucherNumber("CASH/43"));
+
+        intakeService.processPayment(request);
+
+        PostingRequest posting = capturePosting();
+        assertThat(posting.seriesCode()).isEqualTo("CASH-1");
+        assertThat(posting.manualBillNo()).isEqualTo(43L);
+    }
+
+    @Test
+    void processPayment_blankSeriesCodeFallsBackToLegacy() {
+        PaymentVoucherRequest request = new PaymentVoucherRequest()
+                .voucherDate(LocalDate.of(2025, 6, 15))
+                .paymentAccountId(10L)
+                .narration("supplier payout")
+                .seriesCode("   ")
+                .addItemsItem(item(20L, "500"));
+        Voucher saved = new Voucher(VoucherType.PAYMENT, 7L, request.getVoucherDate(), "supplier payout");
+        when(voucherPostingService.post(any()))
+                .thenReturn(new PostingResult(saved, "PY-7", null));
+        when(voucherPostingMapper.mapToCommonVoucherResponse(any(), any(), any()))
+                .thenReturn(new VoucherResponse().id(1L).voucherNumber("PY-7"));
+
+        intakeService.processPayment(request);
+
+        assertThat(capturePosting().seriesCode()).isNull();
     }
 
     @Test
@@ -92,8 +137,9 @@ class VoucherIntakeServiceTest {
                 .narration("customer receipt")
                 .addItemsItem(item(21L, "250"));
         Voucher saved = new Voucher(VoucherType.RECEIPT, 3L, request.getVoucherDate(), "customer receipt");
-        when(voucherPostingService.post(any())).thenReturn(saved);
-        when(voucherPostingMapper.mapToCommonVoucherResponse(saved))
+        when(voucherPostingService.post(any()))
+                .thenReturn(new PostingResult(saved, "RC-3", null));
+        when(voucherPostingMapper.mapToCommonVoucherResponse(any(), any(), any()))
                 .thenReturn(new VoucherResponse().id(2L).voucherNumber("RC-3"));
 
         VoucherResponse actual = intakeService.processReceipt(request);
@@ -128,8 +174,9 @@ class VoucherIntakeServiceTest {
                 .addDebitEntriesItem(item(30L, "300"))
                 .addCreditEntriesItem(item(31L, "300"));
         Voucher saved = new Voucher(VoucherType.JOURNAL, 1L, request.getVoucherDate(), "correction");
-        when(voucherPostingService.post(any())).thenReturn(saved);
-        when(voucherPostingMapper.mapToCommonVoucherResponse(saved))
+        when(voucherPostingService.post(any()))
+                .thenReturn(new PostingResult(saved, "JN-1", null));
+        when(voucherPostingMapper.mapToCommonVoucherResponse(any(), any(), any()))
                 .thenReturn(new VoucherResponse().id(3L).voucherNumber("JN-1"));
 
         VoucherResponse actual = intakeService.processJournal(request);

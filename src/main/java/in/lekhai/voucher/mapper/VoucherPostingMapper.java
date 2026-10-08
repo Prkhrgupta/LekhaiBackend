@@ -1,6 +1,7 @@
 package in.lekhai.voucher.mapper;
 
 import in.lekhai.contract.model.VoucherResponse;
+import in.lekhai.contract.model.VoucherWarnings;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.Voucher;
@@ -35,8 +36,17 @@ public class VoucherPostingMapper {
 
     public VoucherResponse mapToCommonVoucherResponse(Voucher voucher) {
         String displayVoucherNo = voucher.getVoucherType().getPrefix() + "-" + voucher.getVoucherNumber().toString();
-        return new VoucherResponse()
+        return mapToCommonVoucherResponse(voucher, displayVoucherNo, null);
+    }
+
+    public VoucherResponse mapToCommonVoucherResponse(
+            Voucher voucher, String displayVoucherNumber, Long firstMissingBillNo) {
+        VoucherResponse response = new VoucherResponse()
                 .id(voucher.getId())
-                .voucherNumber(displayVoucherNo);
+                .voucherNumber(displayVoucherNumber);
+        if (firstMissingBillNo != null) {
+            response.warnings(new VoucherWarnings().firstMissingBillNo(firstMissingBillNo));
+        }
+        return response;
     }
 }
