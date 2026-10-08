@@ -59,11 +59,37 @@ class VoucherSeriesServiceTest {
     }
 
     @Test
-    void createSeries_rejectsNonSalesType() {
+    void createSeries_acceptsAllSupportedTypes() {
+        when(seriesRepository.existsByVoucherTypeAndSeriesCodeAndFinancialYear(
+                any(), any(), any())).thenReturn(false);
+        when(seriesRepository.save(any())).thenAnswer(invocation -> {
+            in.lekhai.voucher.entity.CustomVoucherSeries series = invocation.getArgument(0);
+            series.setId(1L);
+            return series;
+        });
+
+        for (String type : List.of("SALES", "PAYMENT", "RECEIPT", "CONTRA", "JOURNAL")) {
+            in.lekhai.contract.model.CustomVoucherSeries actual = seriesService.createSeries(
+                    new CreateSeriesRequest("GST", type, "2025-26").prefix("GST/").suffix("/25"));
+
+            assertThat(actual.getVoucherType()).isEqualTo(type);
+        }
+    }
+
+    @Test
+    void createSeries_rejectsUnsupportedType() {
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "PAYMENT", "2025-26")))
+                new CreateSeriesRequest("GST", "PURCHASE", "2025-26")))
                 .isInstanceOf(LekhaiClientException.class)
-                .hasMessageContaining("Only SALES");
+                .hasMessageContaining("Unsupported voucher_type");
+    }
+
+    @Test
+    void createSeries_rejectsUnknownType() {
+        assertThatThrownBy(() -> seriesService.createSeries(
+                new CreateSeriesRequest("GST", "BOGUS", "2025-26")))
+                .isInstanceOf(LekhaiClientException.class)
+                .hasMessageContaining("Unsupported voucher_type");
     }
 
     @Test

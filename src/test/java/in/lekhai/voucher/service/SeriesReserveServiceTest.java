@@ -50,6 +50,40 @@ class SeriesReserveServiceTest {
     }
 
     @Test
+    void autoAllocate_supportsPaymentType() {
+        in.lekhai.voucher.entity.CustomVoucherSeries series = storedSeries(2L, 1L, true, "2025-26");
+        series.setVoucherType(VoucherType.PAYMENT);
+        series.setSeriesCode("CASH");
+        when(seriesRepository.findForUpdate(VoucherType.PAYMENT, "CASH", "2025-26"))
+                .thenReturn(Optional.of(series));
+        when(seriesRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(voucherRepository.findBillNumbersBySeriesAndFy(2L, "2025-26"))
+                .thenReturn(List.of());
+
+        SeriesReserveService.ReserveResult actual = reserveService.reserveAuto(
+                VoucherType.PAYMENT, "CASH", LocalDate.of(2025, 6, 15));
+
+        assertThat(actual.billNo()).isEqualTo(1L);
+        assertThat(actual.seriesId()).isEqualTo(2L);
+        assertThat(actual.firstMissingBillNo()).isNull();
+    }
+
+    @Test
+    void reserve_normalizesLowercaseCode() {
+        in.lekhai.voucher.entity.CustomVoucherSeries series = storedSeries(1L, 5L, true, "2026-27");
+        when(seriesRepository.findForUpdate(VoucherType.SALES, "GST", "2026-27"))
+                .thenReturn(Optional.of(series));
+        when(seriesRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(voucherRepository.findBillNumbersBySeriesAndFy(1L, "2026-27"))
+                .thenReturn(List.of(1L, 2L, 3L, 4L));
+
+        SeriesReserveService.ReserveResult actual = reserveService.reserveAuto(
+                VoucherType.SALES, "  gst ", LocalDate.of(2027, 3, 4));
+
+        assertThat(actual.billNo()).isEqualTo(5L);
+    }
+
+    @Test
     void marchDateConsumesPreviousFinancialYearRow() {
         in.lekhai.voucher.entity.CustomVoucherSeries series = storedSeries(1L, 1L, true, "2026-27");
         when(seriesRepository.findForUpdate(VoucherType.SALES, "GST", "2026-27"))

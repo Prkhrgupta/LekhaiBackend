@@ -6,12 +6,15 @@ import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
+import in.lekhai.voucher.dto.posting.PostingResult;
 import in.lekhai.voucher.entity.Voucher;
 import in.lekhai.voucher.entity.VoucherEntry;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.repository.VoucherEntryRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
+import in.lekhai.voucher.service.SeriesReserveService;
 import in.lekhai.voucher.service.VoucherCounterService;
+import in.lekhai.voucher.util.FinancialYear;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,7 @@ import java.util.List;
 @Service
 public class VoucherPostingService {
     private final VoucherCounterService voucherCounterService;
+    private final SeriesReserveService seriesReserveService;
     private final VoucherPostingMapper voucherPostingMapper;
     private final VoucherRepository voucherRepository;
     private final VoucherEntryRepository voucherEntryRepository;
@@ -31,12 +35,14 @@ public class VoucherPostingService {
 
     public VoucherPostingService(
             VoucherCounterService voucherCounterService,
+            SeriesReserveService seriesReserveService,
             VoucherPostingMapper voucherPostingMapper,
             VoucherRepository voucherRepository,
             VoucherEntryRepository voucherEntryRepository,
             LedgerRepository ledgerRepository
     ) {
         this.voucherCounterService = voucherCounterService;
+        this.seriesReserveService = seriesReserveService;
         this.voucherPostingMapper = voucherPostingMapper;
         this.voucherRepository = voucherRepository;
         this.voucherEntryRepository = voucherEntryRepository;
@@ -48,10 +54,36 @@ public class VoucherPostingService {
      *  enter voucher and voucher entry
      */
     @ShopContextTransactional
-    public Voucher post(PostingRequest request) {
+    public PostingResult post(PostingRequest request) {
         validate(request);
+        if (hasSeries(request)) {
+            return postWithSeries(request);
+        }
+        return postWithCounter(request);
+    }
+
+    private PostingResult postWithCounter(PostingRequest request) {
         Long voucherNumber = voucherCounterService.reserveNextNumber(request.voucherType());
+        Voucher savedVoucher = saveVoucher(request, voucherNumber, null, null);
+        String display = request.voucherType().getPrefix() + "-" + voucherNumber;
+        return new PostingResult(savedVoucher, display, null);
+    }
+
+    private PostingResult postWithSeries(PostingRequest request) {
+        SeriesReserveService.ReserveResult reserved = seriesReserveService.reserve(
+                request.voucherType(), request.seriesCode(), request.voucherDate(), request.manualBillNo());
+        String financialYear = FinancialYear.from(request.voucherDate());
+        Voucher savedVoucher = saveVoucher(
+                request, reserved.billNo(), reserved.seriesId(), financialYear);
+        String display = formatSeriesDisplay(reserved.prefix(), reserved.billNo(), reserved.suffix());
+        return new PostingResult(savedVoucher, display, reserved.firstMissingBillNo());
+    }
+
+    private Voucher saveVoucher(
+            PostingRequest request, Long voucherNumber, Long seriesId, String financialYear) {
         Voucher voucher = voucherPostingMapper.mapToVoucher(request, voucherNumber);
+        voucher.setSeriesId(seriesId);
+        voucher.setFinancialYear(financialYear);
         Voucher savedVoucher = voucherRepository.save(voucher);
 
         int lineNumber = 1;
@@ -65,6 +97,16 @@ public class VoucherPostingService {
         }
         voucherEntryRepository.saveAll(entries);
         return savedVoucher;
+    }
+
+    private boolean hasSeries(PostingRequest request) {
+        return request.seriesCode() != null && !request.seriesCode().isBlank();
+    }
+
+    private String formatSeriesDisplay(String prefix, Long billNo, String suffix) {
+        String head = prefix == null ? "" : prefix;
+        String tail = suffix == null ? "" : suffix;
+        return head + billNo + tail;
     }
 
     /**

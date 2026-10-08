@@ -1,7 +1,9 @@
 package in.lekhai.voucher.service;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,13 @@ public class VoucherSeriesService {
 
     private static final int MAX_BILL_LENGTH = 16;
 
+    private static final Set<VoucherType> SUPPORTED_TYPES = EnumSet.of(
+            VoucherType.SALES,
+            VoucherType.PAYMENT,
+            VoucherType.RECEIPT,
+            VoucherType.CONTRA,
+            VoucherType.JOURNAL);
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final CustomVoucherSeriesRepository seriesRepository;
     private final VoucherRepository voucherRepository;
@@ -49,7 +58,7 @@ public class VoucherSeriesService {
 
     @ShopContextTransactional
     public in.lekhai.contract.model.CustomVoucherSeries createSeries(CreateSeriesRequest request) {
-        VoucherType type = requireSalesType(request == null ? null : request.getVoucherType());
+        VoucherType type = requireSupportedType(request == null ? null : request.getVoucherType());
         String code = requireCode(request == null ? null : request.getSeriesCode());
         String fy = requireFinancialYear(request == null ? null : request.getFinancialYear());
         requireBillLength(request.getPrefix(), request.getSuffix(), 1L);
@@ -120,11 +129,25 @@ public class VoucherSeriesService {
         }
     }
 
-    private VoucherType requireSalesType(String voucherType) {
-        if (voucherType == null || !voucherType.trim().equalsIgnoreCase(VoucherType.SALES.name())) {
-            throw new SeriesValidationException("Only SALES voucher series are supported");
+    private VoucherType requireSupportedType(String voucherType) {
+        VoucherType parsed = parseSupportedType(voucherType);
+        if (parsed == null || !SUPPORTED_TYPES.contains(parsed)) {
+            throw new SeriesValidationException(
+                    "Unsupported voucher_type for series: " + voucherType
+                            + ". Supported: SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL");
         }
-        return VoucherType.SALES;
+        return parsed;
+    }
+
+    private VoucherType parseSupportedType(String voucherType) {
+        if (voucherType == null || voucherType.isBlank()) {
+            return null;
+        }
+        try {
+            return VoucherType.valueOf(voucherType.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     private VoucherType parseTypeFilter(String voucherType) {

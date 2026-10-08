@@ -17,10 +17,12 @@ import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
-import in.lekhai.voucher.entity.Voucher;
+import in.lekhai.voucher.dto.posting.PostingResult;
 import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.service.posting.VoucherPostingService;
+
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @Service
 public class VoucherIntakeService {
@@ -51,7 +53,8 @@ public class VoucherIntakeService {
         sumEntries(voucher.getItems(), LedgerKind.NON_CASH_OR_BANK,
                 "Each payment entry must have an amount greater than zero", "payment entry ledger");
         return post(convertDirectional(voucher.getItems(), voucher.getPaymentAccountId(),
-                voucher.getVoucherDate(), voucher.getNarration(), true, VoucherType.PAYMENT));
+                voucher.getVoucherDate(), voucher.getNarration(), true, VoucherType.PAYMENT,
+                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
     }
 
     /**
@@ -67,7 +70,8 @@ public class VoucherIntakeService {
         sumEntries(voucher.getItems(), LedgerKind.NON_CASH_OR_BANK,
                 "Each receipt entry must have an amount greater than zero", "receipt entry ledger");
         return post(convertDirectional(voucher.getItems(), voucher.getReceiptAccountId(),
-                voucher.getVoucherDate(), voucher.getNarration(), false, VoucherType.RECEIPT));
+                voucher.getVoucherDate(), voucher.getNarration(), false, VoucherType.RECEIPT,
+                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
     }
 
     /**
@@ -86,7 +90,8 @@ public class VoucherIntakeService {
                 "Each contra credit entry must have an amount greater than zero", "contra credit ledger");
         requireBalanced(totalDebit, totalCredit, "Contra voucher total debit must equal total credit");
         return post(convertTwoSided(voucher.getDebitEntries(), voucher.getCreditEntries(),
-                voucher.getVoucherDate(), voucher.getNarration(), VoucherType.CONTRA));
+                voucher.getVoucherDate(), voucher.getNarration(), VoucherType.CONTRA,
+                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
     }
 
     /**
@@ -105,7 +110,8 @@ public class VoucherIntakeService {
                 "Each journal credit entry must have an amount greater than zero", "journal credit ledger");
         requireBalanced(totalDebit, totalCredit, "Journal voucher total debit must equal total credit");
         return post(convertTwoSided(voucher.getDebitEntries(), voucher.getCreditEntries(),
-                voucher.getVoucherDate(), voucher.getNarration(), VoucherType.JOURNAL));
+                voucher.getVoucherDate(), voucher.getNarration(), VoucherType.JOURNAL,
+                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
     }
 
     private void requireVoucherDate(LocalDate voucherDate) {
@@ -147,7 +153,8 @@ public class VoucherIntakeService {
     }
 
     private PostingRequest convertDirectional(List<VoucherEntry> items, Long cashAccountId, LocalDate voucherDate,
-            String narration, boolean cashIsCredit, VoucherType voucherType) {
+            String narration, boolean cashIsCredit, VoucherType voucherType,
+            String seriesCode, Long manualBillNo) {
         List<PostingEntry> postings = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         for (VoucherEntry item : items) {
@@ -159,11 +166,13 @@ public class VoucherIntakeService {
         BigDecimal cashDebit = cashIsCredit ? BigDecimal.ZERO : total;
         BigDecimal cashCredit = cashIsCredit ? total : BigDecimal.ZERO;
         postings.add(new PostingEntry(cashAccountId, cashDebit, cashCredit, narration));
-        return new PostingRequest(voucherType, voucherDate, narration, postings);
+        return new PostingRequest(
+                voucherType, voucherDate, narration, postings, normalizeCode(seriesCode), manualBillNo);
     }
 
     private PostingRequest convertTwoSided(List<VoucherEntry> debitEntries, List<VoucherEntry> creditEntries,
-            LocalDate voucherDate, String narration, VoucherType voucherType) {
+            LocalDate voucherDate, String narration, VoucherType voucherType,
+            String seriesCode, Long manualBillNo) {
         List<PostingEntry> postings = new ArrayList<>();
         for (VoucherEntry entry : debitEntries) {
             postings.add(new PostingEntry(entry.getAccountId(), entry.getAmount(), BigDecimal.ZERO,
@@ -173,12 +182,28 @@ public class VoucherIntakeService {
             postings.add(new PostingEntry(entry.getAccountId(), BigDecimal.ZERO, entry.getAmount(),
                     entry.getRemarks()));
         }
-        return new PostingRequest(voucherType, voucherDate, narration, postings);
+        return new PostingRequest(
+                voucherType, voucherDate, narration, postings, normalizeCode(seriesCode), manualBillNo);
     }
 
     private VoucherResponse post(PostingRequest posting) {
-        Voucher createdVoucher = voucherPostingService.post(posting);
-        return voucherPostingMapper.mapToCommonVoucherResponse(createdVoucher);
+        PostingResult posted = voucherPostingService.post(posting);
+        return voucherPostingMapper.mapToCommonVoucherResponse(
+                posted.voucher(), posted.displayVoucherNumber(), posted.firstMissingBillNo());
+    }
+
+    private String normalizeCode(String seriesCode) {
+        if (seriesCode == null || seriesCode.isBlank()) {
+            return null;
+        }
+        return seriesCode.trim().toUpperCase();
+    }
+
+    private Long billNoOrNull(JsonNullable<Long> billNo) {
+        if (billNo == null || !billNo.isPresent()) {
+            return null;
+        }
+        return billNo.get();
     }
 
     private LekhaiClientException clientError(String message) {

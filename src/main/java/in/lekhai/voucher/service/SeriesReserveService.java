@@ -31,7 +31,8 @@ public class SeriesReserveService {
         this.voucherRepository = voucherRepository;
     }
 
-    public record ReserveResult(Long billNo, Long firstMissingBillNo) {
+    public record ReserveResult(Long billNo, Long firstMissingBillNo, Long seriesId,
+                                  String prefix, String suffix) {
     }
 
     @ShopContextTransactional
@@ -42,8 +43,9 @@ public class SeriesReserveService {
     @ShopContextTransactional
     public ReserveResult reserve(
             VoucherType type, String seriesCode, LocalDate voucherDate, Long manualBillNo) {
+        String code = requireCode(seriesCode);
         String fy = FinancialYear.from(voucherDate);
-        CustomVoucherSeries series = lockSeries(type, seriesCode, fy);
+        CustomVoucherSeries series = lockSeries(type, code, fy);
         if (manualBillNo == null) {
             return allocateAuto(series, fy);
         }
@@ -57,7 +59,8 @@ public class SeriesReserveService {
         requireBillLength(series, billNo);
         series.setNextNumber(billNo + 1);
         seriesRepository.save(series);
-        return new ReserveResult(billNo, firstMissingIncluding(series.getId(), fy, billNo));
+        return new ReserveResult(billNo, firstMissingIncluding(series.getId(), fy, billNo),
+                series.getId(), series.getPrefix(), series.getSuffix());
     }
 
     private ReserveResult allocateManual(CustomVoucherSeries series, String fy, Long manualBillNo) {
@@ -73,12 +76,20 @@ public class SeriesReserveService {
             series.setNextNumber(manualBillNo + 1);
             seriesRepository.save(series);
         }
-        return new ReserveResult(manualBillNo, firstMissingIncluding(series.getId(), fy, manualBillNo));
+        return new ReserveResult(manualBillNo, firstMissingIncluding(series.getId(), fy, manualBillNo),
+                series.getId(), series.getPrefix(), series.getSuffix());
     }
 
     private CustomVoucherSeries lockSeries(VoucherType type, String seriesCode, String fy) {
         return seriesRepository.findForUpdate(type, seriesCode, fy)
                 .orElseThrow(() -> new SeriesFyMissingException(type.name(), fy));
+    }
+
+    private String requireCode(String seriesCode) {
+        if (seriesCode == null || seriesCode.trim().isEmpty()) {
+            throw new SeriesValidationException("series_code must not be blank");
+        }
+        return seriesCode.trim().toUpperCase();
     }
 
     private Long firstMissingIncluding(Long seriesId, String fy, Long justAllocated) {
