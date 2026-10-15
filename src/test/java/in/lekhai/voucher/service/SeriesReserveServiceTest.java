@@ -3,7 +3,7 @@ package in.lekhai.voucher.service;
 import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.error.controller.voucher.exception.DuplicateBillNumberException;
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
 import org.junit.jupiter.api.Test;

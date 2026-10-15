@@ -9,7 +9,7 @@ import in.lekhai.error.controller.voucher.exception.SeriesAlreadyExistsException
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
 import in.lekhai.error.controller.voucher.exception.SeriesImmutableException;
 import in.lekhai.error.controller.voucher.exception.SeriesNotFoundException;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class VoucherSeriesServiceTest {
         });
 
         in.lekhai.contract.model.CustomVoucherSeries actual = seriesService.createSeries(
-                new CreateSeriesRequest("GST", "SALES", "2025-26").prefix("GST/").suffix("/25"));
+                new CreateSeriesRequest("GST", VoucherType.SALES, "2025-26").prefix("GST/").suffix("/25"));
 
         assertThat(actual.getId()).isEqualTo(1L);
         assertThat(actual.getSeriesCode()).isEqualTo("GST");
@@ -68,7 +68,7 @@ class VoucherSeriesServiceTest {
             return series;
         });
 
-        for (String type : List.of("SALES", "PAYMENT", "RECEIPT", "CONTRA", "JOURNAL")) {
+        for (VoucherType type : List.of(VoucherType.SALES, VoucherType.PAYMENT, VoucherType.RECEIPT, VoucherType.CONTRA, VoucherType.JOURNAL)) {
             in.lekhai.contract.model.CustomVoucherSeries actual = seriesService.createSeries(
                     new CreateSeriesRequest("GST", type, "2025-26").prefix("GST/").suffix("/25"));
 
@@ -79,15 +79,15 @@ class VoucherSeriesServiceTest {
     @Test
     void createSeries_rejectsUnsupportedType() {
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "PURCHASE", "2025-26")))
+                new CreateSeriesRequest("GST", VoucherType.PURCHASE, "2025-26")))
                 .isInstanceOf(LekhaiClientException.class)
                 .hasMessageContaining("Unsupported voucher_type");
     }
 
     @Test
-    void createSeries_rejectsUnknownType() {
+    void createSeries_rejectsNullType() {
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "BOGUS", "2025-26")))
+                new CreateSeriesRequest("GST", null, "2025-26")))
                 .isInstanceOf(LekhaiClientException.class)
                 .hasMessageContaining("Unsupported voucher_type");
     }
@@ -95,7 +95,7 @@ class VoucherSeriesServiceTest {
     @Test
     void createSeries_rejectsBadFinancialYear() {
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "SALES", "2025")))
+                new CreateSeriesRequest("GST", VoucherType.SALES, "2025")))
                 .isInstanceOf(LekhaiClientException.class)
                 .hasMessageContaining("financial_year");
     }
@@ -103,7 +103,7 @@ class VoucherSeriesServiceTest {
     @Test
     void createSeries_rejectsOver16CharConfiguration() {
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "SALES", "2025-26")
+                new CreateSeriesRequest("GST", VoucherType.SALES, "2025-26")
                         .prefix("VERY-LONG-PREFIX-").suffix("/25")))
                 .isInstanceOf(LekhaiClientException.class)
                 .hasMessageContaining("16 characters");
@@ -115,7 +115,7 @@ class VoucherSeriesServiceTest {
                 VoucherType.SALES, "GST", "2025-26")).thenReturn(true);
 
         assertThatThrownBy(() -> seriesService.createSeries(
-                new CreateSeriesRequest("GST", "SALES", "2025-26")))
+                new CreateSeriesRequest("GST", VoucherType.SALES, "2025-26")))
                 .isInstanceOf(SeriesAlreadyExistsException.class);
     }
 
@@ -125,7 +125,7 @@ class VoucherSeriesServiceTest {
                 .thenReturn(List.of());
         when(seriesRepository.countFiltered(any(), any())).thenReturn(0L);
 
-        assertThatThrownBy(() -> seriesService.listSeries("SALES", "2025-26", 0, 20, null))
+        assertThatThrownBy(() -> seriesService.listSeries(VoucherType.SALES, "2025-26", 0, 20, null))
                 .isInstanceOf(SeriesFyMissingException.class)
                 .satisfies(e -> {
                     SeriesFyMissingException ex = (SeriesFyMissingException) e;
@@ -142,7 +142,7 @@ class VoucherSeriesServiceTest {
         when(seriesRepository.countFiltered(any(), any())).thenReturn(1L);
 
         CustomVoucherSeriesListResponse actual =
-                seriesService.listSeries("SALES", "2025-26", 0, 20, null);
+                seriesService.listSeries(VoucherType.SALES, "2025-26", 0, 20, null);
 
         assertThat(actual.getData()).hasSize(1);
         assertThat(actual.getPagination().getTotalElements()).isEqualTo(1L);

@@ -6,6 +6,7 @@ import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.Voucher;
 import in.lekhai.voucher.entity.VoucherEntry;
+import in.lekhai.voucher.util.VoucherTypePrefixes;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,7 +36,7 @@ public class VoucherPostingMapper {
     }
 
     public VoucherResponse mapToCommonVoucherResponse(Voucher voucher) {
-        String displayVoucherNo = voucher.getVoucherType().getPrefix() + "-" + voucher.getVoucherNumber().toString();
+        String displayVoucherNo = VoucherTypePrefixes.get(voucher.getVoucherType()) + "-" + voucher.getVoucherNumber().toString();
         return mapToCommonVoucherResponse(voucher, displayVoucherNo, null);
     }
 

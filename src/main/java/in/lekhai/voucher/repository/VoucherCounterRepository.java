@@ -1,7 +1,7 @@
 package in.lekhai.voucher.repository;
 
 import in.lekhai.voucher.entity.VoucherCounter;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;

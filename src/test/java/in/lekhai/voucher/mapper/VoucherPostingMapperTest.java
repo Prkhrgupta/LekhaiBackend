@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.voucher.entity.Voucher;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 
 import org.junit.jupiter.api.Test;
 

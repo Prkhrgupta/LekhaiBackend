@@ -1,6 +1,7 @@
 package in.lekhai.voucher.entity;
 
 import in.lekhai.common.domain.ShopAwareEntity;
+import in.lekhai.contract.model.VoucherType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 

@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
+import in.lekhai.contract.model.VoucherType;
+
 import java.time.Instant;
 import java.time.LocalDate;
 
