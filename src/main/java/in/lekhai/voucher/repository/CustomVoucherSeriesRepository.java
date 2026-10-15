@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import in.lekhai.voucher.entity.CustomVoucherSeries;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 
 @Repository
 public interface CustomVoucherSeriesRepository extends ListCrudRepository<CustomVoucherSeries, Long> {

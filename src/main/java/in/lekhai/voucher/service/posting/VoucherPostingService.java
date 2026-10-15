@@ -15,6 +15,7 @@ import in.lekhai.voucher.repository.VoucherRepository;
 import in.lekhai.voucher.service.SeriesReserveService;
 import in.lekhai.voucher.service.VoucherCounterService;
 import in.lekhai.voucher.util.FinancialYear;
+import in.lekhai.voucher.util.VoucherTypePrefixes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,7 @@ public class VoucherPostingService {
     private PostingResult postWithCounter(PostingRequest request) {
         Long voucherNumber = voucherCounterService.reserveNextNumber(request.voucherType());
         Voucher savedVoucher = saveVoucher(request, voucherNumber, null, null);
-        String display = request.voucherType().getPrefix() + "-" + voucherNumber;
+        String display = VoucherTypePrefixes.get(request.voucherType()) + "-" + voucherNumber;
         return new PostingResult(savedVoucher, display, null);
     }
 

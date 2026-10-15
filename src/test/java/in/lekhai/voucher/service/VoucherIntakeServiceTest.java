@@ -13,7 +13,7 @@ import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.dto.posting.PostingResult;
 import in.lekhai.voucher.entity.Voucher;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.service.posting.VoucherPostingService;
 

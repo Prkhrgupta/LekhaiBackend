@@ -13,7 +13,7 @@ import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.dto.posting.PostingResult;
 import in.lekhai.voucher.entity.Voucher;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.repository.VoucherEntryRepository;
 import in.lekhai.voucher.repository.VoucherRepository;

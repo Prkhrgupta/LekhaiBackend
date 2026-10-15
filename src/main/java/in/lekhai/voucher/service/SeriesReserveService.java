@@ -10,8 +10,8 @@ import in.lekhai.error.controller.voucher.exception.DuplicateBillNumberException
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
 import in.lekhai.error.controller.voucher.exception.SeriesValidationException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.entity.CustomVoucherSeries;
-import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
 import in.lekhai.voucher.util.FinancialYear;

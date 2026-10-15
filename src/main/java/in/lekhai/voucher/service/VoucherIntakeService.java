@@ -18,11 +18,9 @@ import in.lekhai.error.controller.LekhaiClientException;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.dto.posting.PostingResult;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.mapper.VoucherPostingMapper;
 import in.lekhai.voucher.service.posting.VoucherPostingService;
-
-import org.openapitools.jackson.nullable.JsonNullable;
 
 @Service
 public class VoucherIntakeService {
@@ -54,7 +52,7 @@ public class VoucherIntakeService {
                 "Each payment entry must have an amount greater than zero", "payment entry ledger");
         return post(convertDirectional(voucher.getItems(), voucher.getPaymentAccountId(),
                 voucher.getVoucherDate(), voucher.getNarration(), true, VoucherType.PAYMENT,
-                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
+                voucher.getSeriesCode(), voucher.getBillNo()));
     }
 
     /**
@@ -71,7 +69,7 @@ public class VoucherIntakeService {
                 "Each receipt entry must have an amount greater than zero", "receipt entry ledger");
         return post(convertDirectional(voucher.getItems(), voucher.getReceiptAccountId(),
                 voucher.getVoucherDate(), voucher.getNarration(), false, VoucherType.RECEIPT,
-                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
+                voucher.getSeriesCode(), voucher.getBillNo()));
     }
 
     /**
@@ -91,7 +89,7 @@ public class VoucherIntakeService {
         requireBalanced(totalDebit, totalCredit, "Contra voucher total debit must equal total credit");
         return post(convertTwoSided(voucher.getDebitEntries(), voucher.getCreditEntries(),
                 voucher.getVoucherDate(), voucher.getNarration(), VoucherType.CONTRA,
-                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
+                voucher.getSeriesCode(), voucher.getBillNo()));
     }
 
     /**
@@ -111,7 +109,7 @@ public class VoucherIntakeService {
         requireBalanced(totalDebit, totalCredit, "Journal voucher total debit must equal total credit");
         return post(convertTwoSided(voucher.getDebitEntries(), voucher.getCreditEntries(),
                 voucher.getVoucherDate(), voucher.getNarration(), VoucherType.JOURNAL,
-                voucher.getSeriesCode(), billNoOrNull(voucher.getBillNo())));
+                voucher.getSeriesCode(), voucher.getBillNo()));
     }
 
     private void requireVoucherDate(LocalDate voucherDate) {
@@ -197,13 +195,6 @@ public class VoucherIntakeService {
             return null;
         }
         return seriesCode.trim().toUpperCase();
-    }
-
-    private Long billNoOrNull(JsonNullable<Long> billNo) {
-        if (billNo == null || !billNo.isPresent()) {
-            return null;
-        }
-        return billNo.get();
     }
 
     private LekhaiClientException clientError(String message) {

@@ -26,7 +26,11 @@ Posting mutates the ledgers' balances, so it happens atomically inside a shop-sc
 - `service/VoucherLedgerValidator` — shared Account-group checks (cash-or-bank membership) used by the intake.
 - `entity/Voucher`, `entity/VoucherEntry`, `entity/VoucherCounter` — the recorded voucher, its double-entry lines, and its number counter.
 - `entity/CustomVoucherSeries` — bill series per shop × type × code × FY with `next_number` (supported types: SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL).
-- `entity/VoucherType` — the voucher kinds with their legacy-counter prefixes (`PY`, `RC`, `CNT`, `JN`, `SV`); custom series supported for SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL.
+- `entity/VoucherType` — deleted. Voucher kinds are owned by the API contract
+  (`openapi/voucher/components.yaml#/VoucherType`, generated as
+  `in.lekhai.contract.model.VoucherType`); legacy-counter prefixes live in
+  `util/VoucherTypePrefixes` (update it when a new type is added — see How to Extend).
+  Custom series supported for SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL (backend gate).
 - `util/FinancialYear` — FY derivation from `voucher_date` (Kolkata Apr-1) and `YYYY-YY` validation.
 - `dto/posting/PostingRequest`, `PostingEntry`, `PostingResult` — the internal model a validated voucher converts into before posting (`seriesCode` + `manualBillNo` ride along), and the posted outcome (voucher + display number + gap warning).
 - `mapper/VoucherPostingMapper` — posted voucher → contract `VoucherResponse`, including the series display number and `warnings.first_missing_bill_no` when a gap is detected.
@@ -40,10 +44,12 @@ Posting mutates the ledgers' balances, so it happens atomically inside a shop-sc
 
 To let the firm record a new kind of business transaction as a voucher, add a voucher type:
 
-1. Add the type + prefix in `VoucherType` (e.g. a new `PYMT-`/`SR-` series).
-2. Add a `process<X>` method in `VoucherIntakeService` that validates (reject invalid ledgers/amounts with `LekhaiClientException`s) and converts to a `PostingRequest` via the shared `convertDirectional` / `convertTwoSided` helpers — no new class.
-3. Wire the endpoint in `VoucherController` and expose it via `lekhaiapispec`.
-4. Verify counter behaviour in `VoucherCounterService` and add a migration only if the new type needs its own column/counter seeding.
+1. Add the value in `lekhai-apispec/openapi/voucher/components.yaml#/VoucherType` and regen/publish the contract.
+2. Add its legacy prefix entry in `util/VoucherTypePrefixes` (required — display numbering breaks without it).
+3. Add a `process<X>` method in `VoucherIntakeService` that validates (reject invalid ledgers/amounts with `LekhaiClientException`s) and converts to a `PostingRequest` via the shared `convertDirectional` / `convertTwoSided` helpers — no new class.
+4. If the type needs custom series, extend `SUPPORTED_TYPES` in `VoucherSeriesService`; otherwise it stays creatable-only via legacy counter and series creation keeps 422ing.
+5. Wire the endpoint in `VoucherController` and expose it via `lekhaiapispec`.
+6. Verify counter behaviour in `VoucherCounterService` and add a migration only if the new type needs its own column/counter seeding.
 
 ## Deep Dive
 

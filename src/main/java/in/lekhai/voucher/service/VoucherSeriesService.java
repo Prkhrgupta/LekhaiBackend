@@ -16,13 +16,13 @@ import in.lekhai.contract.model.CreateSeriesRequest;
 import in.lekhai.contract.model.CustomVoucherSeriesListResponse;
 import in.lekhai.contract.model.PaginationMeta;
 import in.lekhai.contract.model.UpdateSeriesRequest;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.error.controller.voucher.exception.SeriesAlreadyExistsException;
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
 import in.lekhai.error.controller.voucher.exception.SeriesImmutableException;
 import in.lekhai.error.controller.voucher.exception.SeriesNotFoundException;
 import in.lekhai.error.controller.voucher.exception.SeriesValidationException;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
-import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.repository.CustomVoucherSeriesRepository;
 import in.lekhai.voucher.repository.VoucherRepository;
 import in.lekhai.voucher.util.FinancialYear;
@@ -73,14 +73,14 @@ public class VoucherSeriesService {
 
     @ShopContextTransactional
     public CustomVoucherSeriesListResponse listSeries(
-            String voucherType, String financialYear, int page, int size, List<String> sort) {
-        VoucherType type = parseTypeFilter(voucherType);
+            VoucherType voucherType, String financialYear, int page, int size, List<String> sort) {
+        VoucherType type = voucherType;
         Pageable pageable = toPageable(page, size, sort);
         List<in.lekhai.voucher.entity.CustomVoucherSeries> rows = seriesRepository.findFiltered(
                 type, financialYear, pageable.getPageSize(), pageable.getOffset());
         long total = seriesRepository.countFiltered(type, financialYear);
         if (financialYear != null && !financialYear.isBlank() && total == 0) {
-            throw new SeriesFyMissingException(voucherType == null ? "" : voucherType, financialYear);
+            throw new SeriesFyMissingException(type == null ? "" : type.getValue(), financialYear);
         }
         List<in.lekhai.contract.model.CustomVoucherSeries> data =
                 rows.stream().map(this::mapToResponse).toList();
@@ -129,36 +129,13 @@ public class VoucherSeriesService {
         }
     }
 
-    private VoucherType requireSupportedType(String voucherType) {
-        VoucherType parsed = parseSupportedType(voucherType);
-        if (parsed == null || !SUPPORTED_TYPES.contains(parsed)) {
+    private VoucherType requireSupportedType(VoucherType voucherType) {
+        if (voucherType == null || !SUPPORTED_TYPES.contains(voucherType)) {
             throw new SeriesValidationException(
                     "Unsupported voucher_type for series: " + voucherType
                             + ". Supported: SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL");
         }
-        return parsed;
-    }
-
-    private VoucherType parseSupportedType(String voucherType) {
-        if (voucherType == null || voucherType.isBlank()) {
-            return null;
-        }
-        try {
-            return VoucherType.valueOf(voucherType.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
-    }
-
-    private VoucherType parseTypeFilter(String voucherType) {
-        if (voucherType == null || voucherType.isBlank()) {
-            return null;
-        }
-        try {
-            return VoucherType.valueOf(voucherType.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new SeriesValidationException("Invalid voucher_type filter: " + voucherType);
-        }
+        return voucherType;
     }
 
     private String requireCode(String seriesCode) {
@@ -205,7 +182,7 @@ public class VoucherSeriesService {
         return new in.lekhai.contract.model.CustomVoucherSeries()
                 .id(series.getId())
                 .seriesCode(series.getSeriesCode())
-                .voucherType(series.getVoucherType().name())
+                .voucherType(series.getVoucherType())
                 .financialYear(series.getFinancialYear())
                 .prefix(series.getPrefix())
                 .suffix(series.getSuffix())

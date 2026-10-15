@@ -17,7 +17,7 @@
 | `entity/VoucherEntry.java` | Double-entry line (ledger + debit/credit + amount). |
 | `entity/VoucherCounter.java` | Per-type counter row. |
 | `entity/CustomVoucherSeries.java` | Series row per shop × type × code × FY. Extends `ShopAwareEntity`. |
-| `entity/VoucherType.java` | Enum: PAYMENT, RECEIPT, CONTRA, JOURNAL, PURCHASE, SALES, CREDIT_NOTE, DEBIT_NOTE + prefixes; custom series supported for SALES, PAYMENT, RECEIPT, CONTRA, JOURNAL. |
+| `util/VoucherTypePrefixes.java` | Legacy display prefixes per contract `VoucherType` (update when a new type is added). |
 | `dto/posting/PostingRequest.java` | `record`: type, date, entries list, reference info, optional `seriesCode` + `manualBillNo`. |
 | `dto/posting/PostingResult.java` | `record`: saved voucher, display number, first-missing gap warning (null on the legacy path). |
 | `dto/posting/PostingEntry.java` | ledger, debit/credit amounts, narration. |
@@ -36,8 +36,9 @@
 
 ## Adding a Voucher Type — Full Walkthrough
 
-1. Add enum constant + prefix in `VoucherType`.
-2. Add `process<X>` in `VoucherIntakeService`: validate (throw appropriate `LekhaiClientException`s for invalid books/ledgers/amounts), reusing `requireVoucherDate`, `requireEntriesPresent`, `sumEntries` with the matching `LedgerKind`, and `requireBalanced` where both sides are user-supplied.
+1. Add the value in `lekhai-apispec/openapi/voucher/components.yaml#/VoucherType` and regen/publish the contract.
+2. Add its legacy prefix entry in `util/VoucherTypePrefixes` (required — display numbering breaks without it).
+3. Add `process<X>` in `VoucherIntakeService`: validate (throw appropriate `LekhaiClientException`s for invalid books/ledgers/amounts), reusing `requireVoucherDate`, `requireEntriesPresent`, `sumEntries` with the matching `LedgerKind`, and `requireBalanced` where both sides are user-supplied.
 3. Convert with `convertDirectional` (one cash-or-bank side + item lines) or `convertTwoSided` (explicit debit/credit lines).
 4. Register the endpoint in `VoucherController` and expose via `lekhaiapispec`.
 5. Add migration if the new type needs its own table column or counter row seeding.

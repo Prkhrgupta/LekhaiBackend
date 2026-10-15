@@ -9,7 +9,7 @@ import in.lekhai.core.account_master.repository.LedgerRepository;
 import in.lekhai.core.util.JwtUtil;
 import in.lekhai.voucher.entity.Voucher;
 import in.lekhai.voucher.entity.VoucherEntry;
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.repository.LedgerEntryWithBalanceProjection;
 import in.lekhai.voucher.repository.VoucherEntryRepository;
 import in.lekhai.voucher.repository.VoucherRepository;

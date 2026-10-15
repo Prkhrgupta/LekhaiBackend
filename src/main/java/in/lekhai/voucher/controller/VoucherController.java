@@ -11,6 +11,7 @@ import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.contract.model.ReceiptVoucherRequest;
 import in.lekhai.contract.model.UpdateSeriesRequest;
 import in.lekhai.contract.model.VoucherResponse;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.service.VoucherIntakeService;
 import in.lekhai.voucher.service.VoucherSeriesService;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +74,7 @@ public class VoucherController implements VoucherApi {
 
     @Override
     public ResponseEntity<CustomVoucherSeriesListResponse> listVoucherSeries(
-            String voucherType, String financialYear, Integer page, Integer size, List<String> sort) {
+            VoucherType voucherType, String financialYear, Integer page, Integer size, List<String> sort) {
         int safePage = page == null ? 0 : page;
         int safeSize = size == null ? 20 : size;
         return ResponseEntity.ok(

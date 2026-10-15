@@ -1,6 +1,6 @@
 package in.lekhai.voucher.dto.posting;
 
-import in.lekhai.voucher.entity.VoucherType;
+import in.lekhai.contract.model.VoucherType;
 
 import java.time.LocalDate;
 import java.util.List;

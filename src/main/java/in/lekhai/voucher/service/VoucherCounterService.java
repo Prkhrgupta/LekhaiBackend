@@ -2,8 +2,8 @@ package in.lekhai.voucher.service;
 
 import in.lekhai.shop.context.model.ShopContext;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
+import in.lekhai.contract.model.VoucherType;
 import in.lekhai.voucher.entity.VoucherCounter;
-import in.lekhai.voucher.entity.VoucherType;
 import in.lekhai.voucher.repository.VoucherCounterRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
