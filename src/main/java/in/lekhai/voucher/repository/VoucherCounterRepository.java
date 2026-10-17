@@ -21,4 +21,11 @@ public interface VoucherCounterRepository extends ListCrudRepository<VoucherCoun
         FOR UPDATE
         """)
     Optional<VoucherCounter> findForUpdate(VoucherType voucherType);
+
+    @Query("""
+        SELECT *
+        FROM voucher_counter
+        WHERE voucher_type = :voucherType
+        """)
+    Optional<VoucherCounter> findByVoucherType(VoucherType voucherType);
 }

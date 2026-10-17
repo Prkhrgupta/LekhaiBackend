@@ -117,6 +117,19 @@ public class VoucherSeriesService {
         return mapToResponse(saved);
     }
 
+    @ShopContextTransactional
+    public in.lekhai.contract.model.NextBillNoResponse peekNextBillNo(
+            String seriesCode, VoucherType voucherType, String financialYear) {
+        VoucherType type = requireSupportedType(voucherType);
+        String code = requireCode(seriesCode);
+        String fy = requireFinancialYear(financialYear);
+        in.lekhai.voucher.entity.CustomVoucherSeries series = seriesRepository
+                .findByVoucherTypeAndSeriesCodeAndFinancialYear(type, code, fy)
+                .orElseThrow(() -> new SeriesFyMissingException(type.name(), fy));
+        Long next = series.getNextNumber() == null ? 1L : series.getNextNumber();
+        return new in.lekhai.contract.model.NextBillNoResponse().nextBillNo(next);
+    }
+
     private void rejectPrefixChangeAfterUse(
             in.lekhai.voucher.entity.CustomVoucherSeries series, String nextPrefix, String nextSuffix) {
         boolean changed = !equalsNullable(series.getPrefix(), nextPrefix)
