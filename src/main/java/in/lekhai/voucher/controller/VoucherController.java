@@ -7,11 +7,14 @@ import in.lekhai.contract.model.CreateSeriesRequest;
 import in.lekhai.contract.model.CustomVoucherSeries;
 import in.lekhai.contract.model.CustomVoucherSeriesListResponse;
 import in.lekhai.contract.model.JournalVoucherRequest;
+import in.lekhai.contract.model.NextBillNoResponse;
+import in.lekhai.contract.model.NextVoucherNumberResponse;
 import in.lekhai.contract.model.PaymentVoucherRequest;
 import in.lekhai.contract.model.ReceiptVoucherRequest;
 import in.lekhai.contract.model.UpdateSeriesRequest;
 import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.contract.model.VoucherType;
+import in.lekhai.voucher.service.VoucherCounterService;
 import in.lekhai.voucher.service.VoucherIntakeService;
 import in.lekhai.voucher.service.VoucherSeriesService;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +28,16 @@ import java.util.List;
 public class VoucherController implements VoucherApi {
     private final VoucherIntakeService voucherIntakeService;
     private final VoucherSeriesService voucherSeriesService;
+    private final VoucherCounterService voucherCounterService;
 
     public VoucherController(
             VoucherIntakeService voucherIntakeService,
-            VoucherSeriesService voucherSeriesService
+            VoucherSeriesService voucherSeriesService,
+            VoucherCounterService voucherCounterService
     ) {
         this.voucherIntakeService = voucherIntakeService;
         this.voucherSeriesService = voucherSeriesService;
+        this.voucherCounterService = voucherCounterService;
     }
 
     @Override
@@ -85,5 +91,19 @@ public class VoucherController implements VoucherApi {
     public ResponseEntity<CustomVoucherSeries> updateVoucherSeries(
             Long id, UpdateSeriesRequest updateSeriesRequest) {
         return ResponseEntity.ok(voucherSeriesService.updateSeries(id, updateSeriesRequest));
+    }
+
+    @Override
+    public ResponseEntity<NextBillNoResponse> getNextBillNo(
+            String seriesCode, VoucherType voucherType, String financialYear) {
+        return ResponseEntity.ok(
+                voucherSeriesService.peekNextBillNo(seriesCode, voucherType, financialYear));
+    }
+
+    @Override
+    public ResponseEntity<NextVoucherNumberResponse> getNextVoucherNumber(
+            VoucherType voucherType) {
+        Long next = voucherCounterService.peekNextNumber(voucherType);
+        return ResponseEntity.ok(new NextVoucherNumberResponse().nextVoucherNumber(next));
     }
 }

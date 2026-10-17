@@ -44,4 +44,15 @@ public class VoucherCounterService {
         log.info("Initiated [{}] voucher counter for shopCode=[{}]", voucherType, ShopContext.getShopCode());
         return initialCounter;
     }
+
+    @ShopContextTransactional
+    public Long peekNextNumber(VoucherType voucherType) {
+        if (voucherType == null) {
+            throw new in.lekhai.error.controller.voucher.exception.SeriesValidationException(
+                    "voucher_type must not be null");
+        }
+        return voucherCounterRepository.findByVoucherType(voucherType)
+                .map(VoucherCounter::getNextNumber)
+                .orElse(1L);
+    }
 }

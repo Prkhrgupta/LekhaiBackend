@@ -180,6 +180,31 @@ class VoucherSeriesServiceTest {
         verify(seriesRepository).save(any());
     }
 
+    @Test
+    void peekNextBillNo_returnsNextWithoutReserving() {
+        in.lekhai.voucher.entity.CustomVoucherSeries stored = storedSeries(7L);
+        when(seriesRepository.findByVoucherTypeAndSeriesCodeAndFinancialYear(
+                VoucherType.PAYMENT, "CASH-1", "2025-26"))
+                .thenReturn(Optional.of(stored));
+
+        in.lekhai.contract.model.NextBillNoResponse actual =
+                seriesService.peekNextBillNo("cash-1", VoucherType.PAYMENT, "2025-26");
+
+        assertThat(actual.getNextBillNo()).isEqualTo(5L);
+        verify(seriesRepository).findByVoucherTypeAndSeriesCodeAndFinancialYear(
+                VoucherType.PAYMENT, "CASH-1", "2025-26");
+    }
+
+    @Test
+    void peekNextBillNo_missingRowThrowsSeriesFyMissing() {
+        when(seriesRepository.findByVoucherTypeAndSeriesCodeAndFinancialYear(
+                any(), any(), any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> seriesService.peekNextBillNo(
+                "CASH-1", VoucherType.PAYMENT, "2025-26"))
+                .isInstanceOf(SeriesFyMissingException.class);
+    }
+
     private static in.lekhai.voucher.entity.CustomVoucherSeries storedSeries(Long id) {
         in.lekhai.voucher.entity.CustomVoucherSeries series =
                 new in.lekhai.voucher.entity.CustomVoucherSeries();

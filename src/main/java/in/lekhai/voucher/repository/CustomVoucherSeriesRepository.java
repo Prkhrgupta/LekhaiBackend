@@ -41,6 +41,18 @@ public interface CustomVoucherSeriesRepository extends ListCrudRepository<Custom
     @Query("""
         SELECT *
         FROM custom_voucher_series
+        WHERE voucher_type = :voucherType
+          AND series_code = :seriesCode
+          AND financial_year = :financialYear
+        """)
+    Optional<CustomVoucherSeries> findByVoucherTypeAndSeriesCodeAndFinancialYear(
+            @Param("voucherType") VoucherType voucherType,
+            @Param("seriesCode") String seriesCode,
+            @Param("financialYear") String financialYear);
+
+    @Query("""
+        SELECT *
+        FROM custom_voucher_series
         WHERE (:voucherType IS NULL OR voucher_type = :voucherType)
           AND (:financialYear IS NULL OR financial_year = :financialYear)
         ORDER BY id
