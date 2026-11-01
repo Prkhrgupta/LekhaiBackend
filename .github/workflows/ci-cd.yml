@@ -12,6 +12,8 @@ jobs:
   build_and_push:
     name: Build & Push Image
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.image_info.outputs.tag }}
 
     steps:
       - name: Checkout
@@ -49,7 +51,7 @@ jobs:
 
       - name: Set image tag output
         id: image_info
-        run: echo "::set-output name=tag::${GITHUB_SHA::7}"
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy to Server
@@ -66,7 +68,10 @@ jobs:
           port: ${{ secrets.SSH_PORT || '22' }}
           script: |
             set -e
-            DEPLOY_DIR=${{ secrets.DEPLOY_DIR:-/home/${{ secrets.SERVER_USER }}/deploy }}
+            DEPLOY_DIR="${{ secrets.DEPLOY_DIR }}"
+            if [ -z "$DEPLOY_DIR" ]; then
+              DEPLOY_DIR="/home/${{ secrets.SERVER_USER }}/deploy"
+            fi
             TAG=${{ needs.build_and_push.outputs.tag }}
             echo "Deploy dir: $DEPLOY_DIR"
             echo "Using image tag: $TAG"
