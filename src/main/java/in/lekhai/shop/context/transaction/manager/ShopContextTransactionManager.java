@@ -35,26 +35,47 @@ public class ShopContextTransactionManager extends DataSourceTransactionManager 
 
     @Override
     protected void doBegin(@NonNull Object transaction, @NonNull TransactionDefinition definition) {
-        super.doBegin(transaction, definition);
-
+        // Validate before acquiring a connection: throwing after super.doBegin() would leak
+        // the connection and leave a transaction-active ConnectionHolder bound to the thread.
         Integer shopCode = ShopContext.getShopCode();
         if (Objects.isNull(shopCode)) {
             log.error("Null shop context for transaction :: {} :: {}", transaction, definition);
             throw new InvalidShopCodeException();
         }
 
-        ConnectionHolder connectionHolder = (ConnectionHolder) TransactionSynchronizationManager
-                .getResource(Objects.requireNonNull(getDataSource()));
-        if (Objects.isNull(connectionHolder)) {
-            throw new LekhaiException(String.format("Connection null for transaction :: shop code : [%s]", shopCode));
-        }
+        super.doBegin(transaction, definition);
 
-        Connection connection = connectionHolder.getConnection();
         try {
+            ConnectionHolder connectionHolder = (ConnectionHolder) TransactionSynchronizationManager
+                    .getResource(Objects.requireNonNull(getDataSource()));
+            if (Objects.isNull(connectionHolder)) {
+                throw new LekhaiException(String.format("Connection null for transaction :: shop code : [%s]", shopCode));
+            }
+
+            Connection connection = connectionHolder.getConnection();
             setShopContext(connection, shopCode);
         } catch (SQLException exception) {
-            log.error("Failed to set postgres local context for shop [{}]", shopCode);
+            log.error("Failed to set postgres local context for shop [{}], releasing connection",
+                    shopCode, exception);
+            releaseAfterFailedBegin(transaction);
             throw new LekhaiException(String.format("Failed to set context for shop [%s]", shopCode), exception);
+        } catch (RuntimeException exception) {
+            log.error("Failed to begin transaction for shop [{}], releasing connection",
+                    shopCode, exception);
+            releaseAfterFailedBegin(transaction);
+            throw exception;
+        }
+    }
+
+    /**
+     * Spring does not clean up after a doBegin() that throws (see AbstractPlatformTransactionManager
+     * .startTransaction), so we must unbind the holder and return the connection to the pool ourselves.
+     */
+    private void releaseAfterFailedBegin(Object transaction) {
+        try {
+            super.doCleanupAfterCompletion(transaction);
+        } catch (Exception cleanupException) {
+            log.error("Failed to release connection after failed transaction begin", cleanupException);
         }
     }
 

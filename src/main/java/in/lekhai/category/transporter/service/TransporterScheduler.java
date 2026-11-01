@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -42,45 +41,48 @@ public class TransporterScheduler {
     }
 
 
-    @Scheduled(cron = "0 1 0 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 45 2 * * *", zone = "Asia/Kolkata")
     //TODO : add a failed queue if the automatic fetch fails
     public void fetchEwbsForTransporterAtMidnight() {
         for(Integer shopCode : ewbSchedulerShopCodes) {
-            log.info("Start to fetch Ewbs for shopCode {}", shopCode);
-            ShopContext.setShopCode(shopCode);
+            try {
+                log.info("Start to fetch Ewbs for shopCode {}", shopCode);
+                ShopContext.setShopCode(shopCode);
 
-            Optional<Shops> shopDetails = shopsRepo.findByShopCode(shopCode);
-            if(shopDetails.isEmpty()) {
-                throw new RuntimeException("Something went wrong");
+                Shops shopDetails = shopsRepo.findByShopCode(shopCode)
+                        .orElseThrow(() -> new IllegalStateException("Shop not found for shopCode " + shopCode));
+                Instant now = Instant.now().minus(1, ChronoUnit.DAYS);
+                transporterService.saveAllEwbForTransporterForDate(shopDetails.getGstNumber(), now, shopCode);
+            } catch (Exception e) {
+                log.error("Failed to fetch EWBs for shopCode {}", shopCode, e);
+            } finally {
+                ShopContext.clear();
             }
-            String gstNumber = shopDetails.get().getGstNumber();
-            Instant now = Instant.now().minus(1, ChronoUnit.DAYS);
-            transporterService.saveAllEwbForTransporterForDate(gstNumber, now, shopCode);
-
-            ShopContext.clear();
         }
     }
 
-    // every day 9:40 PM cron >> extend validity for expiring ewb
-    @Scheduled(cron = "0 0 21 * * *", zone = "Asia/Kolkata")
+    // every day 2:40 AM cron >> extend validity for expiring ewb
+    @Scheduled(cron = "0 40 2 * * *", zone = "Asia/Kolkata")
     public void extendValidityCron() {
         for(var shopCode : ewbSchedulerShopCodes) {
-            log.info("Extending validity for  shop {} at {} ", shopCode, LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
-            ShopContext.setShopCode(shopCode);
+            try {
+                log.info("Extending validity for  shop {} at {} ", shopCode, LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
+                ShopContext.setShopCode(shopCode);
 
-            List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY, false);
-            for(var ewbSummary : ewbExpiring) {
-                try {
-                    transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));
-                } catch (Exception e) {
-                    log.error("Failed to Auto-extend ewbNo=[{}]", ewbSummary.getEwbNo());
+                List<EwbSummary> ewbExpiring = transporterService.getEwbExpiringOn(Day.TODAY, false);
+                for(var ewbSummary : ewbExpiring) {
+                    try {
+                        transporterService.extendEwbValidity(ewbSummary.getEwbNo(), buildEwbExtendRequest(ewbSummary));
+                    } catch (Exception e) {
+                        log.error("Failed to Auto-extend ewbNo=[{}]", ewbSummary.getEwbNo(), e);
+                    }
                 }
+            } catch (Exception e) {
+                log.error("Failed to extend validity for shop {}", shopCode, e);
+            } finally {
+                ShopContext.clear();
             }
-
-            ShopContext.clear();
         }
-
-        ShopContext.clear();
     }
 
     private EwbExtendRequest buildEwbExtendRequest(EwbSummary ewbSummary) {
