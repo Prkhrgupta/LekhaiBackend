@@ -41,7 +41,7 @@ public class TransporterScheduler {
     }
 
 
-    @Scheduled(cron = "0 45 2 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 1 0 * * *", zone = "Asia/Kolkata")
     //TODO : add a failed queue if the automatic fetch fails
     public void fetchEwbsForTransporterAtMidnight() {
         for(Integer shopCode : ewbSchedulerShopCodes) {
@@ -61,8 +61,8 @@ public class TransporterScheduler {
         }
     }
 
-    // every day 2:40 AM cron >> extend validity for expiring ewb
-    @Scheduled(cron = "0 40 2 * * *", zone = "Asia/Kolkata")
+    // every day 9:00 PM cron >> extend validity for expiring ewb
+    @Scheduled(cron = "0 0 21 * * *", zone = "Asia/Kolkata")
     public void extendValidityCron() {
         for(var shopCode : ewbSchedulerShopCodes) {
             try {
