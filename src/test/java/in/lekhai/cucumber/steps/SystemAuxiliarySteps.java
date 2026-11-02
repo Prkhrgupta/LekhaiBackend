@@ -89,6 +89,71 @@ public class SystemAuxiliarySteps {
         testContext.setResponse(response);
     }
 
+    // --- Super Admin Category & Feature Steps ---
+
+    @When("the super admin creates a business category {string}")
+    public void theSuperAdminCreatesABusinessCategory(String categoryName) {
+        String token = resolveActiveToken();
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("categoryName", categoryName);
+
+        Response response = RestAssured.given()
+                .auth().oauth2(token)
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .when()
+                .post("/api/category/create");
+
+        testContext.setResponse(response);
+    }
+
+    @When("the super admin requests the list of all business categories")
+    public void theSuperAdminRequestsTheListOfAllBusinessCategories() {
+        String token = resolveActiveToken();
+
+        Response response = RestAssured.given()
+                .auth().oauth2(token)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/api/category/list-all");
+
+        testContext.setResponse(response);
+    }
+
+    @When("the super admin creates a screen feature with key {string} title {string} icon {string}")
+    public void theSuperAdminCreatesAScreenFeature(String featureKey, String title, String icon) {
+        String token = resolveActiveToken();
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("featureKey", featureKey);
+        requestBody.put("title", title);
+        requestBody.put("icon", icon);
+        requestBody.put("isScreen", true);
+
+        Response response = RestAssured.given()
+                .auth().oauth2(token)
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .when()
+                .post("/api/feature/create");
+
+        testContext.setResponse(response);
+    }
+
+    @When("the super admin requests all screen features")
+    public void theSuperAdminRequestsAllScreenFeatures() {
+        String token = resolveActiveToken();
+
+        Response response = RestAssured.given()
+                .auth().oauth2(token)
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/api/feature/all");
+
+        testContext.setResponse(response);
+    }
+
     private String resolveActiveToken() {
         String token = testContext.get("shopScopedToken");
         if (token != null) return token;

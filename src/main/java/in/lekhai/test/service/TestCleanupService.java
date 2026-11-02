@@ -42,5 +42,7 @@ public class TestCleanupService {
         jdbcTemplate.update("DELETE FROM users WHERE uuid NOT IN (SELECT uuid FROM user_accounts WHERE username = 'admin')");
         jdbcTemplate.update("DELETE FROM super_admin_details WHERE uuid NOT IN (SELECT uuid FROM user_accounts WHERE username = 'admin')");
         jdbcTemplate.update("DELETE FROM user_accounts WHERE username != 'admin'");
+        jdbcTemplate.update("DELETE FROM categories WHERE name NOT IN ('SUPER_ADMIN', 'SAREE')");
+        jdbcTemplate.update("DELETE FROM features WHERE feature_key LIKE 'FEATURE_INVOICE_EXPORT%'");
     }
 }
