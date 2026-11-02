@@ -15,6 +15,7 @@ import in.lekhai.contract.model.ReceiptVoucherRequest;
 import in.lekhai.contract.model.VoucherEntry;
 import in.lekhai.contract.model.VoucherResponse;
 import in.lekhai.error.controller.LekhaiClientException;
+import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import in.lekhai.voucher.dto.posting.PostingEntry;
 import in.lekhai.voucher.dto.posting.PostingRequest;
 import in.lekhai.voucher.entity.Voucher;
@@ -41,6 +42,7 @@ public class VoucherIntakeService {
     /**
      * Money paid out: item ledgers take the debit, the single cash-or-bank ledger takes the credit.
      */
+    @ShopContextTransactional
     public VoucherResponse processPayment(PaymentVoucherRequest voucher) {
         if (voucher == null) {
             throw clientError("Payment voucher request must not be null");
@@ -57,6 +59,7 @@ public class VoucherIntakeService {
     /**
      * Money received: item ledgers take the credit, the single cash-or-bank ledger takes the debit.
      */
+    @ShopContextTransactional
     public VoucherResponse processReceipt(ReceiptVoucherRequest voucher) {
         if (voucher == null) {
             throw clientError("Receipt voucher request must not be null");
@@ -73,6 +76,7 @@ public class VoucherIntakeService {
     /**
      * Cash moved between the firm's own cash and bank ledgers; no outside party involved.
      */
+    @ShopContextTransactional
     public VoucherResponse processContra(ContraVoucherRequest voucher) {
         if (voucher == null) {
             throw clientError("Contra voucher request must not be null");
@@ -92,6 +96,7 @@ public class VoucherIntakeService {
     /**
      * Non-cash adjustments and corrections against any ledger, debits balancing credits.
      */
+    @ShopContextTransactional
     public VoucherResponse processJournal(JournalVoucherRequest voucher) {
         if (voucher == null) {
             throw clientError("Journal voucher request must not be null");
