@@ -31,6 +31,7 @@ public class VoucherLedgerValidator {
         this.accountGroupRepository = accountGroupRepository;
     }
 
+    @ShopContextTransactional
     public Ledger requireLedger(Long ledgerId) {
         if (ledgerId == null) {
             throw new LekhaiClientException("Ledger id must not be null", HttpStatus.BAD_REQUEST);
