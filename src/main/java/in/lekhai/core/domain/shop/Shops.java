@@ -17,6 +17,7 @@ public class Shops {
     private String firmName;
     private String registeredAddress;
     private Integer shopCode;
+    private String stateCode;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
@@ -61,6 +62,14 @@ public class Shops {
 
     public String getRegisteredAddress() {
         return registeredAddress;
+    }
+
+    public String getStateCode() {
+        return stateCode;
+    }
+
+    public void setStateCode(String stateCode) {
+        this.stateCode = stateCode;
     }
 
     public Integer getShopCode() {

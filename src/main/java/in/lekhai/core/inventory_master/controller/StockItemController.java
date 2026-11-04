@@ -3,11 +3,13 @@ package in.lekhai.core.inventory_master.controller;
 import in.lekhai.authentication.utils.SecurityExpressions;
 import in.lekhai.contract.api.StockItemApi;
 import in.lekhai.contract.model.DropdownItem;
+import in.lekhai.contract.model.StockAvailabilityResponse;
 import in.lekhai.contract.model.StockItemRequest;
 import in.lekhai.contract.model.StockItemResponse;
 import in.lekhai.contract.model.StockItemSearchableField;
 import in.lekhai.contract.model.StockItemSummaryPageResponse;
 import in.lekhai.core.inventory_master.service.StockItemService;
+import in.lekhai.salesinvoice.service.StockLedgerService;
 import in.lekhai.shop.context.model.ShopContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +26,11 @@ public class StockItemController implements StockItemApi {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final StockItemService stockItemService;
+    private final StockLedgerService stockLedgerService;
 
-    public StockItemController(StockItemService stockItemService) {
+    public StockItemController(StockItemService stockItemService, StockLedgerService stockLedgerService) {
         this.stockItemService = stockItemService;
+        this.stockLedgerService = stockLedgerService;
     }
 
     @Override
@@ -79,5 +83,10 @@ public class StockItemController implements StockItemApi {
                 searchableField, searchText, pageable);
         log.info("Successfully fetched stock item summary {}", ShopContext.getShopCode());
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<StockAvailabilityResponse> getStockItemAvailability(Long id) {
+        return ResponseEntity.ok(stockLedgerService.getAvailability(id));
     }
 }

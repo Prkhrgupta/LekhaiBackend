@@ -46,6 +46,7 @@ All modules live under `src/main/java/in/lekhai/`.
 | `category/` | Transporters + E-way bill scheduling | 5 |
 | `accountbooks/` | Purchase/sales ledger report slice | 2 |
 | `voucher/` | Voucher processing (payment/receipt/contra/journal) + posting | 19 |
+| `salesinvoice/` | GST sales invoice create/preview, stock ledger, stock availability | 20 |
 | `gsp/` | GST Suvidha Provider (TaxPro EWB + GSTIN) — hexagonal | 41 |
 | `core/domain/` | Core domain entities (admin, category, feature, role, shop, user) | 10 |
 | `core/repository/` | Repository interfaces for core domain | 11 |
