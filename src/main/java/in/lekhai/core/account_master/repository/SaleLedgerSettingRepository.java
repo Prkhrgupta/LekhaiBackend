@@ -19,4 +19,12 @@ public interface SaleLedgerSettingRepository extends CrudRepository<SaleLedgerSe
 
     @Query("SELECT COUNT(*) FROM sale_ledger_setting_master WHERE (is_deleted IS NULL OR is_deleted = FALSE)")
     long countAllActive();
+
+    @Query("SELECT * FROM sale_ledger_setting_master "
+            + "WHERE sale_type = :saleType AND (is_deleted IS NULL OR is_deleted = FALSE)")
+    List<SaleLedgerSetting> findActiveBySaleType(@Param("saleType") String saleType);
+
+    @Query("SELECT COUNT(*) > 0 FROM sale_ledger_setting_master "
+            + "WHERE sale_ledger_id = :saleLedgerId AND (is_deleted IS NULL OR is_deleted = FALSE)")
+    boolean existsActiveBySaleLedgerId(@Param("saleLedgerId") Long saleLedgerId);
 }

@@ -2,6 +2,7 @@ package in.lekhai.voucher.config;
 
 import java.io.IOException;
 
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,8 +41,10 @@ public class VoucherTypeBindingConfig {
     Jackson2ObjectMapperBuilderCustomizer voucherTypeJacksonCustomizer() {
         return builder -> {
             // why: builder.modules() replaces Boot's auto-registered modules (drops JavaTimeModule
-            // and breaks LocalDate binding); modulesToInstall() appends instead.
-            builder.modulesToInstall(new JavaTimeModule(), new SimpleModule() {
+            // and breaks LocalDate binding); modulesToInstall() appends instead. It also overwrites any earlier
+            // modulesToInstall() call, so every module we need (JsonNullable for generated contract models) must
+            // be listed here — a separate Module @Bean would be silently dropped.
+            builder.modulesToInstall(new JavaTimeModule(), new JsonNullableModule(), new SimpleModule() {
                 {
                     addDeserializer(VoucherType.class, new JsonDeserializer<VoucherType>() {
                         @Override

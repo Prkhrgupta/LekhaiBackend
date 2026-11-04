@@ -1,5 +1,6 @@
 package in.lekhai.core.service.shop;
 
+import in.lekhai.core.account_master.repository.StateRepository;
 import in.lekhai.core.domain.shop.Shops;
 import in.lekhai.core.domain.users.UserShopAccess;
 import in.lekhai.core.domain.users.Users;
@@ -14,8 +15,10 @@ import in.lekhai.core.repository.users.UserShopAccessRepo;
 import in.lekhai.core.repository.users.UsersRepo;
 import in.lekhai.core.service.admin.AdminService;
 import in.lekhai.core.util.AdminUtils;
+import in.lekhai.error.controller.LekhaiClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +33,21 @@ public class ShopService {
     private final UsersRepo userRepo;
     private final UserShopAccessRepo userShopAccessRepo;
     private final CategoriesRepo categoriesRepo;
+    private final StateRepository stateRepository;
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     public ShopService(AdminService adminService,
             ShopsRepo shopRepo,
             UsersRepo userRepo,
             UserShopAccessRepo userShopAccessRepo,
-            CategoriesRepo categoriesRepo) {
+            CategoriesRepo categoriesRepo,
+            StateRepository stateRepository) {
         this.adminService = adminService;
         this.shopRepo = shopRepo;
         this.userRepo = userRepo;
         this.userShopAccessRepo = userShopAccessRepo;
         this.categoriesRepo = categoriesRepo;
+        this.stateRepository = stateRepository;
     }
 
     @Transactional
@@ -79,6 +85,7 @@ public class ShopService {
                 request.firmName(),
                 request.address(),
                 shopCode);
+        shop.setStateCode(resolveStateCode(request));
 
         Shops savedShop = shopRepo.save(shop);
 
@@ -98,5 +105,24 @@ public class ShopService {
                 savedShop.getFirmName(),
                 savedShop.getGstNumber(),
                 savedShop.getRegisteredAddress());
+    }
+
+    /**
+     * Explicit state wins; otherwise derive it from the GSTIN's 2-digit prefix so existing flows keep working.
+     */
+    private String resolveStateCode(BaseShopRequest request) {
+        if (request.stateCode() != null && !request.stateCode().isBlank()) {
+            return stateRepository.findById(request.stateCode())
+                    .orElseThrow(() -> new LekhaiClientException(
+                            "Unknown state code: " + request.stateCode(), HttpStatus.BAD_REQUEST))
+                    .getStateCode();
+        }
+        String gstIn = request.gstIn();
+        if (gstIn == null || gstIn.length() < 2) {
+            return null;
+        }
+        return stateRepository.findByGstCode(gstIn.substring(0, 2))
+                .map(state -> state.getStateCode())
+                .orElse(null);
     }
 }
