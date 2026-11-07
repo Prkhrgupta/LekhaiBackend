@@ -14,7 +14,7 @@ public class AdminUtils {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
     private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
-    private static final Integer DEFAULT_RANDOM_LETTER_LENGTH = 2;
+    private static final Integer DEFAULT_RANDOM_LETTER_LENGTH = 6;
 
     // TODO : Change this to return a UUID
     public static String createUUID(Roles role) {
