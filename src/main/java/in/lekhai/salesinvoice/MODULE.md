@@ -8,9 +8,9 @@ One request turns a party, a date, a SALES series and a list of items into a num
 
 ## Public API
 
-- `controller/SalesInvoiceController` — implements the generated `SalesInvoiceApi`: `POST /sales-invoice` (201) and `POST /sales-invoice/preview`.
+- `controller/SalesInvoiceController` — implements the generated `SalesInvoiceApi`: `POST /sales-invoice` (201), `POST /sales-invoice/preview` and `GET /sales-invoice/{id}` (404 when missing).
 - `core/inventory_master/controller/StockItemController#getStockItemAvailability` — delegates to `StockLedgerService` (`GET /stock-item/{id}/availability`).
-- `service/SalesInvoiceService` — `create` and `preview`, both `@ShopContextTransactional`.
+- `service/SalesInvoiceService` — `create`, `preview` and `getById` (rebuilds the stored snapshot; per-line GST is derived from the frozen taxable value and rate), all `@ShopContextTransactional`.
 - `service/SalesInvoicePreparationService` — read-only: validate, snapshot masters, calculate, resolve ledgers → `PreparedInvoice`.
 - `service/StockLedgerService` — `getAvailability` (opening + in − out), `recordSale` (out rows).
 - `calc/InvoiceCalculator` — pure BigDecimal GST maths (`InvoiceModels` holds its value objects).
@@ -23,7 +23,7 @@ One request turns a party, a date, a SALES series and a list of items into a num
 
 ## How to Extend
 
-- Cancel/list/detail: add endpoints in the apispec first; reuse `SalesInvoiceResponse`. Cancellation = status `CANCELLED`, reversal `voucher_entry` lines on the same voucher, `SALE_CANCEL` stock rows. Never delete.
+- Cancel/list: add endpoints in the apispec first; reuse `SalesInvoiceResponse`. Cancellation = status `CANCELLED`, reversal `voucher_entry` lines on the same voucher, `SALE_CANCEL` stock rows. Never delete.
 - Ship-to: `ship_to_id` is rejected (422) until the ship-to table exists.
 - E-way bill / broker / transport: add an optional object to the contract, store in `sales_invoice.metadata`.
 
