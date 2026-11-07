@@ -9,6 +9,9 @@ import in.lekhai.contract.model.VoucherType;
 import in.lekhai.error.controller.voucher.exception.SeriesFyMissingException;
 import in.lekhai.salesinvoice.calc.InvoiceModels.Totals;
 import in.lekhai.salesinvoice.entity.SalesInvoice;
+import in.lekhai.salesinvoice.repository.SalesInvoiceItemRepository;
+import in.lekhai.salesinvoice.repository.SalesInvoiceRepository;
+import in.lekhai.salesinvoice.repository.SalesInvoiceTaxRepository;
 import in.lekhai.salesinvoice.mapper.SalesInvoiceMapper;
 import in.lekhai.shop.context.transaction.manager.annotation.ShopContextTransactional;
 import in.lekhai.voucher.dto.posting.PostingEntry;
@@ -44,13 +47,19 @@ public class SalesInvoiceService {
     private final StockLedgerService stockLedgerService;
     private final CustomVoucherSeriesRepository seriesRepository;
     private final SalesInvoiceMapper mapper;
+    private final SalesInvoiceRepository invoiceRepository;
+    private final SalesInvoiceItemRepository itemRepository;
+    private final SalesInvoiceTaxRepository taxRepository;
 
     public SalesInvoiceService(SalesInvoicePreparationService preparationService,
                                SalesInvoicePostingBuilder postingBuilder,
                                VoucherPostingService voucherPostingService,
                                SalesInvoicePersistenceService persistenceService,
                                StockLedgerService stockLedgerService,
-                               CustomVoucherSeriesRepository seriesRepository, SalesInvoiceMapper mapper) {
+                               CustomVoucherSeriesRepository seriesRepository, SalesInvoiceMapper mapper,
+                               SalesInvoiceRepository invoiceRepository,
+                               SalesInvoiceItemRepository itemRepository,
+                               SalesInvoiceTaxRepository taxRepository) {
         this.preparationService = preparationService;
         this.postingBuilder = postingBuilder;
         this.voucherPostingService = voucherPostingService;
@@ -58,6 +67,9 @@ public class SalesInvoiceService {
         this.stockLedgerService = stockLedgerService;
         this.seriesRepository = seriesRepository;
         this.mapper = mapper;
+        this.invoiceRepository = invoiceRepository;
+        this.itemRepository = itemRepository;
+        this.taxRepository = taxRepository;
     }
 
     @ShopContextTransactional
@@ -69,6 +81,14 @@ public class SalesInvoiceService {
         stockLedgerService.recordSale(invoice, posted.voucher().getId());
         addGapWarning(warnings, posted.firstMissingBillNo());
         return mapper.toResponse(invoice, saved, warnings);
+    }
+
+    @ShopContextTransactional
+    public SalesInvoiceResponse getById(Long id) {
+        SalesInvoice invoice = invoiceRepository.findById(id)
+                .orElseThrow(() -> SalesInvoiceErrors.notFound("Sales invoice not found: " + id));
+        return mapper.toResponse(invoice, itemRepository.findBySalesInvoiceIdOrderBySrno(id),
+                taxRepository.findBySalesInvoiceIdOrderById(id));
     }
 
     @ShopContextTransactional

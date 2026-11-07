@@ -30,4 +30,9 @@ public class SalesInvoiceController implements SalesInvoiceApi {
     public ResponseEntity<SalesInvoicePreviewResponse> previewSalesInvoice(SalesInvoiceRequest salesInvoiceRequest) {
         return ResponseEntity.ok(salesInvoiceService.preview(salesInvoiceRequest));
     }
+
+    @Override
+    public ResponseEntity<SalesInvoiceResponse> getSalesInvoice(Long id) {
+        return ResponseEntity.ok(salesInvoiceService.getById(id));
+    }
 }
