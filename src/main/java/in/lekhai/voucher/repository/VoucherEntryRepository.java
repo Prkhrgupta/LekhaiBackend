@@ -4,6 +4,7 @@ import in.lekhai.accountbooks.balancesheet.repository.LedgerNetTotalProjection;
 import in.lekhai.accountbooks.balancesheet.repository.NatureTotalProjection;
 import in.lekhai.core.account_master.domain.LedgerSummaryProjection;
 import in.lekhai.voucher.entity.VoucherEntry;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -142,6 +143,7 @@ public interface VoucherEntryRepository extends CrudRepository<VoucherEntry, Lon
         SELECT ve.id, ve.voucher_id, ve.ledger_id, ve.line_number,
                ve.debit_amount, ve.credit_amount,
                v.voucher_date,
+               ve.clear_date,
                0.0 AS running_net
         FROM voucher_entry ve
         JOIN voucher v ON ve.voucher_id = v.id
@@ -167,4 +169,12 @@ public interface VoucherEntryRepository extends CrudRepository<VoucherEntry, Lon
             @Param("ledgerIds") List<Long> ledgerIds,
             @Param("fromDate") LocalDate fromDate
     );
+
+    @Modifying
+    @Query("""
+        UPDATE voucher_entry
+        SET clear_date = :clearDate, updated_at = CURRENT_TIMESTAMP
+        WHERE id = :id
+    """)
+    int updateClearDate(@Param("id") Long id, @Param("clearDate") LocalDate clearDate);
 }
