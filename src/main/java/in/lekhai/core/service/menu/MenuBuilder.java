@@ -103,7 +103,7 @@ public class MenuBuilder {
         return new MenuItem()
                 .id(feature.getFeatureKey())
                 .title(feature.getTitle())
-                .icon(feature.getIcon())
+                .icon(feature.getIcon() != null ? feature.getIcon() : "")
                 .route(feature.getRoute())
                 .children(null);
     }
@@ -120,7 +120,7 @@ public class MenuBuilder {
         return new MenuItem()
                 .id(feature.getFeatureKey())
                 .title(feature.getTitle())
-                .icon(feature.getIcon())
+                .icon(feature.getIcon() != null ? feature.getIcon() : "")
                 .route(null)
                 .children(childMenuItems);
     }

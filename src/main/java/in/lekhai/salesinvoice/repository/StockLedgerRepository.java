@@ -16,4 +16,10 @@ public interface StockLedgerRepository extends ListCrudRepository<StockLedger, L
 
     @Query("SELECT COALESCE(SUM(out_qty), 0) FROM stock_ledger WHERE stock_item_id = :stockItemId")
     BigDecimal sumOutQty(@Param("stockItemId") Long stockItemId);
+
+    @Query("SELECT COALESCE(SUM(in_value - out_value), 0) FROM stock_ledger WHERE transaction_date < :date")
+    BigDecimal sumNetValueBeforeDate(@Param("date") java.time.LocalDate date);
+
+    @Query("SELECT COALESCE(SUM(in_value - out_value), 0) FROM stock_ledger WHERE transaction_date <= :date")
+    BigDecimal sumNetValueUpToDate(@Param("date") java.time.LocalDate date);
 }
