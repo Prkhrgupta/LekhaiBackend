@@ -27,6 +27,11 @@ super-admin:
   username: ${SUPER_ADMIN_USERNAME:admin}
   password: ${SUPER_ADMIN_PASSWORD:admin@lekhai.in}
   name: ${SUPER_ADMIN_NAME:default_superadmin}
+  # Created on startup if missing and enabled for the default super admin only.
+  routes:
+    - route: /manage_permission/category_wise_permission
+      title: Category Wise Permission
+      icon: ""
 
 features-flag:
   ewb-scheduler: ${FF_EWB_SCHEDULER:71386}

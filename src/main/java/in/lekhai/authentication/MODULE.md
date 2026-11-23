@@ -20,7 +20,9 @@ The books of a firm are sensitive, and different people in the firm have differe
 - `converter/JwtAuthenticationConverter` — token claims → Spring `Authentication` with roles + shop/category preferences.
 - `service/JwtTokenService` — sign/validate/decode tokens.
 - `service/UserService` — user account management (credentials, hashing).
-- `service/AdminProvisioningService` — idempotent bootstrap of admin/super-admin accounts.
+- `service/AdminProvisioningService` — idempotent bootstrap of the default super-admin account; on every startup it also enables the routes listed in `super-admin.routes` for that account's `SUPER_ADMIN` category/role only.
+- `service/SuperAdminRouteProvisioner` — creates any missing configured route as a feature (bit auto-assigned) and returns the bits to enable.
+- `config/properties/SuperAdminRoutesProperties` — typed `super-admin.routes` list.
 - `model/TenantContext`, `model/JwtClaims` — decoded token/tenant structures.
 - `entity/UserAccounts`, `repository/UserAccountRepository` — the security principal (username, password hash, roles, shop access).
 - `utils/SecurityExpressions` — the `@PreAuthorize` expressions used across controllers.
@@ -34,6 +36,7 @@ The books of a firm are sensitive, and different people in the firm have differe
 
 - **New protected endpoint:** annotate with `@PreAuthorize(SecurityExpressions.X)`; don't reinvent authentication.
 - **New claim in the token:** update `JwtTokenService` + `JwtClaims`, and keep `JwtConstants` in sync.
+- **Default-enabled route for the default super admin:** add an entry (`route`, `title`, `icon`) to `super-admin.routes` in `application.yaml`; it is created and enabled on the next startup. Don't hardcode bit numbers.
 - **New login flow:** extend `LoginController` / `UserService`, but don't bypass the `SecurityConfig` filter chain.
 
 ## Deep Dive

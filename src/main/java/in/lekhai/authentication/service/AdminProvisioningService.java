@@ -1,5 +1,6 @@
 package in.lekhai.authentication.service;
 
+import in.lekhai.authentication.config.properties.SuperAdminRoutesProperties;
 import in.lekhai.authentication.entity.UserAccounts;
 import in.lekhai.authentication.repository.UserAccountRepository;
 import in.lekhai.core.domain.category.Categories;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +30,8 @@ import static in.lekhai.core.util.AdminUtils.createUUID;
 
 @Service
 public class AdminProvisioningService {
+
+    private static final String SUPER_ADMIN_CATEGORY = "SUPER_ADMIN";
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -38,6 +42,8 @@ public class AdminProvisioningService {
     private final RolePermissionsRepo rolePermissionsRepo;
     private final UsersRepo usersRepo;
     private final PermissionBitCalculator permissionBitCalculator;
+    private final SuperAdminRouteProvisioner routeProvisioner;
+    private final SuperAdminRoutesProperties routesProperties;
 
     private final String username;
     private final String password;
@@ -51,6 +57,8 @@ public class AdminProvisioningService {
             RolePermissionsRepo rolePermissions,
             UsersRepo usersRepo,
             PermissionBitCalculator permissionBitCalculator,
+            SuperAdminRouteProvisioner routeProvisioner,
+            SuperAdminRoutesProperties routesProperties,
             @Value("${super-admin.username}") String username,
             @Value("${super-admin.password}") String password,
             @Value("${super-admin.name}") String name) {
@@ -61,62 +69,88 @@ public class AdminProvisioningService {
         this.rolePermissionsRepo = rolePermissions;
         this.usersRepo = usersRepo;
         this.permissionBitCalculator = permissionBitCalculator;
+        this.routeProvisioner = routeProvisioner;
+        this.routesProperties = routesProperties;
         this.username = username;
         this.password = password;
         this.name = name;
     }
 
+    /**
+     * Idempotent. Runs on every startup so routes added to config later are picked up.
+     * Only the default super admin's category (SUPER_ADMIN) receives the route bits.
+     */
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void provisionSuperAdmin() {
-        Categories superAdminCategory = categoriesRepo.findByName("SUPER_ADMIN")
-                .orElseGet(() -> {
-                    Categories cat = Categories.builder()
-                            .name("SUPER_ADMIN")
-                            .build();
-                    return categoriesRepo.save(cat);
-                });
+        Categories superAdminCategory = ensureCategory();
+        String uuid = ensureAccount();
+        ensureUser(uuid, superAdminCategory.getId());
 
-        if (superAdminCategory.getPermissions() == null || superAdminCategory.getPermissions().isEmpty()) {
-            permissionBitCalculator.enableBits(superAdminCategory.getPermissions(), Set.of(29));
-            superAdminCategory = categoriesRepo.save(superAdminCategory);
+        Set<Integer> routeBits = routeProvisioner.ensureRoutes(routesProperties.routes());
+        grantToCategory(superAdminCategory, routeBits);
+        grantToRole(superAdminCategory.getId(), routeBits);
+    }
+
+    private Categories ensureCategory() {
+        return categoriesRepo.findByName(SUPER_ADMIN_CATEGORY)
+                .orElseGet(() -> categoriesRepo.save(Categories.builder().name(SUPER_ADMIN_CATEGORY).build()));
+    }
+
+    private void grantToCategory(Categories category, Set<Integer> bits) {
+        if (enableMissingBits(category.getPermissions(), bits)) {
+            categoriesRepo.save(category);
         }
+    }
 
-        if (rolePermissionsRepo.findByCategoryIdAndRoleId(superAdminCategory.getId(), Roles.SUPER_ADMIN).isEmpty()) {
-            RolePermissions rolePerm = new RolePermissions(Roles.SUPER_ADMIN, superAdminCategory.getId());
-            permissionBitCalculator.enableBits(rolePerm.getPermissions(), Set.of(29));
+    private void grantToRole(Integer categoryId, Set<Integer> bits) {
+        Optional<RolePermissions> existing = rolePermissionsRepo
+                .findByCategoryIdAndRoleId(categoryId, Roles.SUPER_ADMIN);
+        // why: the row must exist even with no routes, otherwise menu generation fails for this role
+        RolePermissions rolePerm = existing.orElseGet(() -> new RolePermissions(Roles.SUPER_ADMIN, categoryId));
+        boolean changed = enableMissingBits(rolePerm.getPermissions(), bits);
+        if (existing.isEmpty() || changed) {
             rolePermissionsRepo.save(rolePerm);
         }
+    }
 
-        Optional<UserAccounts> userCredentials = userAccountRepository.findByUsername(username);
-        String uuid;
-        if (userCredentials.isPresent()) {
-            uuid = userCredentials.get().getUuid();
-            log.info("SUPER ADMIN ALREADY {} EXISTS", username);
-        } else {
-            uuid = createUUID(Roles.SUPER_ADMIN);
-            UserAccounts superAdminCredentials = UserAccounts.builder()
-                    .username(username)
-                    .passHash(passwordEncoder.encode(password))
-                    .uuid(uuid)
-                    .build();
-            userAccountRepository.save(superAdminCredentials);
-
-            SuperAdminDetails superAdmin = new SuperAdminDetails();
-            superAdmin.setName(name);
-            superAdmin.setUuid(uuid);
-            superAdminDetailsRepo.save(superAdmin);
-
-            log.info("CREATED SUPER ADMIN {}", username);
+    private boolean enableMissingBits(List<Long> permissions, Set<Integer> bits) {
+        if (permissionBitCalculator.extractEnabledBitPositions(permissions).containsAll(bits)) {
+            return false;
         }
+        permissionBitCalculator.enableBits(permissions, bits);
+        return true;
+    }
 
+    private String ensureAccount() {
+        Optional<UserAccounts> userCredentials = userAccountRepository.findByUsername(username);
+        if (userCredentials.isPresent()) {
+            log.info("SUPER ADMIN ALREADY {} EXISTS", username);
+            return userCredentials.get().getUuid();
+        }
+        String uuid = createUUID(Roles.SUPER_ADMIN);
+        userAccountRepository.save(UserAccounts.builder()
+                .username(username)
+                .passHash(passwordEncoder.encode(password))
+                .uuid(uuid)
+                .build());
+
+        SuperAdminDetails superAdmin = new SuperAdminDetails();
+        superAdmin.setName(name);
+        superAdmin.setUuid(uuid);
+        superAdminDetailsRepo.save(superAdmin);
+
+        log.info("CREATED SUPER ADMIN {}", username);
+        return uuid;
+    }
+
+    private void ensureUser(String uuid, Integer categoryId) {
         Optional<Users> userOpt = usersRepo.findByUuid(uuid);
         if (userOpt.isEmpty()) {
-            Users adminUser = Users.createUserWithCategory(uuid, name, superAdminCategory.getId());
-            usersRepo.save(adminUser);
+            usersRepo.save(Users.createUserWithCategory(uuid, name, categoryId));
         } else if (userOpt.get().getCategoryId() == null) {
             Users adminUser = userOpt.get();
-            adminUser.setCategoryId(superAdminCategory.getId());
+            adminUser.setCategoryId(categoryId);
             usersRepo.save(adminUser);
         }
     }

@@ -13,6 +13,15 @@ import java.util.Set;
 public interface FeaturesRepo extends ListCrudRepository<Features, Long> {
     List<Features> findByBitPositionIn(Set<Integer> bitPositions);
     Optional<Features> findByFeatureKey(String featureKey);
+    Optional<Features> findByRoute(String route);
+
+    @Query(value = """
+        SELECT *
+        FROM features
+        WHERE feature_key = :featureKey
+          AND parent_id IS NOT DISTINCT FROM :parentId
+        """)
+    Optional<Features> findByFeatureKeyAndParentId(String featureKey, Long parentId);
 
     @Query(value = """
         SELECT COALESCE(MAX(bit_position) + 1, 0)
