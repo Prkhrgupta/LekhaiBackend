@@ -30,7 +30,8 @@ public class GspCredentialService {
         if(shop.isEmpty()) {
             throw new RuntimeException("Something went wrong, shopCode not registered but accessed");
         }
-        GspUserCredentials gspUserCredentials = new GspUserCredentials();
+        GspUserCredentials gspUserCredentials = gspUserCredentialsRepo.findByShopCode(shopCode)
+                .orElseGet(GspUserCredentials::new);
 
         gspUserCredentials.setUserName(request.getUsername());
         gspUserCredentials.setShopCode(shopCode);
