@@ -18,6 +18,7 @@ public class VoucherEntry {
     private BigDecimal debitAmount;
     private BigDecimal creditAmount;
     private String remarks;
+    private java.time.LocalDate clearDate;
 
     @CreatedDate
     private Instant createdAt;
@@ -89,6 +90,14 @@ public class VoucherEntry {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    public java.time.LocalDate getClearDate() {
+        return clearDate;
+    }
+
+    public void setClearDate(java.time.LocalDate clearDate) {
+        this.clearDate = clearDate;
     }
 
     public Instant getCreatedAt() {

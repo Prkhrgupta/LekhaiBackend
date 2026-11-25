@@ -1,7 +1,10 @@
 package in.lekhai.voucher.repository;
 
+import in.lekhai.accountbooks.balancesheet.repository.LedgerNetTotalProjection;
+import in.lekhai.accountbooks.balancesheet.repository.NatureTotalProjection;
 import in.lekhai.core.account_master.domain.LedgerSummaryProjection;
 import in.lekhai.voucher.entity.VoucherEntry;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -80,4 +83,98 @@ public interface VoucherEntryRepository extends CrudRepository<VoucherEntry, Lon
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate
     );
+
+    @Query(value = """
+        SELECT ve.ledger_id,
+               COALESCE(SUM(ve.debit_amount), 0) AS total_debit,
+               COALESCE(SUM(ve.credit_amount), 0) AS total_credit
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE v.voucher_date <= :toDate
+        GROUP BY ve.ledger_id
+    """)
+    List<LedgerNetTotalProjection> sumNetByLedgerUpToDate(@Param("toDate") LocalDate toDate);
+
+    @Query(value = """
+        SELECT ve.ledger_id,
+               COALESCE(SUM(ve.debit_amount), 0) AS total_debit,
+               COALESCE(SUM(ve.credit_amount), 0) AS total_credit
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE v.voucher_date >= :fromDate
+          AND v.voucher_date <= :toDate
+        GROUP BY ve.ledger_id
+    """)
+    List<LedgerNetTotalProjection> sumNetByLedgerBetweenDates(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    @Query(value = """
+        SELECT ve.ledger_id,
+               COALESCE(SUM(ve.debit_amount), 0) AS total_debit,
+               COALESCE(SUM(ve.credit_amount), 0) AS total_credit
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE v.voucher_date < :fromDate
+        GROUP BY ve.ledger_id
+    """)
+    List<LedgerNetTotalProjection> sumNetByLedgerBeforeDate(@Param("fromDate") LocalDate fromDate);
+
+    @Query(value = """
+        SELECT ag.nature,
+               COALESCE(SUM(ve.debit_amount), 0) AS total_debit,
+               COALESCE(SUM(ve.credit_amount), 0) AS total_credit
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        JOIN ledger l ON ve.ledger_id = l.id
+        JOIN account_group ag ON l.account_group_id = ag.id
+        WHERE ag.nature IN ('INCOME', 'EXPENSE')
+          AND v.voucher_date >= :fromDate
+          AND v.voucher_date <= :toDate
+        GROUP BY ag.nature
+    """)
+    List<NatureTotalProjection> sumIncomeExpenseBetweenDates(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    @Query("""
+        SELECT ve.id, ve.voucher_id, ve.ledger_id, ve.line_number,
+               ve.debit_amount, ve.credit_amount,
+               v.voucher_date,
+               ve.clear_date,
+               0.0 AS running_net
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE ve.ledger_id IN (:ledgerIds)
+          AND v.voucher_date >= :fromDate
+          AND v.voucher_date <= :toDate
+        ORDER BY v.voucher_date, ve.voucher_id, ve.line_number, ve.id
+    """)
+    List<LedgerEntryWithBalanceProjection> findEntriesByLedgerIdsBetweenDates(
+            @Param("ledgerIds") List<Long> ledgerIds,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(ve.debit_amount - ve.credit_amount), 0)
+        FROM voucher_entry ve
+        JOIN voucher v ON ve.voucher_id = v.id
+        WHERE ve.ledger_id IN (:ledgerIds)
+          AND v.voucher_date < :fromDate
+    """)
+    BigDecimal sumNetBeforeByLedgerIds(
+            @Param("ledgerIds") List<Long> ledgerIds,
+            @Param("fromDate") LocalDate fromDate
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE voucher_entry
+        SET clear_date = :clearDate, updated_at = CURRENT_TIMESTAMP
+        WHERE id = :id
+    """)
+    int updateClearDate(@Param("id") Long id, @Param("clearDate") LocalDate clearDate);
 }

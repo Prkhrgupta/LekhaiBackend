@@ -41,4 +41,17 @@ public interface VoucherRepository extends ListCrudRepository<Voucher, Long> {
             @Param("seriesId") Long seriesId,
             @Param("financialYear") String financialYear,
             @Param("voucherNumber") Long voucherNumber);
+
+    @Query("""
+        SELECT *
+        FROM voucher
+        WHERE voucher_type = :voucherType
+          AND voucher_date >= :fromDate
+          AND voucher_date <= :toDate
+        ORDER BY voucher_date ASC, id ASC
+        """)
+    List<Voucher> findByVoucherTypeAndDateBetween(
+            @Param("voucherType") String voucherType,
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate);
 }

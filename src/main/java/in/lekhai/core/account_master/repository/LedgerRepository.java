@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface LedgerRepository extends ListCrudRepository<Ledger, Long> {
     Optional<Ledger> findByGstInNumber(String gstInNumber);
     Page<Ledger> findAll(Pageable pageable);
+    List<Ledger> findByAccountGroupIdIn(java.util.Collection<Long> accountGroupIds);
 
     @Query("SELECT * FROM ledger WHERE name ILIKE '%' || :query || '%'")
     List<Ledger> findByNameContainingIgnoreCase(@Param("query") String query, Pageable pageable);
